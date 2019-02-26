@@ -29,31 +29,11 @@ options.register ('user',
 
 # defaults
 #~ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv2/TTJets_HT-600to800_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/60000/00E7F059-0BD5-E611-9267-001E67397CB5.root'
-#~ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv2/WJetsToLNu_HT-800To1200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/120000/02DD5E46-7ABE-E611-8F20-0025905B8582.root'
-#~ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv2/WGJets_MonoPhoton_PtG-130_TuneCUETP8M1_13TeV-madgraph/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/50000/BC527183-C0B7-E611-BC15-001E67348055.root'
-#~ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISpring16MiniAODv2/SMS-T5Wg_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16Fast_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/80000/F227DD10-813E-E611-A722-6C3BE5B5C460.root'
-#~ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISpring16MiniAODv2/SMS-TChiWG_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16Fast_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/000C22CC-092D-E611-8162-B083FED04D68.root'
-#~ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISpring16MiniAODv2/SMS-TChiNG_BF50N50G_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16Fast_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/00000/0009D56C-8613-E711-BE86-0CC47A4D76A2.root'
-#~ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv2/GMSB_GravitinoLSP_N1decays_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUSummer16Fast_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/130000/00E65FA0-5B0C-E711-BF18-0025905B8566.root'
-#~ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016E/SinglePhoton/MINIAOD/03Feb2017-v1/80000/74BA03B0-62EB-E611-9F30-0025905A6082.root'
-#options.inputFiles = 'root:///user/kiesel/root-files/johannes/SinglePhoton_Run2016partBtoH-03Feb2017_MINIAOD.root'
-#~ options.inputFiles = 'root:///user/kiesel/root-files/johannes/SinglePhoton_Run2016C-03Feb2017-v1_MINIAOD.root'
-#~ options.inputFiles = 'root:///user/kiesel/root-files/johannes/SinglePhoton_Run2016D-03Feb2017-v1_MINIAOD.root'
-#~ options.inputFiles = 'root:///user/kiesel/root-files/johannes/SinglePhoton_Run2016E-03Feb2017-v1_MINIAOD.root'
-#~ options.inputFiles = 'root:///user/kiesel/root-files/johannes/SinglePhoton_Run2016F-03Feb2017-v1_MINIAOD.root'
-#~ options.inputFiles = 'root:///user/kiesel/root-files/johannes/SinglePhoton_Run2016G-03Feb2017-v1_MINIAOD.root'
-#options.inputFiles = 'root:///user/kiesel/root-files/johannes/SinglePhoton_Run2016H-03Feb2017_ver2-v1_MINIAOD.root'
-#options.inputFiles = 'root:///user/kiesel/root-files/johannes/SinglePhoton_Run2016H-03Feb2017_ver3-v1_MINIAOD.root'
-#~ options.inputFiles = 'root:///user/dmeuser/master/root-files/MINIAOD_80X_mcRun2_asymptotic_2016_miniAODv2_Fast_PAT_500_SIM.root'
-#~ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv2/GGM_GravitinoLSP_M1-50to1500_M3-1000to2500_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUSummer16Fast_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/50000/06B8CB51-31EB-E711-B445-0025905A6136.root'
-#~ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv2/GGM_GravitinoLSP_M1-200to1500_M2-200to1500_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUSummer16Fast_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/50000/000C44EA-F8EC-E711-8145-0242AC130002.root'
-options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv2/GGM_GravitinoLSP_M1-200to1500_M2-200to1500_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUSummer16Fast_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/100000/0E0EDE89-9AC4-E811-9484-AC1F6B1AF16E.root'
-#~ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv2/SMS-T5qqqqHg_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSummer16Fast_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/120000/00078287-CB49-E711-B388-FA163E1C5C83.root'
-#~ options.inputFiles = 'root:///net/data_cms1b/user/dmeuser/master/root-files/tching.root'
-options.outputFile = 'photonTree.root'
+options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016D/MuonEG/MINIAOD/17Jul2018-v1/80000/D48E0B3A-A28E-E811-8A12-7CD30AD08EB4.root'
+options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
 #~ options.maxEvents = -1
-options.maxEvents = 1000
+options.maxEvents = 100
 # get and parse the command line arguments
 options.parseArguments()
 
@@ -63,30 +43,22 @@ isRealData=not dataset.endswith("SIM")
 
 # the actual TreeWriter module
 process = cms.Process("TreeWriter")
-process.options = cms.untracked.PSet( allowUnscheduled = cms.untracked.bool(True) )
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 
-# determine global tag
+# determine global tag here only 2016
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 if isRealData:
-    if "Run2016H" in dataset:
-        process.GlobalTag.globaltag = "80X_dataRun2_Prompt_v16"
-    else:
-        process.GlobalTag.globaltag = "80X_dataRun2_2016SeptRepro_v7"
+        process.GlobalTag.globaltag = "94X_dataRun2_v10"
 else:
-    if "80X_mcRun2_asymptotic_2016_TrancheIV_v6" in dataset:
-        process.GlobalTag.globaltag = "80X_mcRun2_asymptotic_2016_TrancheIV_v8"
-    elif "80X_mcRun2_asymptotic_2016_miniAODv2" in dataset:
-        process.GlobalTag.globaltag = "80X_mcRun2_asymptotic_2016_miniAODv2_v1"
-    else:
-        print "Could not guess correct global tag for", dataset
+        process.GlobalTag.globaltag = "94X_mcRun2_asymptotic_v3"
 
 ######################
 # PHOTONS, ELECTRONS #
 ######################
+"""
 # Regression: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMRegression
 from EgammaAnalysis.ElectronTools.regressionWeights_cfi import regressionWeights
 process = regressionWeights(process)
@@ -193,7 +165,7 @@ updateJetCollection(
    jetCorrections = ('AK4PFchs', cms.vstring(jecLevels), 'None')
 )
 
-
+"""
 ##########################
 # MET                    #
 ##########################
@@ -238,11 +210,13 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     minNumberElectrons_cut=cms.untracked.uint32(0),
                                     minNumberBinos_cut=cms.untracked.uint32(0),
                                     # physics objects
-                                    photons = cms.InputTag("calibratedPatPhotons"),
+                                    #~ photons = cms.InputTag("calibratedPatPhotons"), 80x
+                                    photons = cms.InputTag("slimmedPhotons"),
                                     jets = cms.InputTag("updatedPatJetsUpdatedJEC"),
                                     muons = cms.InputTag("slimmedMuons"),
                                     genJets=cms.InputTag("slimmedGenJets"),
-                                    electrons = cms.InputTag("calibratedPatElectrons"),
+                                    #~ electrons = cms.InputTag("calibratedPatElectrons"), 80x
+                                    electrons = cms.InputTag("slimmedElectrons"),
                                     mets = cms.InputTag("slimmedMETs", "", "TreeWriter"),
                                     metCorr = cms.InputTag(""),
                                     metCorrCal = cms.InputTag(""),
@@ -387,7 +361,7 @@ if user=="kiesel":
         process.TreeWriter.HT_cut = 0.
 
 elif user=="jschulz" or user=="dmeuser":
-    process.TreeWriter.photon_pT_cut=100
+    #~ process.TreeWriter.photon_pT_cut=100
     process.TreeWriter.triggerObjectNames = ["hltEG90CaloIdLHEFilter", "hltEG165HE10Filter"]
     if "Fast" in dataset:
         process.TreeWriter.minNumberPhotons_cut=0

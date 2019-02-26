@@ -349,16 +349,17 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    mayConsume<GenLumiInfoHeader,edm::InLumi> (edm::InputTag("generator"));
    consumes<GenEventInfoProduct>(edm::InputTag("generator"));
    consumes<edm::TriggerResults>(edm::InputTag("TriggerResults", "", "HLT"));
-   consumes<edm::TriggerResults>(edm::InputTag("TriggerResults", ""));
+   consumes<edm::TriggerResults>(edm::InputTag("TriggerResults", "",edm::InputTag::kSkipCurrentProcess));
    consumes<pat::PackedTriggerPrescales>(edm::InputTag("patTrigger"));
-   consumes<std::vector<pat::TriggerObjectStandAlone>>(edm::InputTag("selectedPatTrigger"));
+   //~ consumes<std::vector<pat::TriggerObjectStandAlone>>(edm::InputTag("selectedPatTrigger")); 80x
+   consumes<std::vector<pat::TriggerObjectStandAlone>>(edm::InputTag("slimmedPatTrigger"));
    consumes<edm::View<pat::Photon>>(edm::InputTag("slimmedPhotonsBeforeGSFix"));
-   consumes<edm::View<pat::Photon>>(edm::InputTag("slimmedPhotons", "", "PAT"));
-   consumes<edm::View<pat::Photon>>(edm::InputTag("slimmedPhotons", "", "RECO"));
+   //~ consumes<edm::View<pat::Photon>>(edm::InputTag("slimmedPhotons", "", "PAT")); 80x
+   //~ consumes<edm::View<pat::Photon>>(edm::InputTag("slimmedPhotons", "", "RECO"));
    consumes<bool>(edm::InputTag("particleFlowEGammaGSFixed", "dupECALClusters"));
    consumes<edm::EDCollection<DetId>>(edm::InputTag("ecalMultiAndGSGlobalRecHitEB", "hitsNotReplaced"));
-   consumes<edm::View<pat::Electron>>(edm::InputTag("slimmedElectrons", "", "PAT"));
-   consumes<edm::View<pat::Electron>>(edm::InputTag("slimmedElectrons", "", "RECO"));
+   //~ consumes<edm::View<pat::Electron>>(edm::InputTag("slimmedElectrons", "", "PAT")); 80x
+   //~ consumes<edm::View<pat::Electron>>(edm::InputTag("slimmedElectrons", "", "RECO"));
 
    eventTree_ = fs_->make<TTree> ("eventTree", "event data");
 
@@ -426,6 +427,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
       eventTree_->Branch(name.c_str(), &triggerPrescale_[n], (name+"/I").c_str());
    }
 
+   /*
    // get pileup histogram(s)
    std::string cmssw_base_src = getenv("CMSSW_BASE");
    cmssw_base_src += "/src/";
@@ -443,6 +445,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
       }
    }
    puFile.Close();
+   */
 }
 
 TH1F* TreeWriter::createCutFlowHist(std::string modelName)
@@ -467,6 +470,7 @@ TH1F* TreeWriter::createCutFlowHist(std::string modelName)
 // ------------ method called for each event  ------------
 void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+   std::cout<<"in"<<std::endl;
    Bool_t isRealData;
    isRealData = iEvent.isRealData();
 
@@ -536,12 +540,12 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    iEvent.getByLabel(triggerPrescaleTag, triggerPrescales);
 
    // for each lumiBlock, re-read the trigger indices (rather changes for new run)
+   const edm::TriggerNames &triggerNames = iEvent.triggerNames(*triggerBits);
    if (triggerIndex_.size() && newLumiBlock_) {
       newLumiBlock_ = false;
       // set all trigger indeces to -1 as "not available"-flag
       for (auto& it: triggerIndex_) { it.second = -1; }
       // store the indices of the trigger names that we really find
-      const edm::TriggerNames &triggerNames = iEvent.triggerNames(*triggerBits);
       for (unsigned i=0; i<triggerNames.size(); i++) {
          for (auto& it : triggerIndex_) {
             if (triggerNames.triggerName(i).find(it.first) == 0) {
@@ -570,12 +574,14 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    }
 
    edm::Handle<pat::TriggerObjectStandAloneCollection> triggerObjects;
-   edm::InputTag triggerObjects_("selectedPatTrigger");
+   //~ edm::InputTag triggerObjects_("selectedPatTrigger"); 80x
+   edm::InputTag triggerObjects_("slimmedPatTrigger");
    iEvent.getByLabel(triggerObjects_, triggerObjects);
 
    for (const auto& n : triggerObjectNames_) triggerObjectMap_.at(n).clear();
    tree::Particle trObj;
-   for (const pat::TriggerObjectStandAlone obj: *triggerObjects) {
+   for (pat::TriggerObjectStandAlone obj: *triggerObjects) {
+      obj.unpackFilterLabels(iEvent,*triggerBits);
       for (const auto& n : triggerObjectNames_) {
          if (std::count(obj.filterLabels().begin(), obj.filterLabels().end(), n)) {
             trObj.p.SetPtEtaPhi(obj.pt(), obj.eta(), obj.phi());
@@ -586,7 +592,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
    // MET Filters
    edm::Handle<edm::TriggerResults> metFilterBits;
-   edm::InputTag metFilterTag("TriggerResults", "");
+   edm::InputTag metFilterTag("TriggerResults", "",edm::InputTag::kSkipCurrentProcess);
    iEvent.getByLabel(metFilterTag, metFilterBits);
    // go through the filters and check if they were passed
    const edm::TriggerNames &allFilterNames = iEvent.triggerNames(*metFilterBits);
@@ -672,10 +678,10 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    edm::Handle<edm::View<pat::Photon>> photonCollOld;
    iEvent.getByLabel("slimmedPhotonsBeforeGSFix", photonCollOld);
 
-   // uncorrected photon collection
-   edm::Handle<edm::View<pat::Photon>> photonCollUncorrected;
-   if (reMiniAOD_ || !isRealData) iEvent.getByLabel(edm::InputTag("slimmedPhotons", "", "PAT"), photonCollUncorrected);
-   else iEvent.getByLabel(edm::InputTag("slimmedPhotons", "", "RECO"), photonCollUncorrected);
+   // uncorrected photon collection 80x
+   //~ edm::Handle<edm::View<pat::Photon>> photonCollUncorrected;
+   //~ if (reMiniAOD_ || !isRealData) iEvent.getByLabel(edm::InputTag("slimmedPhotons", "", "PAT"), photonCollUncorrected);
+   //~ else iEvent.getByLabel(edm::InputTag("slimmedPhotons", "", "RECO"), photonCollUncorrected);
 
    // photon collection
    edm::Handle<edm::View<pat::Photon>> photonColl;
@@ -707,10 +713,10 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
         auto p = (*photonCollOld).at(itPos);
         trPho.pMultifit.SetPtEtaPhi(p.pt(), p.superCluster()->eta(), p.superCluster()->phi());
       }
-      if (itPos<photonCollUncorrected->size()) {
-        auto p = (*photonCollUncorrected).at(itPos);
-        trPho.pUncorrected.SetPtEtaPhi(p.pt(), p.superCluster()->eta(), p.superCluster()->phi());
-      }
+      //~ if (itPos<photonCollUncorrected->size()) { 80x
+        //~ auto p = (*photonCollUncorrected).at(itPos);
+        //~ trPho.pUncorrected.SetPtEtaPhi(p.pt(), p.superCluster()->eta(), p.superCluster()->phi());
+      //~ }
 
       vid::CutFlowResult cutFlow = (*loose_id_cutflow)[phoPtr];
       trPho.cIso = cutFlow.getValueCutUpon(4);
@@ -781,10 +787,10 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    iEvent.getByToken(electronMediumIdMapToken_, medium_id_decisions);
    iEvent.getByToken(electronTightIdMapToken_, tight_id_decisions);
    
-   //Uncorrected electron collection
-   edm::Handle<edm::View<pat::Electron>> electronCollUncorrected;
-   if (reMiniAOD_ || !isRealData) iEvent.getByLabel(edm::InputTag("slimmedElectrons", "", "PAT"), electronCollUncorrected);
-   else iEvent.getByLabel(edm::InputTag("slimmedElectrons", "", "RECO"), electronCollUncorrected);
+   //Uncorrected electron collection 80x
+   //~ edm::Handle<edm::View<pat::Electron>> electronCollUncorrected;
+   //~ if (reMiniAOD_ || !isRealData) iEvent.getByLabel(edm::InputTag("slimmedElectrons", "", "PAT"), electronCollUncorrected);
+   //~ else iEvent.getByLabel(edm::InputTag("slimmedElectrons", "", "RECO"), electronCollUncorrected);
    
    //Electron collection
    edm::Handle<edm::View<pat::Electron>> electronColl;
@@ -809,7 +815,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trEl.dPhiAtVtx = el->deltaPhiSuperClusterTrackAtVtx();
       trEl.dEtaAtVtx = el->deltaEtaSuperClusterTrackAtVtx();
       trEl.HoverE = el->hcalOverEcal();
-      trEl.MissHits = el->gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS);
+      trEl.MissHits = el->gsfTrack()->hitPattern().numberOfAllHits(reco::HitPattern::MISSING_INNER_HITS);
       trEl.ConvVeto = el->passConversionVeto();
       trEl.PFminiIso = getPFIsolation(packedCandidates, *el);
       math::XYZPoint vtx_point = firstGoodVertex.position();
@@ -824,12 +830,12 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       else trEl.EoverPInv = (1.0 - el->eSuperClusterOverP())/el->ecalEnergy();
       
       //uncorrected electrons
-      auto itPos = std::distance(electronColl->begin(), el);
       trEl.pUncorrected.SetXYZ(0,0,0);
-      if (itPos<electronCollUncorrected->size()) {
-        auto ele = (*electronCollUncorrected).at(itPos);
-        trEl.pUncorrected.SetPtEtaPhi(ele.pt(), ele.superCluster()->eta(), ele.superCluster()->phi());
-      }
+      //~ auto itPos = std::distance(electronColl->begin(), el); 80x
+      //~ if (itPos<electronCollUncorrected->size()) {
+        //~ auto ele = (*electronCollUncorrected).at(itPos);
+        //~ trEl.pUncorrected.SetPtEtaPhi(ele.pt(), ele.superCluster()->eta(), ele.superCluster()->phi());
+      //~ }
 		
       vElectrons_.push_back(trEl);
    }
@@ -1107,35 +1113,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    
    // write the event
    eventTree_->Fill();
-}
-
-void TreeWriter::beginRun(edm::Run const& iRun, edm::EventSetup const&)
-{
-   // use this to print the weight indices that are used for muR, muF and PDF variations
-   // see https://twiki.cern.ch/twiki/bin/viewauth/CMS/LHEReaderCMSSW
-   // Please also add "consumes<LHERunInfoProduct,edm::InRun>(edm::InputTag("externalLHEProducer"));"
-   // in the constructor
-   /*
-   try {
-      edm::Handle<LHERunInfoProduct> run;
-      typedef std::vector<LHERunInfoProduct::Header>::const_iterator headers_const_iterator;
-
-      iRun.getByLabel("externalLHEProducer", run);
-      LHERunInfoProduct myLHERunInfoProduct = *(run.product());
-
-      for (headers_const_iterator iter = myLHERunInfoProduct.headers_begin(); iter!=myLHERunInfoProduct.headers_end(); iter++) {
-         if (iter->tag().find("initrwgt")==std::string::npos) continue;
-         std::cout << iter->tag() << std::endl;
-         std::vector<std::string> lines = iter->lines();
-         for (unsigned int iLine = 0; iLine<lines.size(); iLine++) {
-            std::cout << lines.at(iLine);
-         }
-      }
-   } catch (std::exception &e) {
-      std::cout<<"cannot read scale/pdf information from lhe:"<<std::endl;
-      std::cout<<e.what()<<std::endl;
-   }
-   */
 }
 
 void TreeWriter::beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const&)

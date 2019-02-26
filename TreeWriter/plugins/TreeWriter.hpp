@@ -9,11 +9,12 @@
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Framework/interface/LuminosityBlock.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
@@ -79,7 +80,7 @@ typedef edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>> Ec
 // class declaration
 //
 
-class TreeWriter : public edm::EDAnalyzer {
+class TreeWriter : public edm::one::EDAnalyzer<edm::one::WatchLuminosityBlocks> {
 public:
    explicit TreeWriter(const edm::ParameterSet&);
    ~TreeWriter() {};
@@ -91,10 +92,8 @@ private:
    virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
    virtual void endJob() override {};
 
-   virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
-   virtual void endRun(edm::Run const&, edm::EventSetup const&) override {};
    virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
-   //virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
+   virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override {};
 
    int matchToTruth(const pat::Photon &pho,
                     const edm::Handle<edm::View<reco::GenParticle>>  &genParticles);
