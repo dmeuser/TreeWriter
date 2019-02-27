@@ -7,6 +7,9 @@ Get CMSSW environment 10_2X
 cmsrel CMSSW_10_2_11_patch1
 cd CMSSW_10_2_11_patch1/src/
 cmsenv
+git cms-init
+git cms-merge-topic cms-egamma:EgammaPostRecoTools
+scram b -j7
 git clone git@github.com:dmeuser/TreeWriter.git
 scram b -j7
 cd TreeWriter

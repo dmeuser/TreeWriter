@@ -54,10 +54,22 @@ if isRealData:
         process.GlobalTag.globaltag = "94X_dataRun2_v10"
 else:
         process.GlobalTag.globaltag = "94X_mcRun2_asymptotic_v3"
+        
 
 ######################
 # PHOTONS, ELECTRONS #
 ######################
+# Geometry neccessary to run setupEgammaPostRecoSeq
+process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi");
+process.load("Geometry.CaloEventSetup.CaloGeometry_cfi");
+process.load("Geometry.CaloEventSetup.CaloTopology_cfi");
+process.load("Configuration.Geometry.GeometryECALHCAL_cff")
+
+from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
+setupEgammaPostRecoSeq(process,
+                       runEnergyCorrections=False, #corrections by default are fine so no need to re-run
+                       era='2016-Legacy')
+
 """
 # Regression: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMRegression
 from EgammaAnalysis.ElectronTools.regressionWeights_cfi import regressionWeights
@@ -465,6 +477,7 @@ for trig in process.TreeWriter.triggerPrescales:
 
 process.p = cms.Path(
     process.BadPFMuonFilter
-    *process.BadChargedCandidateFilter
-    *process.TreeWriter
+    *process.egammaPostRecoSeq
+    #~ *process.BadChargedCandidateFilter
+    #~ *process.TreeWriter
 )
