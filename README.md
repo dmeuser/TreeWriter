@@ -8,7 +8,14 @@ cmsrel CMSSW_10_2_11_patch1
 cd CMSSW_10_2_11_patch1/src/
 cmsenv
 git cms-init
+git cms-merge-topic cms-egamma:EgammaID_1023
 git cms-merge-topic cms-egamma:EgammaPostRecoTools
+scram b -j7
+git clone git@github.com:cms-egamma/EgammaAnalysis-ElectronTools.git EgammaAnalysis/ElectronTools/data
+cd EgammaAnalysis/ElectronTools/data
+git checkout ScalesSmearing2018_Dev
+cd -
+git cms-merge-topic cms-egamma:EgammaPostRecoTools_dev
 scram b -j7
 git clone git@github.com:dmeuser/TreeWriter.git
 scram b -j7
