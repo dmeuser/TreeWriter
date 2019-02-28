@@ -224,12 +224,14 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     # physics objects
                                     #~ photons = cms.InputTag("calibratedPatPhotons"), 80x
                                     photons = cms.InputTag("slimmedPhotons"),
-                                    jets = cms.InputTag("updatedPatJetsUpdatedJEC"),
+                                    # ~ jets = cms.InputTag("updatedPatJetsUpdatedJEC"), 80x
+                                    jets = cms.InputTag("slimmedJets"),
                                     muons = cms.InputTag("slimmedMuons"),
                                     genJets=cms.InputTag("slimmedGenJets"),
                                     #~ electrons = cms.InputTag("calibratedPatElectrons"), 80x
                                     electrons = cms.InputTag("slimmedElectrons"),
-                                    mets = cms.InputTag("slimmedMETs", "", "TreeWriter"),
+                                    # ~ mets = cms.InputTag("slimmedMETs", "", "TreeWriter"), 80x
+                                    mets = cms.InputTag("slimmedMETs"),
                                     metCorr = cms.InputTag(""),
                                     metCorrCal = cms.InputTag(""),
                                     caloMets = cms.InputTag("slimmedMETs"),
@@ -249,7 +251,8 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     photonLooseId15Map   = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-loose"),
                                     photonMediumId15Map  = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-medium"),
                                     photonTightId15Map   = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-tight"),
-                                    photonLooseIdMap   = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring16-V2p2-loose"),
+                                    # ~ photonLooseIdMap   = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring16-V2p2-loose"), 80x
+                                    photonLooseIdMap   = cms.untracked.string("cutBasedPhotonID-Spring16-V2p2-loose"),
                                     photonMediumIdMap  = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring16-V2p2-medium"),
                                     photonTightIdMap   = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring16-V2p2-tight"),
 #                                    photonMvaValuesMap = cms.InputTag("photonMVAValueMapProducer:PhotonMVAEstimatorRun2Spring16NonTrigV1Values"),
@@ -478,6 +481,6 @@ for trig in process.TreeWriter.triggerPrescales:
 process.p = cms.Path(
     process.BadPFMuonFilter
     *process.egammaPostRecoSeq
-    #~ *process.BadChargedCandidateFilter
-    #~ *process.TreeWriter
+    *process.BadChargedCandidateFilter
+    *process.TreeWriter
 )

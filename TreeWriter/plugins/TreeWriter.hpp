@@ -143,7 +143,8 @@ private:
    edm::EDGetTokenT<edm::ValueMap<bool>> photonLooseId15MapToken_;
    edm::EDGetTokenT<edm::ValueMap<bool>> photonMediumId15MapToken_;
    edm::EDGetTokenT<edm::ValueMap<bool>> photonTightId15MapToken_;
-   edm::EDGetTokenT<edm::ValueMap<bool>> photonLooseIdMapToken_;
+   //~ edm::EDGetTokenT<edm::ValueMap<bool>> photonLooseIdMapToken_;
+   std::string photonLooseIdMapToken_;
    edm::EDGetTokenT<edm::ValueMap<bool>> photonMediumIdMapToken_;
    edm::EDGetTokenT<edm::ValueMap<bool>> photonTightIdMapToken_;
    edm::EDGetTokenT<edm::ValueMap<float>> photonMvaValuesMapToken_;
