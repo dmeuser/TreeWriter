@@ -56,9 +56,9 @@ else:
         process.GlobalTag.globaltag = "94X_mcRun2_asymptotic_v3"
         
 
-######################
-# PHOTONS, ELECTRONS #
-######################
+#############
+# ELECTRONS #
+#############
 # Geometry neccessary to run setupEgammaPostRecoSeq
 process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi");
 process.load("Geometry.CaloEventSetup.CaloGeometry_cfi");
@@ -70,114 +70,6 @@ setupEgammaPostRecoSeq(process,
                        runEnergyCorrections=False, #corrections by default are fine so no need to re-run
                        era='2016-Legacy')
 
-"""
-# Regression: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMRegression
-from EgammaAnalysis.ElectronTools.regressionWeights_cfi import regressionWeights
-process = regressionWeights(process)
-
-process.load('Configuration.StandardSequences.Services_cff')
-process.RandomNumberGeneratorService = cms.Service("RandomNumberGeneratorService",
-    calibratedPatElectrons = cms.PSet(
-        initialSeed = cms.untracked.uint32(81),
-        engineName = cms.untracked.string('TRandom3'),
-    ),
-    calibratedPatPhotons = cms.PSet(
-        initialSeed = cms.untracked.uint32(81),
-        engineName = cms.untracked.string('TRandom3'),
-    )
-)
-
-process.load('EgammaAnalysis.ElectronTools.regressionApplication_cff')
-process.load('EgammaAnalysis.ElectronTools.calibratedPatPhotonsRun2_cfi')
-process.load('EgammaAnalysis.ElectronTools.calibratedPatElectronsRun2_cfi')
-
-process.selectedElectrons = cms.EDFilter("PATElectronSelector",
-    src = cms.InputTag("slimmedElectrons"),
-    cut = cms.string("pt > 5 && abs(eta)<2.5")
-)
-process.selectedPhotons = cms.EDFilter("PATPhotonSelector",
-    src = cms.InputTag("slimmedPhotons"),
-    cut = cms.string("pt > 5 && abs(eta)<2.5")
-)
-process.calibratedPatPhotons.isMC = not isRealData
-process.calibratedPatElectrons.isMC = not isRealData
-process.calibratedPatPhotons.photons = "selectedPhotons"
-process.calibratedPatElectrons.electrons = "selectedElectrons"
-
-process.EGMRegression = cms.Path(process.regressionApplication)
-process.EGMSmearerElectrons = cms.Path(process.calibratedPatElectrons)
-process.EGMSmearerPhotons = cms.Path(process.calibratedPatPhotons)
-
-
-# Identification
-process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
-from RecoEgamma.PhotonIdentification.PhotonIDValueMapProducer_cfi import *
-
-from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
-dataFormat = DataFormat.MiniAOD
-
-# turn on VID producer, indicate data format to be DataFormat.MiniAOD
-switchOnVIDElectronIdProducer(process, dataFormat)
-switchOnVIDPhotonIdProducer  (process, dataFormat)
-
-# define which IDs we want to produce
-el_id_modules = ['RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Summer16_80X_V1_cff']
-ph_id_modules = ['RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_Spring15_25ns_V1_cff',
-                 'RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_Spring16_V2p2_cff']
-#                 ,'RecoEgamma.PhotonIdentification.Identification.mvaPhotonID_Spring16_nonTrig_V1_cff']
-
-#add them to the VID producer
-for idmod in el_id_modules:
-    setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection)
-for idmod in ph_id_modules:
-    setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
-
-process.photonIDValueMapProducer.srcMiniAOD = "calibratedPatPhotons"
-#process.photonMVAValueMapProducer.srcMiniAOD = "calibratedPatPhotons"
-process.egmPhotonIDs.physicsObjectSrc = "calibratedPatPhotons"
-process.egmGsfElectronIDs.physicsObjectSrc = "calibratedPatElectrons"
-
-
-##########################
-# Jet Energy Corrections #
-##########################
-# where .db files are placed (e.g. for JEC, JER)
-# Crab will always be in the $CMSSW_BASE directory, so to run the code locally,
-# a symbolic link is added
-#~ if not os.path.exists("src"): os.symlink(os.environ["CMSSW_BASE"]+"/src/", "src")
-if "Fast" in dataset:
-    dbPath = 'sqlite:'
-
-    from CondCore.CondDB.CondDB_cfi import CondDB
-    CondDB.__delattr__('connect')
-
-    process.jec = cms.ESSource('PoolDBESSource',
-        CondDB,
-        connect = cms.string(dbPath+'Spring16_25nsFastSimV1_MC.db'),
-        toGet = cms.VPSet(
-            cms.PSet(
-                record = cms.string('JetCorrectionsRecord'),
-                tag    = cms.string('JetCorrectorParametersCollection_Spring16_25nsFastSimMC_V1_AK4PFchs'),
-                label  = cms.untracked.string('AK4PFchs')
-            )
-        )
-    )
-    # Add an ESPrefer to override JEC that might be available from the global tag
-    process.es_prefer_jec = cms.ESPrefer('PoolDBESSource', 'jec')
-
-
-jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute']
-if isRealData: jecLevels.append('L2L3Residual')
-
-from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-updateJetCollection(
-   process,
-   jetSource = cms.InputTag('slimmedJets'),
-   labelName = 'UpdatedJEC',
-   jetCorrections = ('AK4PFchs', cms.vstring(jecLevels), 'None')
-)
-
-"""
 ##########################
 # MET                    #
 ##########################
@@ -215,10 +107,9 @@ process.TFileService = cms.Service("TFileService", fileName=cms.string(options.o
 process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     # selection configuration
                                     HT_cut=cms.untracked.double(0),
-                                    photon_pT_cut=cms.untracked.double(20), # for leading photon
                                     jet_pT_cut=cms.untracked.double(30), # for all jets
                                     isolatedPhotons=cms.untracked.bool(True), # for all photons in the collection
-                                    minNumberPhotons_cut=cms.untracked.uint32(1),
+                                    minNumberPhotons_cut=cms.untracked.uint32(0),
                                     minNumberElectrons_cut=cms.untracked.uint32(0),
                                     minNumberBinos_cut=cms.untracked.uint32(0),
                                     # physics objects
@@ -243,10 +134,10 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     lheEventProduct = cms.InputTag('externalLHEProducer'),
                                     packedCandidates=cms.InputTag("packedPFCandidates"),
                                     # electron IDs
-                                    electronVetoIdMap   = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-veto"),
-                                    electronLooseIdMap  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-loose"),
-                                    electronMediumIdMap = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-medium"),
-                                    electronTightIdMap  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-tight"),
+                                    electronVetoIdMap   = cms.untracked.string("cutBasedElectronID-Fall17-94X-V1-veto"),
+                                    electronLooseIdMap  = cms.untracked.string("cutBasedElectronID-Fall17-94X-V1-loose"),
+                                    electronMediumIdMap = cms.untracked.string("cutBasedElectronID-Fall17-94X-V1-medium"),
+                                    electronTightIdMap  = cms.untracked.string("cutBasedElectronID-Fall17-94X-V1-tight"),
                                     # photon IDs
                                     photonLooseId15Map   = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-loose"),
                                     photonMediumId15Map  = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-medium"),
@@ -350,33 +241,7 @@ if "PUMoriond17" in dataset or "GGM_GravitinoLSP_M1" in dataset:
 # determine user if not set by crab
 user=options.user or getpass.getuser()
 # user settings
-if user=="kiesel":
-    process.TreeWriter.HT_cut=500.
-    process.TreeWriter.photon_pT_cut=90.
-    process.TreeWriter.minNumberPhotons_cut=0
-    process.TreeWriter.triggerObjectNames = ["hltEG90CaloIdLHEFilter"]
-    process.TreeWriter.triggerNames=[
-        "HLT_Photon90_CaloIdL_PFHT600_v",
-        "HLT_Photon90_v",
-        "HLT_PFHT600_v",
-        "HLT_PFHT800_v",
-        "HLT_Ele27_eta2p1_WPLoose_Gsf_v",
-        "HLT_Ele27_eta2p1_WPTight_Gsf_v",
-        "HLT_PFJet450_v",
-        "HLT_AK8PFJet450_v",
-    ]
-    process.TreeWriter.triggerPrescales=process.TreeWriter.triggerNames
-    if "SingleElectron" in dataset or "DY" in dataset:
-        process.TreeWriter.triggerObjectNames = ["hltEle27erWPLooseGsfTrackIsoFilter", "hltEle27erWPTightGsfTrackIsoFilter", "hltEG90CaloIdLHEFilter"]
-        process.TreeWriter.triggerNames = ["HLT_Ele27_eta2p1_WPLoose_Gsf_v", "HLT_Ele27_eta2p1_WPTight_Gsf_v"]
-        process.TreeWriter.HT_cut = 0.
-        process.TreeWriter.photon_pT_cut = 25.
-        process.TreeWriter.minNumberPhotons_cut = 1
-    if "Fast" in dataset: # signal scan
-        process.TreeWriter.HT_cut = 0.
-
-elif user=="jschulz" or user=="dmeuser":
-    #~ process.TreeWriter.photon_pT_cut=100
+if user=="jschulz" or user=="dmeuser":
     process.TreeWriter.triggerObjectNames = ["hltEG90CaloIdLHEFilter", "hltEG165HE10Filter"]
     if "Fast" in dataset:
         process.TreeWriter.minNumberPhotons_cut=0

@@ -35,39 +35,6 @@ bool hasAncestor(int index, const lhef::HEPEUP& info, int searchId) {
    }
 }
 
-// taken from https://github.com/manuelfs/babymaker/blob/0136340602ee28caab14e3f6b064d1db81544a0a/bmaker/plugins/bmaker_full.cc#L1268-L1295
-// "recipe" https://indico.cern.ch/event/557678/contributions/2247944/attachments/1311994/1963568/16-07-19_ana_manuelf_isr.pdf
-int n_isr_jets(edm::Handle<edm::View<reco::GenParticle>> const &genParticles,
-                            std::vector<tree::Jet> const &jets) {
-   int nisr(0);
-   bool matched;
-   int momid;
-   TVector3 pGen;
-   for (tree::Jet const&jet: jets) {
-      if (jet.hasMuonMatch || jet.hasElectronMatch || jet.hasPhotonMatch) continue;
-      matched = false;
-      for (size_t imc(0); imc < genParticles->size(); imc++) {
-         if (matched) break;
-         const reco::GenParticle &mc = (*genParticles)[imc];
-         if (mc.status()!=23 || abs(mc.pdgId())>5) continue;
-         momid = abs(mc.mother()->pdgId());
-         if (!(momid==6 || momid==23 || momid==24 || momid==25 || momid>1e6)) continue;
-         //check against daughter in case of hard initial splitting
-         for (size_t idau(0); idau < mc.numberOfDaughters(); idau++) {
-            pGen.SetXYZ(mc.daughter(idau)->px(),mc.daughter(idau)->py(),mc.daughter(idau)->pz());
-            if (jet.p.DeltaR(pGen)<0.3) {
-               matched = true;
-               break;
-            }
-         }
-      } // Loop over MC particles
-      if (!matched) {
-         nisr++;
-      }
-   } // Loop over jets
-   return nisr;
-}
-
 // taken from https://twiki.cern.ch/twiki/bin/view/CMS/SUSYRecommendationsForZinv#Photon_jets_control_region
 PromptStatusType getPromptStatus(const reco::GenParticle& p, const edm::Handle<edm::View<reco::GenParticle>>& particles) {
    if (p.status()==1 && p.numberOfMothers() && (fabs(p.mother(0)->pdgId())<=22 || p.mother(0)->pdgId() == 2212)) {
@@ -295,15 +262,11 @@ template <typename T> int sign(T val) {
 
 TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    : dHT_cut_(iConfig.getUntrackedParameter<double>("HT_cut"))
-   , dPhoton_pT_cut_(iConfig.getUntrackedParameter<double>("photon_pT_cut"))
    , dJet_pT_cut_(iConfig.getUntrackedParameter<double>("jet_pT_cut"))
-   , isolatedPhotons_(iConfig.getUntrackedParameter<bool>("isolatedPhotons"))
-   , minNumberPhotons_cut_(iConfig.getUntrackedParameter<unsigned>("minNumberPhotons_cut"))
    , minNumberElectrons_cut_(iConfig.getUntrackedParameter<unsigned>("minNumberElectrons_cut"))
    , minNumberBinos_cut_(iConfig.getUntrackedParameter<unsigned>("minNumberBinos_cut"))
    , newLumiBlock_(true)
    , vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices")))
-   , photonCollectionToken_  (consumes<edm::View<pat::Photon> >(iConfig.getParameter<edm::InputTag>("photons")))
    , jetCollectionToken_     (consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets")))
    , genJetCollectionToken_  (consumes<reco::GenJetCollection>(iConfig.getParameter<edm::InputTag>("genJets")))
    , muonCollectionToken_    (consumes<pat::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons")))
@@ -319,19 +282,10 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    , LHEEventToken_          (consumes<LHEEventProduct>(iConfig.getParameter<edm::InputTag>("lheEventProduct")))
    , packedCandidateToken_   (consumes<std::vector<pat::PackedCandidate>> (iConfig.getParameter<edm::InputTag>("packedCandidates")))
    // electron id
-   //~ , electronVetoIdMapToken_  (consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electronVetoIdMap"   )))
-   //~ , electronLooseIdMapToken_ (consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electronLooseIdMap"  )))
-   //~ , electronMediumIdMapToken_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electronMediumIdMap" )))
-   //~ , electronTightIdMapToken_ (consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electronTightIdMap"  )))
-   // photon id
-   //~ , photonLooseId15MapToken_  (consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("photonLooseId15Map"  )))
-   //~ , photonMediumId15MapToken_ (consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("photonMediumId15Map" )))
-   //~ , photonTightId15MapToken_  (consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("photonTightId15Map"  )))
-   , photonLooseIdMapToken_  (iConfig.getUntrackedParameter<std::string>("photonLooseIdMap"))
-   //~ , photonMediumIdMapToken_ (consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("photonMediumIdMap" )))
-   //~ , photonTightIdMapToken_  (consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("photonTightIdMap"  )))
-//   , photonMvaValuesMapToken_(consumes<edm::ValueMap<float>>(iConfig.getParameter<edm::InputTag>("photonMvaValuesMap")))
-   //~ , phoLooseIdFullInfoMapToken_(consumes<edm::ValueMap<vid::CutFlowResult> >(iConfig.getParameter<edm::InputTag>("photonLooseIdMap" )))
+   , electronVetoIdMapToken_  (iConfig.getUntrackedParameter<std::string>("electronVetoIdMap"))
+   , electronLooseIdMapToken_ (iConfig.getUntrackedParameter<std::string>("electronLooseIdMap"))
+   , electronMediumIdMapToken_(iConfig.getUntrackedParameter<std::string>("electronMediumIdMap"))
+   , electronTightIdMapToken_ (iConfig.getUntrackedParameter<std::string>("electronTightIdMap"))
    // met filters to apply
    , metFilterNames_(iConfig.getUntrackedParameter<std::vector<std::string>>("metFilterNames"))
    , phoWorstChargedIsolationToken_(consumes <edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("phoWorstChargedIsolation")))
@@ -353,9 +307,6 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    consumes<pat::PackedTriggerPrescales>(edm::InputTag("patTrigger"));
    //~ consumes<std::vector<pat::TriggerObjectStandAlone>>(edm::InputTag("selectedPatTrigger")); 80x
    consumes<std::vector<pat::TriggerObjectStandAlone>>(edm::InputTag("slimmedPatTrigger"));
-   consumes<edm::View<pat::Photon>>(edm::InputTag("slimmedPhotonsBeforeGSFix"));
-   //~ consumes<edm::View<pat::Photon>>(edm::InputTag("slimmedPhotons", "", "PAT")); 80x
-   //~ consumes<edm::View<pat::Photon>>(edm::InputTag("slimmedPhotons", "", "RECO"));
    consumes<bool>(edm::InputTag("particleFlowEGammaGSFixed", "dupECALClusters"));
    consumes<edm::EDCollection<DetId>>(edm::InputTag("ecalMultiAndGSGlobalRecHitEB", "hitsNotReplaced"));
    //~ consumes<edm::View<pat::Electron>>(edm::InputTag("slimmedElectrons", "", "PAT")); 80x
@@ -363,7 +314,6 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
 
    eventTree_ = fs_->make<TTree> ("eventTree", "event data");
 
-   eventTree_->Branch("photons", &vPhotons_);
    eventTree_->Branch("jets", &vJets_);
    eventTree_->Branch("genJets", &vGenJets_);
    eventTree_->Branch("electrons", &vElectrons_);
@@ -396,7 +346,6 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("pdf_weights", &vPdf_weights_);
 
    eventTree_->Branch("genHt", &genHt_, "genHt/F");
-   eventTree_->Branch("nISR", &nISR_, "nISR/I");
    //eventTree_->Branch("puPtHat", &puPtHat_ , "puPtHat/F");
    eventTree_->Branch("EWKinoPairPt", &EWKinoPairPt_, "EWKinoPairPt/F");
 
@@ -458,7 +407,6 @@ TH1F* TreeWriter::createCutFlowHist(std::string modelName)
       "trigger",
       "METfilters",
       "nGoodVertices",
-      "photons",
       "HT",
       "nBinos",
       "final"}};
@@ -652,103 +600,8 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    edm::Handle<edm::ValueMap<float>> phoWorstChargedIsolationMap;
    iEvent.getByToken(phoWorstChargedIsolationToken_, phoWorstChargedIsolationMap);
 
-   //~ edm::Handle<edm::ValueMap<bool>> loose_id15_dec;
-   //~ edm::Handle<edm::ValueMap<bool>> medium_id15_dec;
-   //~ edm::Handle<edm::ValueMap<bool>> tight_id15_dec;
-   //~ edm::Handle<edm::ValueMap<bool>> loose_id_dec;
-   //~ edm::Handle<edm::ValueMap<bool>> medium_id_dec;
-   //~ edm::Handle<edm::ValueMap<bool>> tight_id_dec;
-//   edm::Handle<edm::ValueMap<float>> mva_value;
-   //~ edm::Handle<edm::ValueMap<vid::CutFlowResult>> loose_id_cutflow;
-   //~ iEvent.getByToken(photonLooseId15MapToken_, loose_id15_dec);
-   //~ iEvent.getByToken(photonMediumId15MapToken_, medium_id15_dec);
-   //~ iEvent.getByToken(photonTightId15MapToken_, tight_id15_dec);
-   //~ iEvent.getByToken(photonLooseIdMapToken_, loose_id_dec);
-   //~ iEvent.getByToken(photonMediumIdMapToken_, medium_id_dec);
-   //~ iEvent.getByToken(photonTightIdMapToken_, tight_id_dec);
-
-//   iEvent.getByToken(photonMvaValuesMapToken_,mva_value);
-   //~ iEvent.getByToken(phoLooseIdFullInfoMapToken_, loose_id_cutflow);
-
    edm::Handle<EcalRecHitCollection> ebRecHits;
    iEvent.getByToken(ebRecHitsToken_, ebRecHits);
-
-   // old photon collection
-   edm::Handle<edm::View<pat::Photon>> photonCollOld;
-   iEvent.getByLabel("slimmedPhotonsBeforeGSFix", photonCollOld);
-
-   // uncorrected photon collection 80x
-   //~ edm::Handle<edm::View<pat::Photon>> photonCollUncorrected;
-   //~ if (reMiniAOD_ || !isRealData) iEvent.getByLabel(edm::InputTag("slimmedPhotons", "", "PAT"), photonCollUncorrected);
-   //~ else iEvent.getByLabel(edm::InputTag("slimmedPhotons", "", "RECO"), photonCollUncorrected);
-
-   // photon collection
-   edm::Handle<edm::View<pat::Photon>> photonColl;
-   iEvent.getByToken(photonCollectionToken_, photonColl);
-
-   vPhotons_.clear();
-   tree::Photon trPho;
-   for (edm::View<pat::Photon>::const_iterator pho = photonColl->begin(); pho != photonColl->end(); pho++) {
-      // Kinematics
-      if (pho->pt() < 15) continue;
-
-      trPho.p.SetPtEtaPhi(pho->pt(), pho->superCluster()->eta(), pho->superCluster()->phi());
-
-      trPho.seedCrystalE = seedCrystalEnergyEB(*pho->superCluster(), ebRecHits);
-      const edm::Ptr<pat::Photon> phoPtr( photonColl, pho - photonColl->begin() );
-      trPho.sigmaPt = pho->getCorrectedEnergyError(pho->getCandidateP4type())*sin(trPho.p.Theta());
-      trPho.sigmaIetaIeta = pho->full5x5_sigmaIetaIeta();
-      trPho.sigmaIphiIphi = pho->full5x5_showerShapeVariables().sigmaIphiIphi;
-      trPho.hOverE = pho->hadTowOverEm();
-      trPho.hasPixelSeed = pho->hasPixelSeed();
-      trPho.passElectronVeto = pho->passElectronVeto();
-      trPho.r9 = pho->r9();
-      trPho.hasGainSwitch = !pho->hasUserInt("hasGainSwitchFlag") || pho->userInt("hasGainSwitchFlag");
-
-      auto itPos = std::distance(photonColl->begin(), pho);
-      trPho.pMultifit.SetXYZ(0,0,0);
-      trPho.pUncorrected.SetXYZ(0,0,0);
-      if (reMiniAOD_ && itPos<photonCollOld->size()) {
-        auto p = (*photonCollOld).at(itPos);
-        trPho.pMultifit.SetPtEtaPhi(p.pt(), p.superCluster()->eta(), p.superCluster()->phi());
-      }
-      //~ if (itPos<photonCollUncorrected->size()) { 80x
-        //~ auto p = (*photonCollUncorrected).at(itPos);
-        //~ trPho.pUncorrected.SetPtEtaPhi(p.pt(), p.superCluster()->eta(), p.superCluster()->phi());
-      //~ }
-
-      //~ vid::CutFlowResult cutFlow = (*loose_id_cutflow)[phoPtr];
-      //~ trPho.cIso = cutFlow.getValueCutUpon(4);
-      //~ trPho.nIso = cutFlow.getValueCutUpon(5);
-      //~ trPho.pIso = cutFlow.getValueCutUpon(6);
-      //~ trPho.cIsoWorst = (*phoWorstChargedIsolationMap)[phoPtr];
-
-//      trPho.mvaValue=(*mva_value)[phoPtr];
-
-      // MC match
-      if (!isRealData) {
-         trPho.isTrue = matchToTruth(*pho, prunedGenParticles);
-         trPho.isTrueAlternative = matchToTruthAlternative(*pho, prunedGenParticles);
-      } else {
-         trPho.isTrue = UNMATCHED;
-         trPho.isTrueAlternative = UNMATCHED;
-      }
-
-      // check photon working points
-      //~ trPho.isLoose15 = (*loose_id15_dec) [phoPtr];
-      //~ trPho.isMedium15 = (*medium_id15_dec)[phoPtr];
-      //~ trPho.isTight15 = (*tight_id15_dec) [phoPtr];
-      trPho.isLoose = pho->photonID(photonLooseIdMapToken_);
-      //~ trPho.isMedium = (*medium_id_dec)[phoPtr];
-      //~ trPho.isTight = (*tight_id_dec) [phoPtr];
-      // write the photon to collection
-      if (isolatedPhotons_ && !trPho.isLoose15 && !trPho.isLoose) continue;
-      vPhotons_.push_back(trPho);
-   } // photon loop
-
-   sort(vPhotons_.begin(), vPhotons_.end(), tree::PtGreater);
-   if (minNumberPhotons_cut_ && (vPhotons_.size()<minNumberPhotons_cut_|| vPhotons_.at(0).p.Pt()<dPhoton_pT_cut_)) return;
-   hCutFlow_->Fill("photons", mc_weight_*pu_weight_);
 
    // Muons
    edm::Handle<pat::MuonCollection> muonColl;
@@ -774,22 +627,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       vMuons_.push_back(trMuon);
    } // muon loop
    sort(vMuons_.begin(), vMuons_.end(), tree::PtGreater);
-
-   // Electrons
-   // Get the electron ID data from the event stream
-   //~ edm::Handle<edm::ValueMap<bool>> veto_id_decisions;
-   //~ edm::Handle<edm::ValueMap<bool>> loose_id_decisions;
-   //~ edm::Handle<edm::ValueMap<bool>> medium_id_decisions;
-   //~ edm::Handle<edm::ValueMap<bool>> tight_id_decisions;
-   //~ iEvent.getByToken(electronVetoIdMapToken_, veto_id_decisions);
-   //~ iEvent.getByToken(electronLooseIdMapToken_, loose_id_decisions);
-   //~ iEvent.getByToken(electronMediumIdMapToken_, medium_id_decisions);
-   //~ iEvent.getByToken(electronTightIdMapToken_, tight_id_decisions);
-   
-   //Uncorrected electron collection 80x
-   //~ edm::Handle<edm::View<pat::Electron>> electronCollUncorrected;
-   //~ if (reMiniAOD_ || !isRealData) iEvent.getByLabel(edm::InputTag("slimmedElectrons", "", "PAT"), electronCollUncorrected);
-   //~ else iEvent.getByLabel(edm::InputTag("slimmedElectrons", "", "RECO"), electronCollUncorrected);
    
    //Electron collection
    edm::Handle<edm::View<pat::Electron>> electronColl;
@@ -801,9 +638,9 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       //~ if (el->pt()<5) continue;
       const edm::Ptr<pat::Electron> elPtr(electronColl, el - electronColl->begin());
       //~ if (!(*veto_id_decisions)[elPtr]) continue; // take only 'veto' electrons
-      //~ trEl.isLoose =(*loose_id_decisions) [elPtr];
-      //~ trEl.isMedium=(*medium_id_decisions) [elPtr];
-      //~ trEl.isTight =(*tight_id_decisions) [elPtr];
+      trEl.isLoose = el->electronID(electronLooseIdMapToken_);
+      trEl.isMedium = el->electronID(electronMediumIdMapToken_);
+      trEl.isTight = el->electronID(electronTightIdMapToken_);
       trEl.p.SetPtEtaPhi(el->pt(), el->superCluster()->eta(), el->superCluster()->phi());
       trEl.seedCrystalE = seedCrystalEnergyEB(*el->superCluster(), ebRecHits);
       trEl.charge = el->charge();
@@ -879,13 +716,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trJet.nch = jet.chargedMultiplicity();
       trJet.nconstituents = jet.numberOfDaughters();
       // object matching
-      trJet.hasPhotonMatch = false;
-      for (tree::Photon const &ph: vPhotons_) {
-         if (ph.isLoose && trJet.p.DeltaR(ph.p)<0.4) {
-            trJet.hasPhotonMatch = true;
-            break;
-         }
-      }
       trJet.hasElectronMatch = false;
       for (tree::Electron const &el: vElectrons_) {
          if (el.isLoose && el.p.Pt()>=5 && trJet.p.DeltaR(el.p)<0.4) {
@@ -903,9 +733,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       vJets_.push_back(trJet);
    } // jet loop
    sort(vJets_.begin(), vJets_.end(), tree::PtGreater);
-
-   // number of ISR jets
-   nISR_ = isRealData? 0 : n_isr_jets(prunedGenParticles, vJets_);
 
    edm::Handle<reco::GenJetCollection> genJetColl;
    if (!isRealData) {
@@ -1157,91 +984,7 @@ void TreeWriter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) 
    descriptions.addDefault(desc);
 }
 
-int TreeWriter::matchToTruth(const pat::Photon &pho, const edm::Handle<edm::View<reco::GenParticle>> &genParticles)
-{
-   //
-   // Explicit loop and geometric matching method
-   //
 
-   // Find the closest status 1 gen photon to the reco photon
-   double dR = 999;
-   const reco::Candidate *closestPhoton = 0;
-   for (auto const& particle: *genParticles) {
-      // Drop everything that is not photon or not status 1
-      if (abs(particle.pdgId()) != 22 || particle.status() != 1) continue;
-
-      double dRtmp = ROOT::Math::VectorUtil::DeltaR(pho.p4(), particle.p4());
-      if (dRtmp < dR) {
-         dR = dRtmp;
-         closestPhoton = &particle;
-      }
-   }
-   // See if the closest photon (if it exists) is close enough.
-   // If not, no match found.
-   if (!(closestPhoton != 0 && dR < 0.1)) {
-      return UNMATCHED;
-   }
-
-   // Find ID of the parent of the found generator level photon match
-   int ancestorPID = -999;
-   int ancestorStatus = -999;
-   findFirstNonPhotonMother(closestPhoton, ancestorPID, ancestorStatus);
-
-   // Allowed parens: quarks pdgId 1-5, or a gluon 21
-   std::vector<int> allowedParents { -1, 1, -2, 2, -3, 3, -4, 4, -5, 5, -21, 21 };
-   if (!(std::find(allowedParents.begin(),
-                   allowedParents.end(), ancestorPID)
-         != allowedParents.end())) {
-      // So it is not from g, u, d, s, c, b. Check if it is from pi0 or not.
-      if (abs(ancestorPID) == 111)
-         return MATCHED_FROM_PI0;
-      else
-         return MATCHED_FROM_OTHER_SOURCES;
-   }
-   return MATCHED_FROM_GUDSCB;
-}
-
-void TreeWriter::findFirstNonPhotonMother(const reco::Candidate *particle, int &ancestorPID, int &ancestorStatus)
-{
-   if (particle == 0) {
-      printf("TreeWriter: ERROR! null candidate pointer, this should never happen\n");
-      return;
-   }
-
-   // Is this the first non-photon parent? If yes, return, otherwise
-   // go deeper into recursion
-   if (abs(particle->pdgId()) == 22) {
-      findFirstNonPhotonMother(particle->mother(0), ancestorPID, ancestorStatus);
-   } else {
-      ancestorPID = particle->pdgId();
-      ancestorStatus = particle->status();
-   }
-
-   return;
-}
-
-int TreeWriter::matchToTruthAlternative(const pat::Photon &pho, const edm::Handle<edm::View<reco::GenParticle>> &genParticles)
-{
-   // Explicit loop and geometric matching method
-   int isMatched = UNMATCHED;
-   for (auto const& particle: *genParticles) {
-      int pid = particle.pdgId();
-      int ancestorPID = -999;
-      int ancestorStatus = -999;
-      findFirstNonPhotonMother(&particle, ancestorPID, ancestorStatus);
-      if (pid ==22 && TMath::Abs(ancestorPID) <= 22) {
-         double dr = ROOT::Math::VectorUtil::DeltaR(pho.p4(), particle.p4());
-         float dpt = fabs( (pho.pt() - particle.pt() )/particle.pt());
-         if (dr < 0.2 && dpt < 0.2) {
-            isMatched = MATCHED_FROM_GUDSCB;
-            if(ancestorPID == 22) {
-               printf("Ancestor of a photon is a photon!\n");
-            }
-         }
-      }
-   }
-   return isMatched;
-}
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(TreeWriter);

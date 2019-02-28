@@ -95,29 +95,17 @@ private:
    virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
    virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override {};
 
-   int matchToTruth(const pat::Photon &pho,
-                    const edm::Handle<edm::View<reco::GenParticle>>  &genParticles);
-   int matchToTruthAlternative(const pat::Photon &pho,
-                               const edm::Handle<edm::View<reco::GenParticle>>  &genParticles);
-
-   void findFirstNonPhotonMother(const reco::Candidate *particle,
-                                 int &ancestorPID, int &ancestorStatus);
-
    TH1F* createCutFlowHist(std::string modelName = "");
 
    // ----------member data ---------------------------
    double dHT_cut_;
-   double dPhoton_pT_cut_;
    double dJet_pT_cut_;
-   bool isolatedPhotons_;
-   unsigned minNumberPhotons_cut_;
    unsigned minNumberElectrons_cut_;
    unsigned minNumberBinos_cut_;
 
    bool newLumiBlock_;
 
    edm::EDGetTokenT<reco::VertexCollection>    vtxToken_;
-   edm::EDGetTokenT<edm::View<pat::Photon>>    photonCollectionToken_;
    edm::EDGetTokenT<pat::JetCollection>        jetCollectionToken_;
    edm::EDGetTokenT<reco::GenJetCollection>    genJetCollectionToken_;
    edm::EDGetTokenT<pat::MuonCollection>       muonCollectionToken_;
@@ -135,20 +123,10 @@ private:
    edm::EDGetTokenT<std::vector<pat::PackedCandidate>> packedCandidateToken_;
 
    // electron id
-   edm::EDGetTokenT<edm::ValueMap<bool>> electronVetoIdMapToken_;
-   edm::EDGetTokenT<edm::ValueMap<bool>> electronLooseIdMapToken_;
-   edm::EDGetTokenT<edm::ValueMap<bool>> electronMediumIdMapToken_;
-   edm::EDGetTokenT<edm::ValueMap<bool>> electronTightIdMapToken_;
-   // photon id
-   edm::EDGetTokenT<edm::ValueMap<bool>> photonLooseId15MapToken_;
-   edm::EDGetTokenT<edm::ValueMap<bool>> photonMediumId15MapToken_;
-   edm::EDGetTokenT<edm::ValueMap<bool>> photonTightId15MapToken_;
-   //~ edm::EDGetTokenT<edm::ValueMap<bool>> photonLooseIdMapToken_;
-   std::string photonLooseIdMapToken_;
-   edm::EDGetTokenT<edm::ValueMap<bool>> photonMediumIdMapToken_;
-   edm::EDGetTokenT<edm::ValueMap<bool>> photonTightIdMapToken_;
-   edm::EDGetTokenT<edm::ValueMap<float>> photonMvaValuesMapToken_;
-   edm::EDGetTokenT<edm::ValueMap<vid::CutFlowResult>> phoLooseIdFullInfoMapToken_;
+   std::string electronVetoIdMapToken_;
+   std::string electronLooseIdMapToken_;
+   std::string electronMediumIdMapToken_;
+   std::string electronTightIdMapToken_;
 
    // met filters to apply
    const std::vector<std::string> metFilterNames_;
@@ -180,7 +158,6 @@ private:
    Float_t puPtHat_;
    Float_t EWKinoPairPt_;
 
-   Int_t nISR_;
 
    ULong64_t evtNo_;
    UInt_t    runNo_;
@@ -207,7 +184,6 @@ private:
    edm::EDGetTokenT<bool> BadPFMuonFilterToken_;
 
    // physics Objects
-   std::vector<tree::Photon>   vPhotons_;
    std::vector<tree::Jet>      vJets_;
    std::vector<tree::Particle> vGenJets_;
    std::vector<tree::Electron> vElectrons_;
@@ -221,7 +197,6 @@ private:
    tree::MET                   met_JESd_;
    tree::MET                   met_JERu_;
    tree::MET                   met_JERd_;
-   std::vector<tree::Particle> vGenPhotons_;
    std::map<std::string,std::vector<tree::Particle>> triggerObjectMap_;
 
    std::vector<tree::GenParticle> vGenParticles_;

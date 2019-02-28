@@ -38,42 +38,10 @@ namespace tree
       std::vector<GenParticle> daughters;
    };
 
-   struct Photon : public Particle
-   {
-      Float_t sigmaIetaIeta; // full 5x5
-      Float_t sigmaIphiIphi;
-      Float_t hOverE;
-      Bool_t hasPixelSeed;
-      Bool_t passElectronVeto;
-      Float_t r9;
-      Float_t sigmaPt;
-      Float_t seedCrystalE;
-      Bool_t hasGainSwitch;
-
-      Float_t cIso;
-      Float_t nIso;
-      Float_t pIso;
-      Float_t cIsoWorst;
-
-      Int_t isTrue;
-      Int_t isTrueAlternative;
-      TVector3 pMultifit;
-      TVector3 pUncorrected;
-
-      // IDs
-      Bool_t  isLoose15;
-      Bool_t  isMedium15;
-      Bool_t  isTight15;
-      Bool_t  isLoose;
-      Bool_t  isMedium;
-      Bool_t  isTight;
-      Float_t mvaValue;
-   };
 
    struct Jet : public Particle
    {
       bool isLoose;
-      bool hasPhotonMatch;
       bool hasElectronMatch;
       bool hasMuonMatch;
       float bDiscriminator;
