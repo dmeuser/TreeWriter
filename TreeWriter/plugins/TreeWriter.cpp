@@ -369,7 +369,6 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
       eventTree_->Branch(name.c_str(), &triggerPrescale_[n], (name+"/I").c_str());
    }
 
-   /*
    // get pileup histogram(s)
    std::string cmssw_base_src = getenv("CMSSW_BASE");
    cmssw_base_src += "/src/";
@@ -387,7 +386,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
       }
    }
    puFile.Close();
-   */
+   
 }
 
 TH1F* TreeWriter::createCutFlowHist(std::string modelName)
