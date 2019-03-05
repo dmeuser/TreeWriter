@@ -305,22 +305,18 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    consumes<edm::TriggerResults>(edm::InputTag("TriggerResults", "", "HLT"));
    consumes<edm::TriggerResults>(edm::InputTag("TriggerResults", "",edm::InputTag::kSkipCurrentProcess));
    consumes<pat::PackedTriggerPrescales>(edm::InputTag("patTrigger"));
-   //~ consumes<std::vector<pat::TriggerObjectStandAlone>>(edm::InputTag("selectedPatTrigger")); 80x
    consumes<std::vector<pat::TriggerObjectStandAlone>>(edm::InputTag("slimmedPatTrigger"));
    consumes<bool>(edm::InputTag("particleFlowEGammaGSFixed", "dupECALClusters"));
    consumes<edm::EDCollection<DetId>>(edm::InputTag("ecalMultiAndGSGlobalRecHitEB", "hitsNotReplaced"));
-   //~ consumes<edm::View<pat::Electron>>(edm::InputTag("slimmedElectrons", "", "PAT")); 80x
-   //~ consumes<edm::View<pat::Electron>>(edm::InputTag("slimmedElectrons", "", "RECO"));
 
+   // setup tree and define branches
    eventTree_ = fs_->make<TTree> ("eventTree", "event data");
-
    eventTree_->Branch("jets", &vJets_);
    eventTree_->Branch("genJets", &vGenJets_);
    eventTree_->Branch("electrons", &vElectrons_);
    eventTree_->Branch("muons", &vMuons_);
    eventTree_->Branch("met", &met_);
    eventTree_->Branch("metCorrected", &metCorrected_);
-//   eventTree_->Branch("metCalibrated", &metCalibrated_);
    eventTree_->Branch("met_raw", &met_raw_);
    eventTree_->Branch("met_gen", &met_gen_);
    eventTree_->Branch("met_JESu", &met_JESu_);
@@ -328,13 +324,11 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("met_JERu", &met_JERu_);
    eventTree_->Branch("met_JERd", &met_JERd_);
    eventTree_->Branch("genParticles", &vGenParticles_);
-   for (const auto& n : triggerObjectNames_) {
+   for (const auto& n : triggerObjectNames_) {  //Trigger branches
      triggerObjectMap_[n] = std::vector<tree::Particle>();
      eventTree_->Branch(n.c_str(), &triggerObjectMap_[n]);
    }
    eventTree_->Branch("intermediateGenParticles", &vIntermediateGenParticles_);
-
-   //eventTree_->Branch("nPV", &nPV_, "nPV/I");
    eventTree_->Branch("true_nPV", &true_nPV_, "true_nPV/I");
    eventTree_->Branch("nGoodVertices" , &nGoodVertices_ , "nGoodVertices/I");
    eventTree_->Branch("nTracksPV", &nTracksPV_, "nTracksPV/I");
@@ -346,7 +340,6 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("pdf_weights", &vPdf_weights_);
 
    eventTree_->Branch("genHt", &genHt_, "genHt/F");
-   //eventTree_->Branch("puPtHat", &puPtHat_ , "puPtHat/F");
    eventTree_->Branch("EWKinoPairPt", &EWKinoPairPt_, "EWKinoPairPt/F");
 
    eventTree_->Branch("evtNo", &evtNo_, "evtNo/l");
