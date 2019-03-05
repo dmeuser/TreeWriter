@@ -2,7 +2,7 @@ import ROOT
 import sys
 
 def generateHistoFromList( list, name, title="pileup" ):
-    while len(list)<75: list += [0] # same binning as for data needed
+    while len(list)<100: list += [0] # same binning as for data needed
     histo = ROOT.TH1F( name, title, len(list), 0, len(list) )
     for bin, content in enumerate( list ):
         histo.SetBinContent( bin+1, content ) # bin0 is underflow!
@@ -15,7 +15,8 @@ def generateHistoFromMixingModule( mixing ):
 
 def writeObjectsToFile( list, filename ):
     # list contains objects which will be written to a TFile
-    outfile = ROOT.TFile( filename, "recreate" )
+    #~ outfile = ROOT.TFile( filename, "recreate" ) #changed to save different years in one file
+    outfile = ROOT.TFile( filename, "update" )
     outfile.cd()
     for entry in list:
         entry.Write()
@@ -32,10 +33,9 @@ if __name__ == "__main__":
     filename = sys.argv[1]
 
     hists = []
-    hists.append( generateHistoFromMixingModule( "mix_2015_25ns_Startup_PoissonOOTPU" ) )
-    hists.append( generateHistoFromMixingModule( "mix_2015_25ns_FallMC_matchData_PoissonOOTPU" ) )
-    hists.append( generateHistoFromMixingModule( "mix_2016_25ns_SpringMC_PUScenarioV1_PoissonOOTPU" ) )
-    hists.append( generateHistoFromMixingModule( "mix_2016_25ns_Moriond17MC_PoissonOOTPU" ) )
+    #~ hists.append( generateHistoFromMixingModule( "mix_2016_25ns_Moriond17MC_PoissonOOTPU" ) )
+    hists.append( generateHistoFromMixingModule( "mix_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU" ) ) #CHANGE YEAR IN MAKEFILE BEFORE RUNNIG THESE!!!!!
+    #~ hists.append( generateHistoFromMixingModule( "mix_2018_25ns_JuneProjectionFull18_PoissonOOTPU" ) )
 
     writeObjectsToFile( hists, filename )
 

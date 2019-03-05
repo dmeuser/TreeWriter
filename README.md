@@ -21,6 +21,11 @@ git clone git@github.com:dmeuser/TreeWriter.git
 scram b -j7
 cd TreeWriter
 ```
+Create Pileup Histograms (Source different CMSSW version before, due to https://hypernews.cern.ch/HyperNews/CMS/get/luminosity/816/1/1.html or use manual fix described there)
+
+```
+make -C PUreweighting
+```
 Run the TreeWriter
 - locally
 ```
