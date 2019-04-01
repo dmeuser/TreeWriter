@@ -264,7 +264,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    : dHT_cut_(iConfig.getUntrackedParameter<double>("HT_cut"))
    , dJet_pT_cut_(iConfig.getUntrackedParameter<double>("jet_pT_cut"))
    , minNumberElectrons_cut_(iConfig.getUntrackedParameter<unsigned>("minNumberElectrons_cut"))
-   , minNumberBinos_cut_(iConfig.getUntrackedParameter<unsigned>("minNumberBinos_cut"))
+   , NumberLeptons_cut_(iConfig.getUntrackedParameter<unsigned>("NumberLeptons_cut"))
    , newLumiBlock_(true)
    , vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices")))
    , jetCollectionToken_     (consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets")))
@@ -296,8 +296,6 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    , triggerNames_(iConfig.getParameter<std::vector<std::string>>("triggerNames"))
    , triggerPrescales_(iConfig.getParameter<std::vector<std::string>>("triggerPrescales"))
    , triggerObjectNames_(iConfig.getParameter<std::vector<std::string>>("triggerObjectNames"))
-   , BadChCandFilterToken_(consumes<bool>(iConfig.getParameter<edm::InputTag>("BadChargedCandidateFilter")))
-   , BadPFMuonFilterToken_(consumes<bool>(iConfig.getParameter<edm::InputTag>("BadPFMuonFilter")))
 {
    // declare consumptions that are used "byLabel" in analyze()
    mayConsume<GenLumiInfoHeader,edm::InLumi> (edm::InputTag("generator"));
@@ -329,6 +327,9 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
      eventTree_->Branch(n.c_str(), &triggerObjectMap_[n]);
    }
    eventTree_->Branch("intermediateGenParticles", &vIntermediateGenParticles_);
+   eventTree_->Branch("ee", &ee_);
+   eventTree_->Branch("mumu", &mumu_);
+   eventTree_->Branch("emu", &emu_);
    eventTree_->Branch("true_nPV", &true_nPV_, "true_nPV/I");
    eventTree_->Branch("nGoodVertices" , &nGoodVertices_ , "nGoodVertices/I");
    eventTree_->Branch("nTracksPV", &nTracksPV_, "nTracksPV/I");
@@ -399,8 +400,8 @@ TH1F* TreeWriter::createCutFlowHist(std::string modelName)
       "trigger",
       "METfilters",
       "nGoodVertices",
+      "Dilepton",
       "HT",
-      "nBinos",
       "final"}};
    TH1F* h = fs_->make<TH1F>(name.c_str(), name.c_str(), vCutBinNames.size(), 0, vCutBinNames.size());
    for (uint i=0; i<vCutBinNames.size(); i++) { h->GetXaxis()->SetBinLabel(i+1, vCutBinNames.at(i)); }
@@ -414,8 +415,10 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    isRealData = iEvent.isRealData();
 
    hCutFlow_->Fill("initial_unweighted", 1);
-
-   // PileUp weights
+   
+   ///////////////////
+   // PileUp weights//
+   ///////////////////
    puPtHat_ = 0;
    if (!isRealData) {
       edm::Handle<PileupSummaryInfoCollection> PupInfo;
@@ -436,8 +439,10 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       true_nPV_ = -1;
       pu_weight_ = 1.;
    }
-
-   // generator weights
+   
+   //////////////////////
+   // generator weights//
+   //////////////////////
    mc_weight_ = 1; // 1 for data
    if (!isRealData) {
       edm::Handle<GenEventInfoProduct> GenEventInfoHandle;
@@ -470,7 +475,10 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
    hCutFlow_->Fill("initial_mc_weighted", mc_weight_);
    hCutFlow_->Fill("initial", mc_weight_*pu_weight_);
-
+   
+   ////////////
+   // Trigger//
+   ////////////
    edm::Handle<edm::TriggerResults> triggerBits;
    edm::Handle<pat::PackedTriggerPrescales> triggerPrescales;
    edm::InputTag triggerTag("TriggerResults", "", "HLT");
@@ -528,8 +536,10 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
          }
       }
    }
-
-   // MET Filters
+   
+   ////////////////
+   // MET Filters//
+   ////////////////
    edm::Handle<edm::TriggerResults> metFilterBits;
    edm::InputTag metFilterTag("TriggerResults", "",edm::InputTag::kSkipCurrentProcess);
    iEvent.getByLabel(metFilterTag, metFilterBits);
@@ -541,18 +551,11 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       if (index >= allFilterNames.size()) std::cerr << "MET filter '" << name << "' not found!" << std::endl;
       if (!metFilterBits->accept(index)) return; // not passed
    }
-   if (!reMiniAOD_) {
-       edm::Handle<bool> ifilterbadChCand;
-       iEvent.getByToken(BadChCandFilterToken_, ifilterbadChCand);
-       if (!*ifilterbadChCand) return;
-
-       edm::Handle<bool> ifilterbadPFMuon;
-       iEvent.getByToken(BadPFMuonFilterToken_, ifilterbadPFMuon);
-       if (!*ifilterbadPFMuon) return;
-   }
    hCutFlow_->Fill("METfilters", mc_weight_*pu_weight_);
-
-   // Get PV
+   
+   ////////////////////
+   // Primary Vertex//
+   ///////////////////
    edm::Handle<reco::VertexCollection> vertices;
    iEvent.getByToken(vtxToken_, vertices);
    if (vertices->empty()) return; // skip the event if no PV found
@@ -579,7 +582,9 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    iEvent.getByToken(rhoToken_, rhoH);
    rho_ = *rhoH;
    
-   // number of tracks
+   /////////////////////
+   // number of tracks//
+   /////////////////////
    edm::Handle<std::vector<pat::PackedCandidate>> packedCandidates;
    iEvent.getByToken(packedCandidateToken_, packedCandidates);
    nTracksPV_ = std::count_if(packedCandidates->begin(),packedCandidates->end(), [] (const pat::PackedCandidate& cand) {
@@ -594,8 +599,10 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
    edm::Handle<EcalRecHitCollection> ebRecHits;
    iEvent.getByToken(ebRecHitsToken_, ebRecHits);
-
-   // Muons
+   
+   //////////
+   // Muons//
+   //////////
    edm::Handle<pat::MuonCollection> muonColl;
    iEvent.getByToken(muonCollectionToken_, muonColl);
 
@@ -604,7 +611,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    for (const pat::Muon &mu : *muonColl) {
       //~ if (!mu.isLooseMuon()) continue;
       if (! (mu.isPFMuon() || mu.isGlobalMuon() || mu.isTrackerMuon())) continue;
-      if (mu.pt()<3) continue;
+      if (mu.pt()<10 || mu.eta()>2.4) continue;
       trMuon.p.SetPtEtaPhi(mu.pt(), mu.eta(), mu.phi());
       trMuon.isTight = mu.isTightMuon(firstGoodVertex);
       trMuon.isMedium = mu.isMediumMuon();
@@ -620,14 +627,16 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    } // muon loop
    sort(vMuons_.begin(), vMuons_.end(), tree::PtGreater);
    
-   //Electron collection
+   /////////////
+   //Electrons//
+   /////////////
    edm::Handle<edm::View<pat::Electron>> electronColl;
    iEvent.getByToken(electronCollectionToken_, electronColl);
 
    vElectrons_.clear();
    tree::Electron trEl;
    for (edm::View<pat::Electron>::const_iterator el = electronColl->begin();el != electronColl->end(); el++) {
-      //~ if (el->pt()<5) continue;
+      if (el->pt()<10 || abs(el->superCluster()->eta())>2.5 || ((1.4442 < abs(el->superCluster()->eta())) && (el->superCluster()->eta()) < 1.5660)) continue;
       const edm::Ptr<pat::Electron> elPtr(electronColl, el - electronColl->begin());
       //~ if (!(*veto_id_decisions)[elPtr]) continue; // take only 'veto' electrons
       trEl.isLoose = el->electronID(electronLooseIdMapToken_);
@@ -668,9 +677,33 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       vElectrons_.push_back(trEl);
    }
    sort(vElectrons_.begin(), vElectrons_.end(), tree::PtGreater);
-   if (vElectrons_.size()<minNumberElectrons_cut_) return;
-
-   // Jets
+   
+   ///////////////////////
+   // Dilepton Selection//
+   ///////////////////////
+   if ((vElectrons_.size()+vMuons_.size())!=NumberLeptons_cut_) return;
+   ee_=false;
+   mumu_=false;
+   emu_=false;
+   
+   if (vElectrons_.size()==2){
+      if (vElectrons_[0].charge*vElectrons_[1].charge!=-1) return;
+      ee_=true;
+   }
+   else if (vMuons_.size()==2){
+      if (vMuons_[0].charge*vMuons_[1].charge!=-1) return;
+      mumu_=true;
+   }
+   else {
+      if (vMuons_[0].charge*vElectrons_[0].charge!=-1) return;
+      emu_=true;
+   }
+   
+   hCutFlow_->Fill("Dilepton", mc_weight_*pu_weight_);
+   
+   /////////
+   // Jets//
+   /////////
    edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
    iSetup.get<JetCorrectionsRecord>().get("AK4PFchs", JetCorParColl);
    JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
@@ -689,7 +722,9 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       if (fabs(jet.eta())>3) continue;
       if (jet.pt()<dJet_pT_cut_) continue;
       trJet.p.SetPtEtaPhi(jet.pt(), jet.eta(), jet.phi());
-      trJet.bDiscriminator = jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+      trJet.bTagCSVv2 = jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+      trJet.bTagMVAv2 = jet.bDiscriminator("pfCombinedMVAV2BJetTags");
+      trJet.bTagDeepCSV = jet.bDiscriminator("pfDeepCSVJetTags:probb")+jet.bDiscriminator("pfDeepCSVJetTags:probbb");
       trJet.isLoose = jetIdSelector(jet);
       jecUnc.setJetEta(jet.eta());
       jecUnc.setJetPt(jet.pt());
@@ -725,7 +760,10 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       vJets_.push_back(trJet);
    } // jet loop
    sort(vJets_.begin(), vJets_.end(), tree::PtGreater);
-
+   
+   ///////////
+   // GenJet//
+   ///////////
    edm::Handle<reco::GenJetCollection> genJetColl;
    if (!isRealData) {
      iEvent.getByToken(genJetCollectionToken_, genJetColl);
@@ -752,7 +790,9 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    if (HT<dHT_cut_) return;
    hCutFlow_->Fill("HT", mc_weight_*pu_weight_);
 
-   // MET
+   ////////
+   // MET//
+   ////////
    edm::Handle<pat::METCollection> metCollCalo;
    iEvent.getByToken(caloMetCollectionToken_, metCollCalo);
    caloMetPt_ = metCollCalo->front().caloMETPt();
@@ -811,8 +851,10 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    met_JESd_.sig = met_.sig;
    met_JERu_.sig = met_.sig;
    met_JERd_.sig = met_.sig;
-
-   // generated HT
+   
+   /////////////////
+   // generated HT//
+   /////////////////
    // copied from https://github.com/Aachen-3A/PxlSkimmer/blob/master/Skimming/src/PxlSkimmer_miniAOD.cc#L590
    genHt_ = -1;
    if (!isRealData) {
@@ -842,8 +884,9 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       }
    }
 
-
-   // Generated Particles
+   ////////////////////////
+   // Generated Particles//
+   ////////////////////////
    // status flags: https://indico.cern.ch/event/459797/contribution/2/attachments/1181555/1710844/mcaod-Nov4-2015.pdf
    vGenParticles_.clear();
    vIntermediateGenParticles_.clear();
@@ -907,11 +950,13 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       sort(vGenParticles_.begin(), vGenParticles_.end(), tree::PtGreater);
       EWKinoPairPt_ = p_EWK_tot.Pt();
    }
-   if (signal_nBinos_ < minNumberBinos_cut_) return;
    hCutFlow_->Fill("nBinos", mc_weight_*pu_weight_);
 
    hCutFlow_->Fill("final", mc_weight_*pu_weight_);
-   // store event identity
+   
+   ///////////////////
+   // Event identity//
+   ///////////////////
    evtNo_ = iEvent.id().event();
    runNo_ = iEvent.run();
    lumNo_ = iEvent.luminosityBlock();
@@ -924,7 +969,9 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    iEvent.getByLabel("particleFlowEGammaGSFixed", "dupECALClusters", duplicateGSFixedHandle);
    particleFlowEGammaGSFixed_dupECALClusters_ = reMiniAOD_ && *duplicateGSFixedHandle;
    
-   //TrackIsolation
+   //////////////////
+   //TrackIsolation//
+   //////////////////
    electronTrackIsoVeto = TrackIsolation(packedCandidates, metColl, vertices, 11);
    muonTrackIsoVeto = TrackIsolation(packedCandidates, metColl, vertices, 13);
    pionTrackIsoVeto = TrackIsolation(packedCandidates, metColl, vertices, 211);

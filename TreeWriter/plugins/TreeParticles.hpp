@@ -44,7 +44,9 @@ namespace tree
       bool isLoose;
       bool hasElectronMatch;
       bool hasMuonMatch;
-      float bDiscriminator;
+      float bTagCSVv2;
+      float bTagMVAv2;
+      float bTagDeepCSV;
       float uncert;
       float chf;
       float nhf;

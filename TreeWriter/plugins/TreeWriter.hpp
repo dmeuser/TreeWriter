@@ -101,7 +101,7 @@ private:
    double dHT_cut_;
    double dJet_pT_cut_;
    unsigned minNumberElectrons_cut_;
-   unsigned minNumberBinos_cut_;
+   unsigned NumberLeptons_cut_;
 
    bool newLumiBlock_;
 
@@ -179,10 +179,6 @@ private:
    std::map<std::string, int>    triggerIndex_;
    std::vector<std::string>      triggerObjectNames_;
 
-   // met filter tokens
-   edm::EDGetTokenT<bool> BadChCandFilterToken_;
-   edm::EDGetTokenT<bool> BadPFMuonFilterToken_;
-
    // physics Objects
    std::vector<tree::Jet>      vJets_;
    std::vector<tree::Particle> vGenJets_;
@@ -216,6 +212,11 @@ private:
 
    // Pileup histogram(s)
    TH1F hPU_;
+   
+   // Dilepton Event Type (ee,mumu,emu)
+   bool mumu_;
+   bool ee_;
+   bool emu_;
 };
 
 #endif /* TREEWRITER_HPP__ */
