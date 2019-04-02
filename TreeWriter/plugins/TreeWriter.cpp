@@ -533,7 +533,8 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       obj.unpackFilterLabels(iEvent,*triggerBits);
       for (const auto& n : triggerObjectNames_) {
          if (std::count(obj.filterLabels().begin(), obj.filterLabels().end(), n)) {
-            trObj.p.SetPtEtaPhi(obj.pt(), obj.eta(), obj.phi());
+            //~ trObj.p.SetPtEtaPhi(obj.pt(), obj.eta(), obj.phi());
+            trObj.p.SetPtEtaPhiE(obj.pt(), obj.eta(), obj.phi(), obj.energy());
             triggerObjectMap_.at(n).push_back(trObj);
          }
       }
@@ -614,7 +615,8 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       //~ if (!mu.isLooseMuon()) continue;
       if (! (mu.isPFMuon() || mu.isGlobalMuon() || mu.isTrackerMuon())) continue;
       if (mu.pt()<10 || mu.eta()>2.4) continue;
-      trMuon.p.SetPtEtaPhi(mu.pt(), mu.eta(), mu.phi());
+      //~ trMuon.p.SetPtEtaPhi(mu.pt(), mu.eta(), mu.phi());
+      trMuon.p.SetPtEtaPhiE(mu.pt(), mu.eta(), mu.phi(), mu.energy());
       trMuon.isTight = mu.isTightMuon(firstGoodVertex);
       trMuon.isMedium = mu.isMediumMuon();
       trMuon.isLoose = mu.isLooseMuon();
@@ -644,7 +646,8 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trEl.isLoose = el->electronID(electronLooseIdMapToken_);
       trEl.isMedium = el->electronID(electronMediumIdMapToken_);
       trEl.isTight = el->electronID(electronTightIdMapToken_);
-      trEl.p.SetPtEtaPhi(el->pt(), el->superCluster()->eta(), el->superCluster()->phi());
+      //~ trEl.p.SetPtEtaPhi(el->pt(), el->superCluster()->eta(), el->superCluster()->phi());
+      trEl.p.SetPtEtaPhiE(el->pt(), el->superCluster()->eta(), el->superCluster()->phi(), el->energy());
       trEl.seedCrystalE = seedCrystalEnergyEB(*el->superCluster(), ebRecHits);
       trEl.charge = el->charge();
       auto const & pfIso = el->pfIsolationVariables();
@@ -691,14 +694,17 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    
    if (vElectrons_.size()==2){
       if (vElectrons_[0].charge*vElectrons_[1].charge!=-1) return;
+      mll_=(vElectrons_[0].p+vElectrons_[1].p).M();
       ee_=true;
    }
    else if (vMuons_.size()==2){
       if (vMuons_[0].charge*vMuons_[1].charge!=-1) return;
+      mll_=(vMuons_[0].p+vMuons_[1].p).M();
       mumu_=true;
    }
    else {
       if (vMuons_[0].charge*vElectrons_[0].charge!=-1) return;
+      mll_=(vMuons_[0].p+vElectrons_[0].p).M();
       emu_=true;
    }
    
@@ -727,7 +733,8 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    for (const pat::Jet& jet : *jetColl) {
       if (fabs(jet.eta())>2.4) continue;
       if (jet.pt()<dJet_pT_cut_) continue;
-      trJet.p.SetPtEtaPhi(jet.pt(), jet.eta(), jet.phi());
+      //~ trJet.p.SetPtEtaPhi(jet.pt(), jet.eta(), jet.phi());
+      trJet.p.SetPtEtaPhiM(jet.pt(), jet.eta(), jet.phi(), jet.energy());
       trJet.bTagCSVv2 = jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
       trJet.bTagMVAv2 = jet.bDiscriminator("pfCombinedMVAV2BJetTags");
       trJet.bTagDeepCSV = jet.bDiscriminator("pfDeepCSVJetTags:probb")+jet.bDiscriminator("pfDeepCSVJetTags:probbb");
@@ -778,7 +785,8 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
      tree::Particle trGJet;
      for (const reco::GenJet& jet: *genJetColl) {
         if (jet.pt()<dJet_pT_cut_-5) continue;
-        trGJet.p.SetPtEtaPhi(jet.pt(), jet.eta(), jet.phi());
+        //~ trGJet.p.SetPtEtaPhi(jet.pt(), jet.eta(), jet.phi());
+        trGJet.p.SetPtEtaPhiM(jet.pt(), jet.eta(), jet.phi(), jet.energy());
         vGenJets_.push_back(trGJet);
      }
      sort(vGenJets_.begin(), vGenJets_.end(), tree::PtGreater);
@@ -806,22 +814,26 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
    edm::Handle<pat::METCollection> metCorrectedColl;
    iEvent.getByToken(metCorrectedCollectionToken_, metCorrectedColl);
-   metCorrected_.p.SetPtEtaPhi(metCorrectedColl->front().pt(), metCorrectedColl->front().eta(), metCorrectedColl->front().phi());
+   //~ metCorrected_.p.SetPtEtaPhi(metCorrectedColl->front().pt(), metCorrectedColl->front().eta(), metCorrectedColl->front().phi());
+   metCorrected_.p.SetPtEtaPhiE(metCorrectedColl->front().pt(), metCorrectedColl->front().eta(), metCorrectedColl->front().phi(), metCorrectedColl->front().energy());
 
    edm::Handle<pat::METCollection> metCalibratedColl;
    iEvent.getByToken(metCalibratedCollectionToken_, metCalibratedColl);
-   metCalibrated_.p.SetPtEtaPhi(metCalibratedColl->front().pt(), metCalibratedColl->front().eta(), metCalibratedColl->front().phi());
+   //~ metCalibrated_.p.SetPtEtaPhi(metCalibratedColl->front().pt(), metCalibratedColl->front().eta(), metCalibratedColl->front().phi());
+   metCalibrated_.p.SetPtEtaPhiE(metCalibratedColl->front().pt(), metCalibratedColl->front().eta(), metCalibratedColl->front().phi(), metCalibratedColl->front().energy());
 
    edm::Handle<pat::METCollection> metColl;
    iEvent.getByToken(metCollectionToken_, metColl);
 
    const pat::MET &met = metColl->front();
    double metPt = met.pt();
-   met_.p.SetPtEtaPhi(metPt, met.eta(), met.phi());
+   //~ met_.p.SetPtEtaPhi(metPt, met.eta(), met.phi());
+   met_.p.SetPtEtaPhiE(metPt, met.eta(), met.phi(), met.energy());
 
    if( !isRealData ) {
       const reco::GenMET *genMet = met.genMET();
-      met_gen_.p.SetPtEtaPhi(genMet->pt(), genMet->eta(), genMet->phi());
+      //~ met_gen_.p.SetPtEtaPhi(genMet->pt(), genMet->eta(), genMet->phi());
+      met_gen_.p.SetPtEtaPhiE(genMet->pt(), genMet->eta(), genMet->phi(), genMet->energy());
    }
 
    // jet resolution shift is set to 0 for 74X
@@ -840,17 +852,22 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
    pat::MET::LorentzVector metShifted;
    metShifted = met.shiftedP4(pat::MET::NoShift, pat::MET::Raw);
-   met_raw_.p.SetPtEtaPhi(metShifted.pt(), metShifted.eta(), metShifted.phi());
+   //~ met_raw_.p.SetPtEtaPhi(metShifted.pt(), metShifted.eta(), metShifted.phi());
+   met_raw_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
 
    metShifted = met.shiftedP4(pat::MET::JetEnUp);
-   met_JESu_.p.SetPtEtaPhi(metShifted.pt(), metShifted.eta(), metShifted.phi());
+   //~ met_JESu_.p.SetPtEtaPhi(metShifted.pt(), metShifted.eta(), metShifted.phi());
+   met_JESu_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
    metShifted = met.shiftedP4(pat::MET::JetEnDown);
-   met_JESd_.p.SetPtEtaPhi(metShifted.pt(), metShifted.eta(), metShifted.phi());
+   //~ met_JESd_.p.SetPtEtaPhi(metShifted.pt(), metShifted.eta(), metShifted.phi());
+   met_JESd_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
 
    metShifted = met.shiftedP4(pat::MET::JetResUp);
-   met_JERu_.p.SetPtEtaPhi(metShifted.pt(), metShifted.eta(), metShifted.phi());
+   //~ met_JERu_.p.SetPtEtaPhi(metShifted.pt(), metShifted.eta(), metShifted.phi());
+   met_JERu_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
    metShifted = met.shiftedP4(pat::MET::JetResDown);
-   met_JERd_.p.SetPtEtaPhi(metShifted.pt(), metShifted.eta(), metShifted.phi());
+   //~ met_JERd_.p.SetPtEtaPhi(metShifted.pt(), metShifted.eta(), metShifted.phi());
+   met_JERd_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
 
    met_.sig = met.metSignificance();
    met_raw_.sig = met_.sig;
@@ -915,13 +932,15 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
             if (iNdaugh>1) { // skip "decays" V->V
                trIntermP.pdgId = genP.pdgId();
                trIntermP.isPrompt = genP.statusFlags().isPrompt();
-               trIntermP.p.SetPtEtaPhi(genP.pt(), genP.eta(), genP.phi());
+               //~ trIntermP.p.SetPtEtaPhi(genP.pt(), genP.eta(), genP.phi());
+               trIntermP.p.SetPtEtaPhiE(genP.pt(), genP.eta(), genP.phi(), genP.energy());
                trIntermP.daughters.clear();
                for (int i=0; i<iNdaugh; i++) { // store the decay products
                   reco::Candidate const& daugh = *genP.daughter(i);
                   trP.pdgId = daugh.pdgId();
                   trP.isPrompt = false;
-                  trP.p.SetPtEtaPhi(daugh.pt(), daugh.eta(), daugh.phi());
+                  //~ trP.p.SetPtEtaPhi(daugh.pt(), daugh.eta(), daugh.phi());
+                  trP.p.SetPtEtaPhiE(daugh.pt(), daugh.eta(), daugh.phi(), daugh.energy());
                   trIntermP.daughters.push_back(trP);
                }
                vIntermediateGenParticles_.push_back(trIntermP);
@@ -934,7 +953,8 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
             trP.pdgId = genP.pdgId();
             trP.isPrompt = genP.statusFlags().isPrompt();
             trP.fromHardProcess = genP.statusFlags().fromHardProcess();
-            trP.p.SetPtEtaPhi(genP.pt(),genP.eta(),genP.phi());
+            //~ trP.p.SetPtEtaPhi(genP.pt(),genP.eta(),genP.phi());
+            trP.p.SetPtEtaPhiE(genP.pt(), genP.eta(), genP.phi(), genP.energy());
             trP.promptStatus = getPromptStatus(genP, prunedGenParticles);
             vGenParticles_.push_back(trP);
          }

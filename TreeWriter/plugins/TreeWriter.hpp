@@ -153,7 +153,9 @@ private:
    Float_t pu_weight_;
    Char_t  mc_weight_; // +1 or -1 event weights (take care when reading with python, this is a character!)
    std::vector<float> vPdf_weights_;
-
+   
+   Float_t mll_;
+   Float_t Ht_;
    Float_t genHt_;
    Float_t puPtHat_;
    Float_t EWKinoPairPt_;

@@ -17,7 +17,8 @@ namespace tree
 {
    struct Particle
    {
-      TVector3 p;
+      //~ TVector3 p;
+      TLorentzVector p;
       bool isEB() { return fabs(p.Eta())<1.4442; }
       bool isEE() {
          auto aEta = fabs(p.Eta());
