@@ -94,7 +94,8 @@ runMetCorAndUncFromMiniAOD(
 # Define input and output      #
 ################################
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(options.maxEvents))
-process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles))#, lumisToProcess = cms.untracked.VLuminosityBlockRange("276315:134"))#eventsToProcess = cms.untracked.VEventRange("276315:134:185994346"))
+#~ process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), lumisToProcess = cms.untracked.VLuminosityBlockRange("276315:134"))#eventsToProcess = cms.untracked.VEventRange("276315:134:185994346"))
+process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles))#, eventsToProcess = cms.untracked.VEventRange("276315:134:186839926"))
 process.TFileService = cms.Service("TFileService", fileName=cms.string(options.outputFile))
 
 
@@ -104,7 +105,7 @@ process.TFileService = cms.Service("TFileService", fileName=cms.string(options.o
 process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     # selection configuration
                                     HT_cut=cms.untracked.double(0),
-                                    jet_pT_cut=cms.untracked.double(30), # for all jets
+                                    jet_pT_cut=cms.untracked.double(14), # for all jets
                                     isolatedPhotons=cms.untracked.bool(True), # for all photons in the collection
                                     minNumberElectrons_cut=cms.untracked.uint32(0),
                                     NumberLeptons_cut=cms.untracked.uint32(2),

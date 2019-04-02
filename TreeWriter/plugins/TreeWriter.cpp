@@ -710,8 +710,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    
    hCutFlow_->Fill("Dilepton", mc_weight_*pu_weight_);
    
-   //~ std::cout<<runNo_<<":"<<lumNo_<<":"<<evtNo_<<std::endl;
-   
    /////////
    // Jets//
    /////////
