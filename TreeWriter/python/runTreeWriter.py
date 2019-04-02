@@ -28,8 +28,8 @@ options.register ('user',
                   "Name the user. If not set by crab, this script will determine it.")
 
 # defaults
-options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v1/00000/001BCE65-30C3-E811-A357-A4BF0112DD3C.root'
-#~ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016D/MuonEG/MINIAOD/17Jul2018-v1/80000/D48E0B3A-A28E-E811-8A12-7CD30AD08EB4.root'
+#~ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v1/00000/001BCE65-30C3-E811-A357-A4BF0112DD3C.root'
+options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016D/MuonEG/MINIAOD/17Jul2018-v1/80000/D48E0B3A-A28E-E811-8A12-7CD30AD08EB4.root'
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
 #~ options.maxEvents = -1
@@ -94,7 +94,7 @@ runMetCorAndUncFromMiniAOD(
 # Define input and output      #
 ################################
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(options.maxEvents))
-process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles))#, eventsToProcess = cms.untracked.VEventRange("1:29986:5916215"))
+process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles))#, lumisToProcess = cms.untracked.VLuminosityBlockRange("276315:134"))#eventsToProcess = cms.untracked.VEventRange("276315:134:185994346"))
 process.TFileService = cms.Service("TFileService", fileName=cms.string(options.outputFile))
 
 
@@ -109,13 +109,10 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     minNumberElectrons_cut=cms.untracked.uint32(0),
                                     NumberLeptons_cut=cms.untracked.uint32(2),
                                     # physics objects
-                                    # ~ jets = cms.InputTag("updatedPatJetsUpdatedJEC"), 80x
                                     jets = cms.InputTag("slimmedJets"),
                                     muons = cms.InputTag("slimmedMuons"),
                                     genJets=cms.InputTag("slimmedGenJets"),
-                                    #~ electrons = cms.InputTag("calibratedPatElectrons"), 80x
                                     electrons = cms.InputTag("slimmedElectrons"),
-                                    # ~ mets = cms.InputTag("slimmedMETs", "", "TreeWriter"), 80x
                                     mets = cms.InputTag("slimmedMETs"),
                                     metCorr = cms.InputTag(""),
                                     metCorrCal = cms.InputTag(""),
@@ -155,7 +152,6 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     triggerObjectNames=cms.vstring(),
                                     pfJetIDSelector=cms.PSet(version=cms.string('FIRSTDATA'), quality=cms.string('LOOSE')),
                                     triggerPrescales=cms.vstring(), # also useful to check whether a trigger was run
-                                    BadPFMuonFilter = cms.InputTag("BadPFMuonFilter"),
                                     metCorrected = cms.InputTag("slimmedMETs"),
                                     metCalibrated = cms.InputTag("slimmedMETs")
 )
