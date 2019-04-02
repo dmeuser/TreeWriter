@@ -340,6 +340,8 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("mc_weight", &mc_weight_, "mc_weight/B");
    eventTree_->Branch("pdf_weights", &vPdf_weights_);
 
+   eventTree_->Branch("mll", &mll_, "mll/F");
+   eventTree_->Branch("Ht", &Ht_, "Ht/F");
    eventTree_->Branch("genHt", &genHt_, "genHt/F");
    eventTree_->Branch("EWKinoPairPt", &EWKinoPairPt_, "EWKinoPairPt/F");
 
@@ -685,6 +687,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    ee_=false;
    mumu_=false;
    emu_=false;
+   mll_=0;
    
    if (vElectrons_.size()==2){
       if (vElectrons_[0].charge*vElectrons_[1].charge!=-1) return;
@@ -700,6 +703,8 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    }
    
    hCutFlow_->Fill("Dilepton", mc_weight_*pu_weight_);
+   
+   //~ std::cout<<runNo_<<":"<<lumNo_<<":"<<evtNo_<<std::endl;
    
    /////////
    // Jets//
@@ -718,8 +723,9 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
    vJets_.clear();
    tree::Jet trJet;
+   Ht_=0;
    for (const pat::Jet& jet : *jetColl) {
-      if (fabs(jet.eta())>3) continue;
+      if (fabs(jet.eta())>2.4) continue;
       if (jet.pt()<dJet_pT_cut_) continue;
       trJet.p.SetPtEtaPhi(jet.pt(), jet.eta(), jet.phi());
       trJet.bTagCSVv2 = jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
@@ -757,6 +763,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
             break;
          }
       }
+      Ht_+=trJet.p.Pt();
       vJets_.push_back(trJet);
    } // jet loop
    sort(vJets_.begin(), vJets_.end(), tree::PtGreater);
@@ -898,32 +905,24 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    TVector3 p_EWK_tot;
    p_EWK_tot.SetPtEtaPhi(0.,0.,0.);
    if (!isRealData) {
-      //~ std::cout<<"------------------------------"<<std::endl;
       // Get generator level info
       // Pruned particles are the one containing "important" stuff
       for (const reco::GenParticle &genP: *prunedGenParticles){
          auto absId = abs(genP.pdgId());
-         // estimate number of binos
-         if (absId == 1000023 && abs(genP.mother(0)->pdgId()) != 1000023) signal_nBinos_++;
-         
-         // number of neutralino_1 decays
-         if (absId == 1000022 && genP.status()==22) signal_nNeutralinoDecays_++;
 
-         if (absId==1000022||absId==1000023||absId==1000025||absId==1000024) { // store intermediate neutralinos and charginos
+         if (absId==6||absId==24) { // store intermediate tops and w bosons
             int iNdaugh = genP.numberOfDaughters();
             if (iNdaugh>1) { // skip "decays" V->V
                trIntermP.pdgId = genP.pdgId();
                trIntermP.isPrompt = genP.statusFlags().isPrompt();
                trIntermP.p.SetPtEtaPhi(genP.pt(), genP.eta(), genP.phi());
                trIntermP.daughters.clear();
-               //~ std::cout<<absId<<std::endl;
                for (int i=0; i<iNdaugh; i++) { // store the decay products
                   reco::Candidate const& daugh = *genP.daughter(i);
                   trP.pdgId = daugh.pdgId();
                   trP.isPrompt = false;
                   trP.p.SetPtEtaPhi(daugh.pt(), daugh.eta(), daugh.phi());
                   trIntermP.daughters.push_back(trP);
-                  //~ std::cout<<daugh.pdgId()<<std::endl;
                }
                vIntermediateGenParticles_.push_back(trIntermP);
             }
@@ -931,7 +930,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
          
          // save particles
          if (genP.status()==22 || genP.status()==23 || // some generator particles
-               (genP.status() == 1 && genP.pt()>20 && (absId==22 || (11 <= absId && absId <= 16)))) { // status 1 photons and leptons (including neutrinos)
+               (genP.status() == 1 && genP.pt()>10 && (absId==22 || (11 <= absId && absId <= 16)))) { // status 1 photons and leptons (including neutrinos)
             trP.pdgId = genP.pdgId();
             trP.isPrompt = genP.statusFlags().isPrompt();
             trP.fromHardProcess = genP.statusFlags().fromHardProcess();
