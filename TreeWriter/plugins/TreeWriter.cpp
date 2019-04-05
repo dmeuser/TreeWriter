@@ -612,7 +612,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    vMuons_.clear();
    tree::Muon trMuon;
    for (const pat::Muon &mu : *muonColl) {
-      //~ if (!mu.isLooseMuon()) continue;
+      if (mu.isTightMuon(firstGoodVertex)) continue; // take only 'tight' muons
       if (! (mu.isPFMuon() || mu.isGlobalMuon() || mu.isTrackerMuon())) continue;
       if (mu.pt()<10 || mu.eta()>2.4) continue;
       //~ trMuon.p.SetPtEtaPhi(mu.pt(), mu.eta(), mu.phi());
@@ -642,7 +642,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    for (edm::View<pat::Electron>::const_iterator el = electronColl->begin();el != electronColl->end(); el++) {
       if (el->pt()<10 || abs(el->superCluster()->eta())>2.5 || ((1.4442 < abs(el->superCluster()->eta())) && (el->superCluster()->eta()) < 1.5660)) continue;
       const edm::Ptr<pat::Electron> elPtr(electronColl, el - electronColl->begin());
-      //~ if (!(*veto_id_decisions)[elPtr]) continue; // take only 'veto' electrons
+      if (!el->electronID(electronTightIdMapToken_)) continue; // take only 'tight' electrons
       trEl.isLoose = el->electronID(electronLooseIdMapToken_);
       trEl.isMedium = el->electronID(electronMediumIdMapToken_);
       trEl.isTight = el->electronID(electronTightIdMapToken_);
@@ -708,6 +708,9 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       emu_=true;
    }
    
+   std::cout<<lumNo_<<":"<<evtNo_<<std::endl;
+   std::cout<<mll_<<std::endl;
+   
    hCutFlow_->Fill("Dilepton", mc_weight_*pu_weight_);
    
    /////////
@@ -756,14 +759,14 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       // object matching
       trJet.hasElectronMatch = false;
       for (tree::Electron const &el: vElectrons_) {
-         if (el.isLoose && el.p.Pt()>=5 && trJet.p.DeltaR(el.p)<0.4) {
+         if (el.isTight && el.p.Pt()>=20 && trJet.p.DeltaR(el.p)<0.4) {
             trJet.hasElectronMatch = true;
             break;
          }
       }
       trJet.hasMuonMatch = false;
       for (tree::Muon const &mu: vMuons_){
-         if (mu.isLoose && mu.p.Pt()>=5 && trJet.p.DeltaR(mu.p)<0.4){
+         if (mu.isTight && mu.p.Pt()>=20 && trJet.p.DeltaR(mu.p)<0.4){
             trJet.hasMuonMatch = true;
             break;
          }
