@@ -612,7 +612,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    vMuons_.clear();
    tree::Muon trMuon;
    for (const pat::Muon &mu : *muonColl) {
-      if (mu.isTightMuon(firstGoodVertex)) continue; // take only 'tight' muons
+      if (!mu.isTightMuon(firstGoodVertex)) continue; // take only 'tight' muons
       if (! (mu.isPFMuon() || mu.isGlobalMuon() || mu.isTrackerMuon())) continue;
       if (mu.pt()<10 || mu.eta()>2.4) continue;
       //~ trMuon.p.SetPtEtaPhi(mu.pt(), mu.eta(), mu.phi());
@@ -707,9 +707,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       mll_=(vMuons_[0].p+vElectrons_[0].p).M();
       emu_=true;
    }
-   
-   std::cout<<lumNo_<<":"<<evtNo_<<std::endl;
-   std::cout<<mll_<<std::endl;
    
    hCutFlow_->Fill("Dilepton", mc_weight_*pu_weight_);
    
