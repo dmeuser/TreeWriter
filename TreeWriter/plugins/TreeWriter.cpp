@@ -296,6 +296,8 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    , triggerNames_(iConfig.getParameter<std::vector<std::string>>("triggerNames"))
    , triggerPrescales_(iConfig.getParameter<std::vector<std::string>>("triggerPrescales"))
    , triggerObjectNames_(iConfig.getParameter<std::vector<std::string>>("triggerObjectNames"))
+   // scale factor map
+   , fctLeptonFullSimScaleFactors_(iConfig.getParameter<edm::ParameterSet>("LeptonFullSimScaleFactors"))
 {
    // declare consumptions that are used "byLabel" in analyze()
    mayConsume<GenLumiInfoHeader,edm::InLumi> (edm::InputTag("generator"));
@@ -344,6 +346,12 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("Ht", &Ht_, "Ht/F");
    eventTree_->Branch("genHt", &genHt_, "genHt/F");
    eventTree_->Branch("EWKinoPairPt", &EWKinoPairPt_, "EWKinoPairPt/F");
+   eventTree_->Branch("MT2", &MT2_, "MT2/F");
+   
+   eventTree_->Branch("lepton1SF", &lepton1SF_, "lepton1SF/F");
+   eventTree_->Branch("lepton2SF", &lepton2SF_, "lepton2SF/F");
+   eventTree_->Branch("lepton1SF_unc", &lepton1SF_unc_, "lepton1SF_unc/F");
+   eventTree_->Branch("lepton2SF_unc", &lepton2SF_unc_, "lepton2SF_unc/F");
 
    eventTree_->Branch("evtNo", &evtNo_, "evtNo/l");
    eventTree_->Branch("runNo", &runNo_, "runNo/i");
@@ -614,7 +622,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    for (const pat::Muon &mu : *muonColl) {
       if (!mu.isTightMuon(firstGoodVertex)) continue; // take only 'tight' muons
       if (! (mu.isPFMuon() || mu.isGlobalMuon() || mu.isTrackerMuon())) continue;
-      if (mu.pt()<10 || mu.eta()>2.4) continue;
+      if (mu.pt()<20 || mu.eta()>2.4) continue;
       //~ trMuon.p.SetPtEtaPhi(mu.pt(), mu.eta(), mu.phi());
       trMuon.p.SetPtEtaPhiE(mu.pt(), mu.eta(), mu.phi(), mu.energy());
       trMuon.isTight = mu.isTightMuon(firstGoodVertex);
@@ -622,6 +630,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trMuon.isLoose = mu.isLooseMuon();
       auto const& pfIso = mu.pfIsolationR04();
       trMuon.rIso = (pfIso.sumChargedHadronPt + std::max(0., pfIso.sumNeutralHadronEt + pfIso.sumPhotonEt - 0.5*pfIso.sumPUPt))/mu.pt();
+      if (trMuon.rIso>0.15) continue; //Tight relIso cut
       trMuon.charge = mu.charge();
       trMuon.PFminiIso = getPFIsolation(packedCandidates, mu);
       math::XYZPoint vtx_point = firstGoodVertex.position();
@@ -640,7 +649,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    vElectrons_.clear();
    tree::Electron trEl;
    for (edm::View<pat::Electron>::const_iterator el = electronColl->begin();el != electronColl->end(); el++) {
-      if (el->pt()<10 || abs(el->superCluster()->eta())>2.5 || ((1.4442 < abs(el->superCluster()->eta())) && (el->superCluster()->eta()) < 1.5660)) continue;
+      if (el->pt()<20 || abs(el->superCluster()->eta())>2.4 || ((1.4442 < abs(el->superCluster()->eta())) && (el->superCluster()->eta()) < 1.5660)) continue;
       const edm::Ptr<pat::Electron> elPtr(electronColl, el - electronColl->begin());
       if (!el->electronID(electronTightIdMapToken_)) continue; // take only 'tight' electrons
       trEl.isLoose = el->electronID(electronLooseIdMapToken_);
@@ -696,16 +705,28 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       if (vElectrons_[0].charge*vElectrons_[1].charge!=-1) return;
       mll_=(vElectrons_[0].p+vElectrons_[1].p).M();
       ee_=true;
+      lepton1SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].p.Eta()))[0];
+      lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].p.Eta()))[1];
+      lepton2SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[1],vElectrons_[1].p.Pt(),vElectrons_[1].p.Eta()))[0];
+      lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[1],vElectrons_[1].p.Pt(),vElectrons_[1].p.Eta()))[1];
    }
    else if (vMuons_.size()==2){
       if (vMuons_[0].charge*vMuons_[1].charge!=-1) return;
       mll_=(vMuons_[0].p+vMuons_[1].p).M();
       mumu_=true;
+      lepton1SF_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[0];
+      lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[1];
+      lepton2SF_=(fctLeptonFullSimScaleFactors_(vMuons_[1],vMuons_[1].p.Pt(),vMuons_[1].p.Eta()))[0];
+      lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vMuons_[1],vMuons_[1].p.Pt(),vMuons_[1].p.Eta()))[1];
    }
    else {
       if (vMuons_[0].charge*vElectrons_[0].charge!=-1) return;
       mll_=(vMuons_[0].p+vElectrons_[0].p).M();
       emu_=true;
+      lepton1SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].p.Eta()))[0];
+      lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].p.Eta()))[1];
+      lepton2SF_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[0];
+      lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[1];
    }
    
    hCutFlow_->Fill("Dilepton", mc_weight_*pu_weight_);
@@ -873,6 +894,29 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    met_JESd_.sig = met_.sig;
    met_JERu_.sig = met_.sig;
    met_JERd_.sig = met_.sig;
+   
+   ///////////
+   //MT2//////
+   ///////////
+   if (mumu_){
+      pa[0]=vMuons_[0].p.Px(); pa[1]=vMuons_[0].p.Py(); pa[2]=vMuons_[0].p.Pz();
+      pb[0]=vMuons_[1].p.Px(); pb[1]=vMuons_[1].p.Py(); pb[2]=vMuons_[1].p.Pz();
+   }
+   else if (emu_){
+      pa[0]=vMuons_[0].p.Px(); pa[1]=vMuons_[0].p.Py(); pa[2]=vMuons_[0].p.Pz();
+      pb[0]=vElectrons_[0].p.Px(); pb[1]=vElectrons_[0].p.Py(); pb[2]=vElectrons_[0].p.Pz();
+   }
+   else {
+      pa[0]=vElectrons_[0].p.Px(); pa[1]=vElectrons_[0].p.Py(); pa[2]=vElectrons_[0].p.Pz();
+      pb[0]=vElectrons_[1].p.Px(); pb[1]=vElectrons_[1].p.Py(); pb[2]=vElectrons_[1].p.Pz();
+   }
+   pmiss[0]=0; pmiss[1]=met_.p.Px(); pmiss[2]=met_.p.Py();
+   
+   fctMT2_.set_mn(0.);
+   fctMT2_.set_momenta(pa,pb,pmiss);
+   
+   MT2_=static_cast<float>(fctMT2_.get_mt2());
+   
    
    /////////////////
    // generated HT//

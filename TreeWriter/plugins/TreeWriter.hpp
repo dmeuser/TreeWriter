@@ -71,6 +71,9 @@
 
 #include "TreeParticles.hpp"
 
+#include "MT2Functor.h"
+#include <TreeWriter/TreeWriter/plugins/LeptonFullSimScaleFactorMapFunctor.h>
+
 
 typedef std::vector<PileupSummaryInfo> PileupSummaryInfoCollection;
 typedef edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>> EcalRecHitCollection;
@@ -159,6 +162,7 @@ private:
    Float_t genHt_;
    Float_t puPtHat_;
    Float_t EWKinoPairPt_;
+   Float_t MT2_;
 
 
    ULong64_t evtNo_;
@@ -204,6 +208,13 @@ private:
    Bool_t electronTrackIsoVeto;
    Bool_t muonTrackIsoVeto;
    Bool_t pionTrackIsoVeto;
+   
+   // Scale factors
+   LeptonFullSimScaleFactorMapFunctor fctLeptonFullSimScaleFactors_;
+   Float_t lepton1SF_;
+   Float_t lepton2SF_;
+   Float_t lepton1SF_unc_;
+   Float_t lepton2SF_unc_;
 
    // File Service to store things to a root file
    edm::Service<TFileService> fs_;
@@ -219,6 +230,12 @@ private:
    bool mumu_;
    bool ee_;
    bool emu_;
+   
+   //MT2 functor
+   MT2Functor fctMT2_;
+   double pa[3];
+   double pb[3];
+   double pmiss[3];
 };
 
 #endif /* TREEWRITER_HPP__ */

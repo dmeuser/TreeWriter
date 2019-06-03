@@ -33,7 +33,7 @@ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniA
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
 options.maxEvents = -1
-#~ options.maxEvents = 1000
+#~ options.maxEvents = 100
 # get and parse the command line arguments
 options.parseArguments()
 
@@ -89,6 +89,22 @@ runMetCorAndUncFromMiniAOD(
 #~ process.BadPFMuonFilter.muons = cms.InputTag("slimmedMuons")
 #~ process.BadPFMuonFilter.PFCandidates = cms.InputTag("packedPFCandidates")
 
+################################
+# Lepton Scale Factors         #
+################################
+LeptonFullSimScaleFactorMapPars2016 = cms.PSet(
+    #~ dataMCScaleFactorFile_mu_ID = cms.string('${CMSSW_BASE}/src/TreeWriter/data/2016/RunBCDEF_SF_ID.root'),
+    #~ dataMCScaleFactorFile_mu_Iso = cms.string('${CMSSW_BASE}/src/TreeWriter/data/2016/RunBCDEF_SF_ISO.root'),
+    dataMCScaleFactorFile_mu_ID = cms.string('${CMSSW_BASE}/src/TreeWriter/data/2016/MuonSF_ID_merged.root'),
+    dataMCScaleFactorFile_mu_Iso = cms.string('${CMSSW_BASE}/src/TreeWriter/data/2016/MuonSF_ISO_merged.root'),
+    
+    dataMCScaleFactorFile_ele = cms.string('${CMSSW_BASE}/src/TreeWriter/data/2016/2016LegacyReReco_ElectronTight_Fall17V2.root'),
+    
+    dataMCScaleFactorHisto_mu_ID = cms.string('NUM_TightID_DEN_genTracks_eta_pt'),
+    dataMCScaleFactorHisto_mu_Iso = cms.string('NUM_TightRelIso_DEN_TightIDandIPCut_eta_pt'),
+    
+    dataMCScaleFactorHisto_ele_ID = cms.string('EGamma_SF2D'),
+)
 
 ################################
 # Define input and output      #
@@ -154,7 +170,8 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     pfJetIDSelector=cms.PSet(version=cms.string('FIRSTDATA'), quality=cms.string('LOOSE')),
                                     triggerPrescales=cms.vstring(), # also useful to check whether a trigger was run
                                     metCorrected = cms.InputTag("slimmedMETs"),
-                                    metCalibrated = cms.InputTag("slimmedMETs")
+                                    metCalibrated = cms.InputTag("slimmedMETs"),
+                                    LeptonFullSimScaleFactors = LeptonFullSimScaleFactorMapPars2016,
 )
 
 ################################
