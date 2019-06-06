@@ -899,16 +899,16 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    //MT2//////
    ///////////
    if (mumu_){
-      pa[0]=vMuons_[0].p.Px(); pa[1]=vMuons_[0].p.Py(); pa[2]=vMuons_[0].p.Pz();
-      pb[0]=vMuons_[1].p.Px(); pb[1]=vMuons_[1].p.Py(); pb[2]=vMuons_[1].p.Pz();
+      pa[0]=vMuons_[0].p.M(); pa[1]=vMuons_[0].p.Px(); pa[2]=vMuons_[0].p.Py();
+      pb[0]=vMuons_[1].p.M(); pb[1]=vMuons_[1].p.Px(); pb[2]=vMuons_[1].p.Py();
    }
    else if (emu_){
-      pa[0]=vMuons_[0].p.Px(); pa[1]=vMuons_[0].p.Py(); pa[2]=vMuons_[0].p.Pz();
-      pb[0]=vElectrons_[0].p.Px(); pb[1]=vElectrons_[0].p.Py(); pb[2]=vElectrons_[0].p.Pz();
+      pa[0]=vMuons_[0].p.M(); pa[1]=vMuons_[0].p.Px(); pa[2]=vMuons_[0].p.Py();
+      pb[0]=vElectrons_[0].p.M(); pb[1]=vElectrons_[0].p.Px(); pb[2]=vElectrons_[0].p.Py();
    }
    else {
-      pa[0]=vElectrons_[0].p.Px(); pa[1]=vElectrons_[0].p.Py(); pa[2]=vElectrons_[0].p.Pz();
-      pb[0]=vElectrons_[1].p.Px(); pb[1]=vElectrons_[1].p.Py(); pb[2]=vElectrons_[1].p.Pz();
+      pa[0]=vElectrons_[0].p.M(); pa[1]=vElectrons_[0].p.Px(); pa[2]=vElectrons_[0].p.Py();
+      pb[0]=vElectrons_[1].p.M(); pb[1]=vElectrons_[1].p.Px(); pb[2]=vElectrons_[1].p.Py();
    }
    pmiss[0]=0; pmiss[1]=met_.p.Px(); pmiss[2]=met_.p.Py();
    
@@ -991,7 +991,9 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
          
          // save particles
          if (genP.status()==22 || genP.status()==23 || // some generator particles
+               (genP.status() == 1 && absId>100000 && genP.numberOfDaughters()!=1)||    // BSM particles
                (genP.status() == 1 && genP.pt()>10 && (absId==22 || (11 <= absId && absId <= 16)))) { // status 1 photons and leptons (including neutrinos)
+            if(genP.numberOfDaughters()==1) continue; //skip particles, which decay like V->V
             trP.pdgId = genP.pdgId();
             trP.isPrompt = genP.statusFlags().isPrompt();
             trP.fromHardProcess = genP.statusFlags().fromHardProcess();
