@@ -55,6 +55,8 @@
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHERunInfoProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenLumiInfoHeader.h"
+#include "AnalysisDataFormats/TopObjects/interface/TopGenEvent.h"
+#include "AnalysisDataFormats/TopObjects/interface/TtGenEvent.h"
 
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
@@ -163,6 +165,8 @@ private:
    Float_t puPtHat_;
    Float_t EWKinoPairPt_;
    Float_t MT2_;
+   Float_t genMT2_;
+   Float_t genMT2neutrino_;
 
 
    ULong64_t evtNo_;
@@ -236,6 +240,26 @@ private:
    double pa[3];
    double pb[3];
    double pmiss[3];
+   
+   //Ttbar gen Event
+   const bool ttbarGenInfo_;
+   const edm::InputTag genEventTtbarTag_;
+   TLorentzVector genTop_;
+   TLorentzVector genAntiTop_;
+   TLorentzVector genLepton_;
+   TLorentzVector genAntiLepton_;
+   TLorentzVector genTau_;
+   TLorentzVector genAntiTau_;
+   int genLeptonPdgId_;
+   int genAntiLeptonPdgId_;
+   TLorentzVector genB_;
+   TLorentzVector genAntiB_;
+   TLorentzVector genNeutrino_;
+   TLorentzVector genAntiNeutrino_;
+   TLorentzVector genWMinus_;
+   TLorentzVector genWPlus_;
+   
+   TLorentzVector genNeutrinoSum_;
 };
 
 #endif /* TREEWRITER_HPP__ */

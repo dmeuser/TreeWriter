@@ -9,4 +9,5 @@
 <use name="CondFormats/JetMETObjects"/>
 <use name="JetMETCorrections/Objects"/>
 <use name="JetMETCorrections/Modules"/>
+<use name="AnalysisDataFormats/TopObjects"/>
 <flags EDM_PLUGIN="1"/>

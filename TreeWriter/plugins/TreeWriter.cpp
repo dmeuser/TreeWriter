@@ -256,6 +256,47 @@ bool TrackIsolation(edm::Handle<pat::PackedCandidateCollection> const &pfcands,e
     return TrackIso;
 }
 
+// Caracterize ttbar decay
+const TLorentzVector nullP4_(0., 0., 0., 0.);
+void GenLorentzVector(const reco::GenParticle* gen, TLorentzVector& TLV)
+{
+   TLV.SetPtEtaPhiE(gen->pt(), gen->eta(), gen->phi(), gen->energy());
+}
+
+const reco::GenParticle* tauDaughter(const reco::GenParticle* tau)
+{
+   for(size_t iDaughter = 0; iDaughter < tau->numberOfDaughters(); ++iDaughter){
+      const reco::GenParticle* daughter = dynamic_cast<const reco::GenParticle*>(tau->daughter(iDaughter));
+      if(std::abs(daughter->pdgId())==11 || std::abs(daughter->pdgId())==13) return daughter;
+      else if(abs(daughter->pdgId()) == 15) return tauDaughter(daughter);
+   }
+   return tau;
+}
+
+void assignLeptonAndTau(const reco::GenParticle* lepton, TLorentzVector& genLepton, int& pdgId, TLorentzVector& genTau)
+{
+   const reco::GenParticle* finalLepton;
+   if(abs(lepton->pdgId()) == 15){
+      GenLorentzVector(lepton,genTau);
+      finalLepton = tauDaughter(lepton);
+   }
+   else{
+      genTau = nullP4_;
+      finalLepton = lepton;
+   }
+
+   if(abs(lepton->pdgId()) != 15){
+      GenLorentzVector(finalLepton,genLepton);
+      pdgId = finalLepton->pdgId();
+   }
+   else{
+      genLepton = nullP4_;
+      pdgId = 0;
+   }
+}
+
+
+
 template <typename T> int sign(T val) {
    return (T(0) < val) - (val < T(0));
 }
@@ -298,6 +339,9 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    , triggerObjectNames_(iConfig.getParameter<std::vector<std::string>>("triggerObjectNames"))
    // scale factor map
    , fctLeptonFullSimScaleFactors_(iConfig.getParameter<edm::ParameterSet>("LeptonFullSimScaleFactors"))
+   // Ttbar gen Event Info
+   , ttbarGenInfo_(iConfig.getParameter<bool>("ttbarGenInfo"))
+   //~ , genEventTtbarTag_(iConfig.getParameter<edm::InputTag>("genEventTtbar"))
 {
    // declare consumptions that are used "byLabel" in analyze()
    mayConsume<GenLumiInfoHeader,edm::InLumi> (edm::InputTag("generator"));
@@ -308,6 +352,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    consumes<std::vector<pat::TriggerObjectStandAlone>>(edm::InputTag("slimmedPatTrigger"));
    consumes<bool>(edm::InputTag("particleFlowEGammaGSFixed", "dupECALClusters"));
    consumes<edm::EDCollection<DetId>>(edm::InputTag("ecalMultiAndGSGlobalRecHitEB", "hitsNotReplaced"));
+   consumes<TtGenEvent>(edm::InputTag("genEvt"));
 
    // setup tree and define branches
    eventTree_ = fs_->make<TTree> ("eventTree", "event data");
@@ -347,6 +392,8 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("genHt", &genHt_, "genHt/F");
    eventTree_->Branch("EWKinoPairPt", &EWKinoPairPt_, "EWKinoPairPt/F");
    eventTree_->Branch("MT2", &MT2_, "MT2/F");
+   eventTree_->Branch("genMT2", &genMT2_, "genMT2/F");
+   eventTree_->Branch("genMT2neutrino", &genMT2neutrino_, "genMT2neutrino/F");
    
    eventTree_->Branch("lepton1SF", &lepton1SF_, "lepton1SF/F");
    eventTree_->Branch("lepton2SF", &lepton2SF_, "lepton2SF/F");
@@ -367,6 +414,21 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("electronTrackIsoVeto", &electronTrackIsoVeto);
    eventTree_->Branch("muonTrackIsoVeto", &muonTrackIsoVeto);
    eventTree_->Branch("pionTrackIsoVeto", &pionTrackIsoVeto);
+   
+   eventTree_->Branch("genTop", &genTop_);
+   eventTree_->Branch("genAntiTop", &genAntiTop_);
+   eventTree_->Branch("genLepton", &genLepton_);
+   eventTree_->Branch("genAntiLepton", &genAntiLepton_);
+   eventTree_->Branch("genTau", &genTau_);
+   eventTree_->Branch("genAntiTau", &genAntiTau_);
+   eventTree_->Branch("genLeptonPdgId", &genLeptonPdgId_);
+   eventTree_->Branch("genAntiLeptonPdgId", &genAntiLeptonPdgId_);
+   eventTree_->Branch("genB", &genB_);
+   eventTree_->Branch("genAntiB", &genAntiB_);
+   eventTree_->Branch("genNeutrino", &genNeutrino_);
+   eventTree_->Branch("genAntiNeutrino", &genAntiNeutrino_);
+   eventTree_->Branch("genWMinus", &genWMinus_);
+   eventTree_->Branch("genWPlus", &genWPlus_);
 
    // Fill trigger maps
    for (const auto& n : triggerNames_) {
@@ -656,7 +718,8 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trEl.isMedium = el->electronID(electronMediumIdMapToken_);
       trEl.isTight = el->electronID(electronTightIdMapToken_);
       //~ trEl.p.SetPtEtaPhi(el->pt(), el->superCluster()->eta(), el->superCluster()->phi());
-      trEl.p.SetPtEtaPhiE(el->pt(), el->superCluster()->eta(), el->superCluster()->phi(), el->energy());
+      //~ trEl.p.SetPtEtaPhiE(el->pt(), el->superCluster()->eta(), el->superCluster()->phi(), el->energy());
+      trEl.p.SetPtEtaPhiE(el->pt(), el->eta(), el->phi(), el->energy());
       trEl.seedCrystalE = seedCrystalEnergyEB(*el->superCluster(), ebRecHits);
       trEl.charge = el->charge();
       auto const & pfIso = el->pfIsolationVariables();
@@ -672,8 +735,8 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       math::XYZPoint vtx_point = firstGoodVertex.position();
       trEl.d0 = el->bestTrack()->dxy( vtx_point );
       trEl.dZ = el->bestTrack()->dz( vtx_point );
-      trEl.phiObj = el->phi();
-      trEl.etaObj = el->eta();
+      trEl.phiSC = el->superCluster()->phi();
+      trEl.etaSC = el->superCluster()->eta();
       
       // VID calculation of (1/E - 1/p)
       if (el->ecalEnergy() == 0)   trEl.EoverPInv = 1e30;
@@ -705,10 +768,10 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       if (vElectrons_[0].charge*vElectrons_[1].charge!=-1) return;
       mll_=(vElectrons_[0].p+vElectrons_[1].p).M();
       ee_=true;
-      lepton1SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].p.Eta()))[0];
-      lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].p.Eta()))[1];
-      lepton2SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[1],vElectrons_[1].p.Pt(),vElectrons_[1].p.Eta()))[0];
-      lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[1],vElectrons_[1].p.Pt(),vElectrons_[1].p.Eta()))[1];
+      lepton1SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[0];
+      lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[1];
+      lepton2SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[1],vElectrons_[1].p.Pt(),vElectrons_[1].etaSC))[0];
+      lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[1],vElectrons_[1].p.Pt(),vElectrons_[1].etaSC))[1];
    }
    else if (vMuons_.size()==2){
       if (vMuons_[0].charge*vMuons_[1].charge!=-1) return;
@@ -723,8 +786,8 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       if (vMuons_[0].charge*vElectrons_[0].charge!=-1) return;
       mll_=(vMuons_[0].p+vElectrons_[0].p).M();
       emu_=true;
-      lepton1SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].p.Eta()))[0];
-      lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].p.Eta()))[1];
+      lepton1SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[0];
+      lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[1];
       lepton2SF_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[0];
       lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[1];
    }
@@ -898,13 +961,13 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    ///////////
    //MT2//////
    ///////////
-   if (mumu_){
-      pa[0]=vMuons_[0].p.M(); pa[1]=vMuons_[0].p.Px(); pa[2]=vMuons_[0].p.Py();
-      pb[0]=vMuons_[1].p.M(); pb[1]=vMuons_[1].p.Px(); pb[2]=vMuons_[1].p.Py();
-   }
-   else if (emu_){
+   if (emu_){
       pa[0]=vMuons_[0].p.M(); pa[1]=vMuons_[0].p.Px(); pa[2]=vMuons_[0].p.Py();
       pb[0]=vElectrons_[0].p.M(); pb[1]=vElectrons_[0].p.Px(); pb[2]=vElectrons_[0].p.Py();
+   }
+   else if (mumu_){
+      pa[0]=vMuons_[0].p.M(); pa[1]=vMuons_[0].p.Px(); pa[2]=vMuons_[0].p.Py();
+      pb[0]=vMuons_[1].p.M(); pb[1]=vMuons_[1].p.Px(); pb[2]=vMuons_[1].p.Py();
    }
    else {
       pa[0]=vElectrons_[0].p.M(); pa[1]=vElectrons_[0].p.Px(); pa[2]=vElectrons_[0].p.Py();
@@ -1016,6 +1079,90 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    hCutFlow_->Fill("nBinos", mc_weight_*pu_weight_);
 
    hCutFlow_->Fill("final", mc_weight_*pu_weight_);
+   
+   //////////////////////////
+   // Gen Information Ttbar//
+   //////////////////////////
+   if(ttbarGenInfo_){
+      // Gen-level particles of ttbar system
+      edm::Handle<TtGenEvent> ttbarGenEvent;
+      iEvent.getByLabel("genEvt", ttbarGenEvent);
+      if(!ttbarGenEvent.failedToGet()){
+         // Top quarks, and for dileptonic decays also decay products
+         if(ttbarGenEvent->top()) GenLorentzVector(ttbarGenEvent->top(),genTop_);
+         else genTop_ = nullP4_;
+         if(ttbarGenEvent->topBar()) GenLorentzVector(ttbarGenEvent->topBar(),genAntiTop_);
+         else genAntiTop_ = nullP4_;
+         if(ttbarGenEvent->lepton()){
+            assignLeptonAndTau(ttbarGenEvent->lepton(), genLepton_, genLeptonPdgId_, genTau_);
+         }
+         else{
+            genLepton_ = nullP4_;
+            genLeptonPdgId_ = 0;
+            genTau_ = nullP4_;
+         }
+         if(ttbarGenEvent->leptonBar()){
+            assignLeptonAndTau(ttbarGenEvent->leptonBar(), genAntiLepton_, genAntiLeptonPdgId_, genAntiTau_);
+         }
+         else{
+            genAntiLepton_ = nullP4_;
+            genAntiLeptonPdgId_ = 0;
+            genAntiTau_ = nullP4_;
+         }
+         if(ttbarGenEvent->b()) GenLorentzVector(ttbarGenEvent->b(),genB_);
+         else genB_ = nullP4_;
+         if(ttbarGenEvent->bBar()) GenLorentzVector(ttbarGenEvent->bBar(),genAntiB_);
+         else genAntiB_ = nullP4_;
+         if(ttbarGenEvent->neutrino()) GenLorentzVector(ttbarGenEvent->neutrino(),genNeutrino_);
+         else genNeutrino_ = nullP4_;
+         if(ttbarGenEvent->neutrinoBar()) GenLorentzVector(ttbarGenEvent->neutrinoBar(),genAntiNeutrino_);
+         else genAntiNeutrino_ = nullP4_;
+         if(ttbarGenEvent->wPlus()) GenLorentzVector(ttbarGenEvent->wPlus(),genWPlus_);
+         else genWPlus_ = nullP4_;
+         if(ttbarGenEvent->wMinus()) GenLorentzVector(ttbarGenEvent->wMinus(),genWMinus_);
+         else genWMinus_ = nullP4_;
+      }
+      else{
+         std::cerr<<"\nError: no ttbar gen event?!\n\n";
+         genTop_ = nullP4_;
+         genAntiTop_ = nullP4_;
+         genLepton_ = nullP4_;
+         genAntiLepton_ = nullP4_;
+         genTau_ = nullP4_;
+         genAntiTau_ = nullP4_;
+         genLeptonPdgId_ = 0;
+         genAntiLeptonPdgId_ = 0;
+         genB_ = nullP4_;
+         genAntiB_ = nullP4_;
+         genNeutrino_ = nullP4_;
+         genAntiNeutrino_ = nullP4_;
+         genWMinus_ = nullP4_;
+         genWPlus_ = nullP4_;
+      }
+   }
+   
+   //////////////////
+   // Gen MT2     //
+   /////////////////
+   pa[0]=genLepton_.M(); pa[1]=genLepton_.Px(); pa[2]=genLepton_.Py();
+   pb[0]=genAntiLepton_.M(); pb[1]=genAntiLepton_.Px(); pb[2]=genAntiLepton_.Py();
+   
+   pmiss[0]=0; pmiss[1]=met_gen_.p.Px(); pmiss[2]=met_gen_.p.Py();
+   
+   fctMT2_.set_mn(0.);
+   fctMT2_.set_momenta(pa,pb,pmiss);
+   
+   genMT2_=static_cast<float>(fctMT2_.get_mt2());
+      
+   if(ttbarGenInfo_){
+      genNeutrinoSum_=genNeutrino_+genAntiNeutrino_;
+      pmiss[0]=0; pmiss[1]=genNeutrinoSum_.Px(); pmiss[2]=genNeutrinoSum_.Py();
+      
+      fctMT2_.set_mn(0.);
+      fctMT2_.set_momenta(pa,pb,pmiss);
+      
+      genMT2neutrino_=static_cast<float>(fctMT2_.get_mt2());
+   }
    
    ///////////////////
    // Event identity//
