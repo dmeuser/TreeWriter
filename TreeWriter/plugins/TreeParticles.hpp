@@ -110,6 +110,10 @@ namespace tree
    inline bool PtGreater(const tree::Particle p1, const tree::Particle p2) {
       return p1.p.Pt() > p2.p.Pt();
    }
+   
+   inline bool PtGreaterLorentz(const TLorentzVector p1, const TLorentzVector p2) {
+      return p1.Pt() > p2.Pt();
+   }
 
 } // end namespace definition
 #endif /* TREEPARTICLES_H */

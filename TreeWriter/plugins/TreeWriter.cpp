@@ -263,6 +263,11 @@ void GenLorentzVector(const reco::GenParticle* gen, TLorentzVector& TLV)
    TLV.SetPtEtaPhiE(gen->pt(), gen->eta(), gen->phi(), gen->energy());
 }
 
+void GenLorentzVector_Jet(const reco::GenJet* gen, TLorentzVector& TLV)
+{
+   TLV.SetPtEtaPhiE(gen->pt(), gen->eta(), gen->phi(), gen->energy());
+}
+
 const reco::GenParticle* tauDaughter(const reco::GenParticle* tau)
 {
    for(size_t iDaughter = 0; iDaughter < tau->numberOfDaughters(); ++iDaughter){
@@ -285,7 +290,7 @@ void assignLeptonAndTau(const reco::GenParticle* lepton, TLorentzVector& genLept
       finalLepton = lepton;
    }
 
-   if(abs(lepton->pdgId()) != 15){
+   if(abs(finalLepton->pdgId()) != 15){
       GenLorentzVector(finalLepton,genLepton);
       pdgId = finalLepton->pdgId();
    }
@@ -294,6 +299,17 @@ void assignLeptonAndTau(const reco::GenParticle* lepton, TLorentzVector& genLept
       pdgId = 0;
    }
 }
+
+bool isWDaughter(const reco::GenParticle& particle)
+{
+  return (std::abs(particle.mother()->pdgId()) == 24);
+}
+
+bool isTopDaughter(const reco::GenParticle& particle)
+{
+  return (std::abs(particle.mother()->pdgId()) == 6);
+}
+
 
 
 
@@ -341,7 +357,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    , fctLeptonFullSimScaleFactors_(iConfig.getParameter<edm::ParameterSet>("LeptonFullSimScaleFactors"))
    // Ttbar gen Event Info
    , ttbarGenInfo_(iConfig.getParameter<bool>("ttbarGenInfo"))
-   //~ , genEventTtbarTag_(iConfig.getParameter<edm::InputTag>("genEventTtbar"))
+   , pseudoTopInfo_(iConfig.getParameter<bool>("ttbarPseudoInfo"))
 {
    // declare consumptions that are used "byLabel" in analyze()
    mayConsume<GenLumiInfoHeader,edm::InLumi> (edm::InputTag("generator"));
@@ -353,6 +369,10 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    consumes<bool>(edm::InputTag("particleFlowEGammaGSFixed", "dupECALClusters"));
    consumes<edm::EDCollection<DetId>>(edm::InputTag("ecalMultiAndGSGlobalRecHitEB", "hitsNotReplaced"));
    consumes<TtGenEvent>(edm::InputTag("genEvt"));
+   // ~consumes<int>(edm::InputTag("generatorTopFilter","decayMode"));
+   consumes<std::vector<reco::GenParticle>>(edm::InputTag("pseudoTop"));
+   consumes<reco::GenJetCollection>(edm::InputTag("pseudoTop","leptons"));
+   consumes<reco::GenJetCollection>(edm::InputTag("pseudoTop","jets"));
 
    // setup tree and define branches
    eventTree_ = fs_->make<TTree> ("eventTree", "event data");
@@ -415,6 +435,8 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("muonTrackIsoVeto", &muonTrackIsoVeto);
    eventTree_->Branch("pionTrackIsoVeto", &pionTrackIsoVeto);
    
+   eventTree_->Branch("ttbarProductionMode", &ttbarProductionMode_);
+   // ~eventTree_->Branch("ttbarDecayMode", &ttbarDecayMode_);
    eventTree_->Branch("genTop", &genTop_);
    eventTree_->Branch("genAntiTop", &genAntiTop_);
    eventTree_->Branch("genLepton", &genLepton_);
@@ -429,6 +451,24 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("genAntiNeutrino", &genAntiNeutrino_);
    eventTree_->Branch("genWMinus", &genWMinus_);
    eventTree_->Branch("genWPlus", &genWPlus_);
+   
+   eventTree_->Branch("ttbarPseudoDecayMode", &ttbarPseudoDecayMode_);
+   eventTree_->Branch("pseudoTop", &pseudoTop_);
+   eventTree_->Branch("pseudoAntiTop", &pseudoAntiTop_);
+   eventTree_->Branch("pseudoLepton", &pseudoLepton_);
+   eventTree_->Branch("pseudoAntiLepton", &pseudoAntiLepton_);
+   eventTree_->Branch("pseudoTau", &pseudoTau_);
+   eventTree_->Branch("pseudoAntiTau", &pseudoAntiTau_);
+   eventTree_->Branch("pseudoLeptonPdgId", &pseudoLeptonPdgId_);
+   eventTree_->Branch("pseudoAntiLeptonPdgId", &pseudoAntiLeptonPdgId_);
+   eventTree_->Branch("pseudoBJet", &pseudoBJet_);
+   eventTree_->Branch("pseudoAntiBJet", &pseudoAntiBJet_);
+   eventTree_->Branch("pseudoNeutrino", &pseudoNeutrino_);
+   eventTree_->Branch("pseudoAntiNeutrino", &pseudoAntiNeutrino_);
+   eventTree_->Branch("pseudoWMinus", &pseudoWMinus_);
+   eventTree_->Branch("pseudoWPlus", &pseudoWPlus_);
+   eventTree_->Branch("allPseudoJets", &v_allPseudoJet_);
+   eventTree_->Branch("allPseudoLeptons", &v_allPseudoLepton_);
 
    // Fill trigger maps
    for (const auto& n : triggerNames_) {
@@ -755,44 +795,131 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    }
    sort(vElectrons_.begin(), vElectrons_.end(), tree::PtGreater);
    
+   /////////////////////////////
+   // Pseudo TTbar Information//
+   /////////////////////////////
+   if(pseudoTopInfo_){
+      edm::Handle<std::vector<reco::GenParticle> > pseudoTopQuarks;
+      iEvent.getByLabel("pseudoTop", pseudoTopQuarks);
+      if(!pseudoTopQuarks.failedToGet()){
+         pseudoTop_ = nullP4_;
+         pseudoAntiTop_ = nullP4_;
+         pseudoBJet_ = nullP4_;
+         pseudoAntiBJet_ = nullP4_;
+         pseudoWPlus_ = nullP4_;
+         pseudoWMinus_ = nullP4_;
+         pseudoLepton_ = nullP4_;
+         pseudoAntiLepton_ = nullP4_;
+         pseudoLeptonPdgId_ = 0;
+         pseudoAntiLeptonPdgId_ = 0;
+         pseudoNeutrino_ = nullP4_;
+         pseudoAntiNeutrino_ = nullP4_;
+         ttbarPseudoDecayMode_ = 0;
+
+         for(std::vector<reco::GenParticle>::const_iterator i_particle = pseudoTopQuarks->begin(); i_particle != pseudoTopQuarks->end(); ++i_particle)
+         {
+            if(i_particle->pdgId() == 6) GenLorentzVector(&(*i_particle),pseudoTop_);
+            if(i_particle->pdgId() == -6) GenLorentzVector(&(*i_particle),pseudoAntiTop_);
+            if(i_particle->pdgId() == 5 && isTopDaughter(*i_particle)) GenLorentzVector(&(*i_particle),pseudoBJet_);
+            if(i_particle->pdgId() == -5 && isTopDaughter(*i_particle)) GenLorentzVector(&(*i_particle),pseudoAntiBJet_);
+            if(i_particle->pdgId() == 24 && isTopDaughter(*i_particle)) GenLorentzVector(&(*i_particle),pseudoWPlus_);
+            if(i_particle->pdgId() == -24 && isTopDaughter(*i_particle)) GenLorentzVector(&(*i_particle),pseudoWMinus_);
+            if((i_particle->pdgId() == 11 || i_particle->pdgId() == 13) && isWDaughter(*i_particle)) {GenLorentzVector(&(*i_particle),pseudoLepton_); pseudoLeptonPdgId_ = i_particle->pdgId();}
+            if((i_particle->pdgId() == -11 || i_particle->pdgId() == -13) && isWDaughter(*i_particle)) {GenLorentzVector(&(*i_particle),pseudoAntiLepton_); pseudoAntiLeptonPdgId_ = i_particle->pdgId();}
+            if((i_particle->pdgId() == 12 || i_particle->pdgId() == 14 || i_particle->pdgId() == 16) && isWDaughter(*i_particle)) GenLorentzVector(&(*i_particle),pseudoNeutrino_);
+            if((i_particle->pdgId() == -12 || i_particle->pdgId() == -14 || i_particle->pdgId() == -16) && isWDaughter(*i_particle)) GenLorentzVector(&(*i_particle),pseudoAntiNeutrino_);
+         }
+
+         if(std::abs(pseudoLeptonPdgId_) == 11 && std::abs(pseudoAntiLeptonPdgId_) == 11) ttbarPseudoDecayMode_ = 1; // ee
+         else if(std::abs(pseudoLeptonPdgId_) == 13 && std::abs(pseudoAntiLeptonPdgId_) == 13) ttbarPseudoDecayMode_ = 2; // mumu
+         else if(std::abs(pseudoLeptonPdgId_*pseudoAntiLeptonPdgId_) == 143) ttbarPseudoDecayMode_ = 3; // emu
+
+      }
+      else {
+         std::cerr<<"\nError: no pseudo top?!\n\n";
+         ttbarPseudoDecayMode_ = -1;
+         pseudoTop_ = nullP4_;
+         pseudoAntiTop_ = nullP4_;
+         pseudoBJet_ = nullP4_;
+         pseudoAntiBJet_ = nullP4_;
+         pseudoWPlus_ = nullP4_;
+         pseudoWMinus_ = nullP4_;
+         pseudoLepton_ = nullP4_;
+         pseudoAntiLepton_ = nullP4_;
+         pseudoLeptonPdgId_ = 0;
+         pseudoAntiLeptonPdgId_ = 0;
+         pseudoNeutrino_ = nullP4_;
+         pseudoAntiNeutrino_ = nullP4_;
+      }
+      
+      // All particle jets
+      tree::Particle tempParticle_;
+      edm::Handle<reco::GenJetCollection> pseudoJets;
+      iEvent.getByLabel("pseudoTop","jets", pseudoJets);
+      for(std::vector<reco::GenJet>::const_iterator i_jet = pseudoJets->begin(); i_jet != pseudoJets->end(); ++i_jet){
+         GenLorentzVector_Jet(&(*i_jet),tempParticle_.p);
+         v_allPseudoJet_.push_back(tempParticle_);
+      }
+
+      // All particle leptons
+      edm::Handle<reco::GenJetCollection> pseudoLeptons;
+      iEvent.getByLabel("pseudoTop","leptons",pseudoLeptons);
+      for(std::vector<reco::GenJet>::const_iterator i_lepton = pseudoLeptons->begin(); i_lepton != pseudoLeptons->end(); ++i_lepton){
+         GenLorentzVector_Jet(&(*i_lepton),tempParticle_.p);
+         v_allPseudoLepton_.push_back(tempParticle_);
+      }
+
+
+   }
+   
    ///////////////////////
    // Dilepton Selection//
    ///////////////////////
-   if ((vElectrons_.size()+vMuons_.size())!=NumberLeptons_cut_) return;
+   // Keep only events which satisfy the pseudoTop selection (recommended by the LHCTopWG plus additonal dileptoMass cut) or satisfy a loose reco dilepton selection
+   bool pseudoDileptonSelection=true;
+   if (ttbarPseudoDecayMode_==0) pseudoDileptonSelection=false;
+   bool recoDileptonSelection=true;
+   
    ee_=false;
    mumu_=false;
    emu_=false;
    mll_=0;
+   if ((vElectrons_.size()+vMuons_.size())==NumberLeptons_cut_){
    
-   if (vElectrons_.size()==2){
-      if (vElectrons_[0].charge*vElectrons_[1].charge!=-1) return;
-      mll_=(vElectrons_[0].p+vElectrons_[1].p).M();
-      ee_=true;
-      lepton1SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[0];
-      lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[1];
-      lepton2SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[1],vElectrons_[1].p.Pt(),vElectrons_[1].etaSC))[0];
-      lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[1],vElectrons_[1].p.Pt(),vElectrons_[1].etaSC))[1];
+      if (vElectrons_.size()==2){
+         if (vElectrons_[0].charge*vElectrons_[1].charge!=-1) recoDileptonSelection=false;
+         mll_=(vElectrons_[0].p+vElectrons_[1].p).M();
+         ee_=true;
+         lepton1SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[0];
+         lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[1];
+         lepton2SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[1],vElectrons_[1].p.Pt(),vElectrons_[1].etaSC))[0];
+         lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[1],vElectrons_[1].p.Pt(),vElectrons_[1].etaSC))[1];
+      }
+      else if (vMuons_.size()==2){
+         if (vMuons_[0].charge*vMuons_[1].charge!=-1) recoDileptonSelection=false;
+         mll_=(vMuons_[0].p+vMuons_[1].p).M();
+         mumu_=true;
+         lepton1SF_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[0];
+         lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[1];
+         lepton2SF_=(fctLeptonFullSimScaleFactors_(vMuons_[1],vMuons_[1].p.Pt(),vMuons_[1].p.Eta()))[0];
+         lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vMuons_[1],vMuons_[1].p.Pt(),vMuons_[1].p.Eta()))[1];
+      }
+      else {
+         if (vMuons_[0].charge*vElectrons_[0].charge!=-1) recoDileptonSelection=false;
+         mll_=(vMuons_[0].p+vElectrons_[0].p).M();
+         emu_=true;
+         lepton1SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[0];
+         lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[1];
+         lepton2SF_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[0];
+         lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[1];
+      }
    }
-   else if (vMuons_.size()==2){
-      if (vMuons_[0].charge*vMuons_[1].charge!=-1) return;
-      mll_=(vMuons_[0].p+vMuons_[1].p).M();
-      mumu_=true;
-      lepton1SF_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[0];
-      lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[1];
-      lepton2SF_=(fctLeptonFullSimScaleFactors_(vMuons_[1],vMuons_[1].p.Pt(),vMuons_[1].p.Eta()))[0];
-      lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vMuons_[1],vMuons_[1].p.Pt(),vMuons_[1].p.Eta()))[1];
-   }
-   else {
-      if (vMuons_[0].charge*vElectrons_[0].charge!=-1) return;
-      mll_=(vMuons_[0].p+vElectrons_[0].p).M();
-      emu_=true;
-      lepton1SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[0];
-      lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[1];
-      lepton2SF_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[0];
-      lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[1];
-   }
+   else recoDileptonSelection=false;
+   
+   if (!recoDileptonSelection && !pseudoDileptonSelection) return;
    
    hCutFlow_->Fill("Dilepton", mc_weight_*pu_weight_);
+
    
    /////////
    // Jets//
@@ -1083,11 +1210,20 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    //////////////////////////
    // Gen Information Ttbar//
    //////////////////////////
+   // ~edm::Handle<int> ttbarDecayMode;
+   // ~iEvent.getByLabel("generatorTopFilter", "decayMode", ttbarDecayMode);
+   // ~ttbarDecayMode_ = ttbarDecayMode.failedToGet() ? 0 : *ttbarDecayMode;
+
    if(ttbarGenInfo_){
       // Gen-level particles of ttbar system
       edm::Handle<TtGenEvent> ttbarGenEvent;
       iEvent.getByLabel("genEvt", ttbarGenEvent);
       if(!ttbarGenEvent.failedToGet()){
+         // Which process generates the ttbar event: gluon-gluon-fusion (0), quark-quark-annihilation (1), all other processes (2)
+         if(ttbarGenEvent->fromGluonFusion()) ttbarProductionMode_ = 0;
+         else if(ttbarGenEvent->fromQuarkAnnihilation()) ttbarProductionMode_ = 1;
+         else ttbarProductionMode_ = 2;
+         
          // Top quarks, and for dileptonic decays also decay products
          if(ttbarGenEvent->top()) GenLorentzVector(ttbarGenEvent->top(),genTop_);
          else genTop_ = nullP4_;
@@ -1139,6 +1275,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
          genWMinus_ = nullP4_;
          genWPlus_ = nullP4_;
       }
+      
    }
    
    //////////////////

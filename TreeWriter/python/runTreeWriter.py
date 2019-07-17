@@ -28,13 +28,14 @@ options.register ('user',
                   "Name the user. If not set by crab, this script will determine it.")
 
 # defaults
-#~ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v1/00000/001BCE65-30C3-E811-A357-A4BF0112DD3C.root'
-#~ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/100000/0C0D1C23-C1EC-E811-8B4B-AC1F6B23C848.root'
+# ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v1/00000/001BCE65-30C3-E811-A357-A4BF0112DD3C.root'
+# ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/100000/0C0D1C23-C1EC-E811-8B4B-AC1F6B23C848.root'
 options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/90000/8A0E1474-26F6-E811-B813-0CC47AFCC37A.root'
 #~ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016D/MuonEG/MINIAOD/17Jul2018-v1/80000/D48E0B3A-A28E-E811-8A12-7CD30AD08EB4.root'
+# ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/60000/F40DF1A0-E937-E911-AB5B-AC1F6BAC7D12.root'
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
-#~ options.maxEvents = -1
+# ~options.maxEvents = -1
 options.maxEvents = 100
 # get and parse the command line arguments
 options.parseArguments()
@@ -48,7 +49,6 @@ process = cms.Process("TreeWriter")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
-process.MessageLogger.categories.append('TopGenEvent')
 
 
 # determine global tag here only 2016
@@ -119,6 +119,34 @@ process.decaySubset.src = genParticleCollection
 process.decaySubset.fillMode = "kME" # Status3, use kStable for Status2
 runMode = "Run2"
 process.decaySubset.runMode = runMode
+
+################################
+# Ttbar Pseudo Info            #
+################################
+process.load("TopQuarkAnalysis.TopEventProducers.producers.pseudoTop_cfi")
+process.pseudoTop = cms.EDProducer("PseudoTopProducer",
+   genParticles = cms.InputTag("prunedGenParticles"),
+   finalStates = cms.InputTag("packedGenParticles"),
+   minLeptonPt = cms.double(20),
+   maxLeptonEta = cms.double(2.4),
+   minJetPt = cms.double(30),
+   maxJetEta = cms.double(2.4),
+   leptonConeSize = cms.double(0.1),
+   jetConeSize = cms.double(0.4),
+   wMass = cms.double(80.4),
+   tMass = cms.double(172.5),
+
+   minLeptonPtDilepton = cms.double(20),
+   maxLeptonEtaDilepton = cms.double(2.4),
+   minDileptonMassDilepton = cms.double(20),
+   minLeptonPtSemilepton = cms.double(20),
+   maxLeptonEtaSemilepton = cms.double(2.4),
+   minVetoLeptonPtSemilepton = cms.double(15),
+   maxVetoLeptonEtaSemilepton = cms.double(2.5),
+   minMETSemiLepton = cms.double(30),
+   minMtWSemiLepton = cms.double(30)
+)
+
 ################################
 # Define input and output      #
 ################################
@@ -186,6 +214,7 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     metCalibrated = cms.InputTag("slimmedMETs"),
                                     LeptonFullSimScaleFactors = LeptonFullSimScaleFactorMapPars2016,
                                     ttbarGenInfo = cms.bool(False),
+                                    ttbarPseudoInfo = cms.bool(False),
 )
 
 ################################
@@ -194,6 +223,7 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
 
 process.TreeWriter.hardPUveto=dataset.startswith("/QCD_HT100to200")
 process.TreeWriter.ttbarGenInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T"))
+process.TreeWriter.ttbarPseudoInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T"))
 
 if "03Feb2017" in dataset:
     process.TreeWriter.reMiniAOD = True
@@ -337,6 +367,7 @@ for trig in process.TreeWriter.triggerPrescales:
 process.p = cms.Path(
     #~ process.BadPFMuonFilter*
     process.makeGenEvt
+    *process.pseudoTop
     *process.egammaPostRecoSeq
     *process.TreeWriter
 )

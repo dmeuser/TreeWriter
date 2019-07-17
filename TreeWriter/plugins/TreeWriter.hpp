@@ -243,7 +243,8 @@ private:
    
    //Ttbar gen Event
    const bool ttbarGenInfo_;
-   const edm::InputTag genEventTtbarTag_;
+   int ttbarProductionMode_;
+   // ~int ttbarDecayMode_;
    TLorentzVector genTop_;
    TLorentzVector genAntiTop_;
    TLorentzVector genLepton_;
@@ -258,8 +259,28 @@ private:
    TLorentzVector genAntiNeutrino_;
    TLorentzVector genWMinus_;
    TLorentzVector genWPlus_;
-   
    TLorentzVector genNeutrinoSum_;
+   
+   //Ttbar pseudo gen Event
+   const bool pseudoTopInfo_;
+   int ttbarPseudoDecayMode_;
+   TLorentzVector pseudoTop_;
+   TLorentzVector pseudoAntiTop_;
+   TLorentzVector pseudoLepton_;
+   TLorentzVector pseudoAntiLepton_;
+   TLorentzVector pseudoTau_;
+   TLorentzVector pseudoAntiTau_;
+   int pseudoLeptonPdgId_;
+   int pseudoAntiLeptonPdgId_;
+   TLorentzVector pseudoBJet_;
+   TLorentzVector pseudoAntiBJet_;
+   TLorentzVector pseudoNeutrino_;
+   TLorentzVector pseudoAntiNeutrino_;
+   TLorentzVector pseudoWMinus_;
+   TLorentzVector pseudoWPlus_;
+   TLorentzVector pseudoNeutrinoSum_;
+   std::vector<tree::Particle> v_allPseudoJet_;
+   std::vector<tree::Particle> v_allPseudoLepton_;
 };
 
 #endif /* TREEWRITER_HPP__ */
