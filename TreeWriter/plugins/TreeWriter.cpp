@@ -369,7 +369,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    consumes<bool>(edm::InputTag("particleFlowEGammaGSFixed", "dupECALClusters"));
    consumes<edm::EDCollection<DetId>>(edm::InputTag("ecalMultiAndGSGlobalRecHitEB", "hitsNotReplaced"));
    consumes<TtGenEvent>(edm::InputTag("genEvt"));
-   // ~consumes<int>(edm::InputTag("generatorTopFilter","decayMode"));
+   consumes<int>(edm::InputTag("generatorTopFilter","decayMode"));
    consumes<std::vector<reco::GenParticle>>(edm::InputTag("pseudoTop"));
    consumes<reco::GenJetCollection>(edm::InputTag("pseudoTop","leptons"));
    consumes<reco::GenJetCollection>(edm::InputTag("pseudoTop","jets"));
@@ -436,7 +436,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("pionTrackIsoVeto", &pionTrackIsoVeto);
    
    eventTree_->Branch("ttbarProductionMode", &ttbarProductionMode_);
-   // ~eventTree_->Branch("ttbarDecayMode", &ttbarDecayMode_);
+   eventTree_->Branch("ttbarDecayMode", &ttbarDecayMode_);
    eventTree_->Branch("genTop", &genTop_);
    eventTree_->Branch("genAntiTop", &genAntiTop_);
    eventTree_->Branch("genLepton", &genLepton_);
@@ -1210,9 +1210,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    //////////////////////////
    // Gen Information Ttbar//
    //////////////////////////
-   // ~edm::Handle<int> ttbarDecayMode;
-   // ~iEvent.getByLabel("generatorTopFilter", "decayMode", ttbarDecayMode);
-   // ~ttbarDecayMode_ = ttbarDecayMode.failedToGet() ? 0 : *ttbarDecayMode;
 
    if(ttbarGenInfo_){
       // Gen-level particles of ttbar system
@@ -1257,6 +1254,15 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
          else genWPlus_ = nullP4_;
          if(ttbarGenEvent->wMinus()) GenLorentzVector(ttbarGenEvent->wMinus(),genWMinus_);
          else genWMinus_ = nullP4_;
+         
+         // Top decay mode
+         ttbarDecayMode_=0;
+         if(ttbarGenEvent->isFullLeptonic(WDecay::kElec,WDecay::kElec)) ttbarDecayMode_=1;
+         else if(ttbarGenEvent->isFullLeptonic(WDecay::kMuon,WDecay::kMuon)) ttbarDecayMode_=2;
+         else if(ttbarGenEvent->isFullLeptonic(WDecay::kElec,WDecay::kMuon)) ttbarDecayMode_=3;
+         else if(ttbarGenEvent->isFullLeptonic(WDecay::kTau,WDecay::kElec)) ttbarDecayMode_=5;
+         else if(ttbarGenEvent->isFullLeptonic(WDecay::kTau,WDecay::kMuon)) ttbarDecayMode_=6;
+         else if(ttbarGenEvent->isFullLeptonic(WDecay::kTau,WDecay::kTau)) ttbarDecayMode_=7;
       }
       else{
          std::cerr<<"\nError: no ttbar gen event?!\n\n";

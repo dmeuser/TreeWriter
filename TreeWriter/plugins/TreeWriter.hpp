@@ -244,7 +244,7 @@ private:
    //Ttbar gen Event
    const bool ttbarGenInfo_;
    int ttbarProductionMode_;
-   // ~int ttbarDecayMode_;
+   int ttbarDecayMode_;
    TLorentzVector genTop_;
    TLorentzVector genAntiTop_;
    TLorentzVector genLepton_;
