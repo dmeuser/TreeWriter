@@ -371,8 +371,8 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    consumes<TtGenEvent>(edm::InputTag("genEvt"));
    consumes<int>(edm::InputTag("generatorTopFilter","decayMode"));
    consumes<std::vector<reco::GenParticle>>(edm::InputTag("pseudoTop"));
-   consumes<reco::GenJetCollection>(edm::InputTag("pseudoTop","leptons"));
-   consumes<reco::GenJetCollection>(edm::InputTag("pseudoTop","jets"));
+   //~consumes<reco::GenJetCollection>(edm::InputTag("pseudoTop","leptons"));
+   //~consumes<reco::GenJetCollection>(edm::InputTag("pseudoTop","jets"));
 
    // setup tree and define branches
    eventTree_ = fs_->make<TTree> ("eventTree", "event data");
@@ -467,8 +467,8 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("pseudoAntiNeutrino", &pseudoAntiNeutrino_);
    eventTree_->Branch("pseudoWMinus", &pseudoWMinus_);
    eventTree_->Branch("pseudoWPlus", &pseudoWPlus_);
-   eventTree_->Branch("allPseudoJets", &v_allPseudoJet_);
-   eventTree_->Branch("allPseudoLeptons", &v_allPseudoLepton_);
+   //~eventTree_->Branch("allPseudoJets", &v_allPseudoJet_);
+   //~eventTree_->Branch("allPseudoLeptons", &v_allPseudoLepton_);
 
    // Fill trigger maps
    for (const auto& n : triggerNames_) {
@@ -852,22 +852,24 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
          pseudoAntiNeutrino_ = nullP4_;
       }
       
-      // All particle jets
-      tree::Particle tempParticle_;
-      edm::Handle<reco::GenJetCollection> pseudoJets;
-      iEvent.getByLabel("pseudoTop","jets", pseudoJets);
-      for(std::vector<reco::GenJet>::const_iterator i_jet = pseudoJets->begin(); i_jet != pseudoJets->end(); ++i_jet){
-         GenLorentzVector_Jet(&(*i_jet),tempParticle_.p);
-         v_allPseudoJet_.push_back(tempParticle_);
-      }
+      //~// All particle jets
+      //~v_allPseudoJet_.clear();
+      //~tree::Particle tempParticle_;
+      //~edm::Handle<reco::GenJetCollection> pseudoJets;
+      //~iEvent.getByLabel("pseudoTop","jets", pseudoJets);
+      //~for(std::vector<reco::GenJet>::const_iterator i_jet = pseudoJets->begin(); i_jet != pseudoJets->end(); ++i_jet){
+         //~GenLorentzVector_Jet(&(*i_jet),tempParticle_.p);
+         //~v_allPseudoJet_.push_back(tempParticle_);
+      //~}
 
-      // All particle leptons
-      edm::Handle<reco::GenJetCollection> pseudoLeptons;
-      iEvent.getByLabel("pseudoTop","leptons",pseudoLeptons);
-      for(std::vector<reco::GenJet>::const_iterator i_lepton = pseudoLeptons->begin(); i_lepton != pseudoLeptons->end(); ++i_lepton){
-         GenLorentzVector_Jet(&(*i_lepton),tempParticle_.p);
-         v_allPseudoLepton_.push_back(tempParticle_);
-      }
+      //~// All particle leptons
+      //~v_allPseudoLepton_.clear();
+      //~edm::Handle<reco::GenJetCollection> pseudoLeptons;
+      //~iEvent.getByLabel("pseudoTop","leptons",pseudoLeptons);
+      //~for(std::vector<reco::GenJet>::const_iterator i_lepton = pseudoLeptons->begin(); i_lepton != pseudoLeptons->end(); ++i_lepton){
+         //~GenLorentzVector_Jet(&(*i_lepton),tempParticle_.p);
+         //~v_allPseudoLepton_.push_back(tempParticle_);
+      //~}
 
 
    }
@@ -1088,24 +1090,28 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    ///////////
    //MT2//////
    ///////////
-   if (emu_){
-      pa[0]=vMuons_[0].p.M(); pa[1]=vMuons_[0].p.Px(); pa[2]=vMuons_[0].p.Py();
-      pb[0]=vElectrons_[0].p.M(); pb[1]=vElectrons_[0].p.Px(); pb[2]=vElectrons_[0].p.Py();
-   }
-   else if (mumu_){
-      pa[0]=vMuons_[0].p.M(); pa[1]=vMuons_[0].p.Px(); pa[2]=vMuons_[0].p.Py();
-      pb[0]=vMuons_[1].p.M(); pb[1]=vMuons_[1].p.Px(); pb[2]=vMuons_[1].p.Py();
-   }
-   else {
-      pa[0]=vElectrons_[0].p.M(); pa[1]=vElectrons_[0].p.Px(); pa[2]=vElectrons_[0].p.Py();
-      pb[0]=vElectrons_[1].p.M(); pb[1]=vElectrons_[1].p.Px(); pb[2]=vElectrons_[1].p.Py();
-   }
-   pmiss[0]=0; pmiss[1]=met_.p.Px(); pmiss[2]=met_.p.Py();
    
-   fctMT2_.set_mn(0.);
-   fctMT2_.set_momenta(pa,pb,pmiss);
-   
-   MT2_=static_cast<float>(fctMT2_.get_mt2());
+   if (recoDileptonSelection){
+      if (emu_){
+         pa[0]=vMuons_[0].p.M(); pa[1]=vMuons_[0].p.Px(); pa[2]=vMuons_[0].p.Py();
+         pb[0]=vElectrons_[0].p.M(); pb[1]=vElectrons_[0].p.Px(); pb[2]=vElectrons_[0].p.Py();
+      }
+      else if (mumu_){
+         pa[0]=vMuons_[0].p.M(); pa[1]=vMuons_[0].p.Px(); pa[2]=vMuons_[0].p.Py();
+         pb[0]=vMuons_[1].p.M(); pb[1]=vMuons_[1].p.Px(); pb[2]=vMuons_[1].p.Py();
+      }
+      else {
+         pa[0]=vElectrons_[0].p.M(); pa[1]=vElectrons_[0].p.Px(); pa[2]=vElectrons_[0].p.Py();
+         pb[0]=vElectrons_[1].p.M(); pb[1]=vElectrons_[1].p.Px(); pb[2]=vElectrons_[1].p.Py();
+      }
+      pmiss[0]=0; pmiss[1]=met_.p.Px(); pmiss[2]=met_.p.Py();
+      
+      fctMT2_.set_mn(0.);
+      fctMT2_.set_momenta(pa,pb,pmiss);
+      
+      MT2_=static_cast<float>(fctMT2_.get_mt2());
+   }
+   else MT2_=0;
    
    
    /////////////////
@@ -1280,6 +1286,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
          genAntiNeutrino_ = nullP4_;
          genWMinus_ = nullP4_;
          genWPlus_ = nullP4_;
+         ttbarDecayMode_=0;
       }
       
    }

@@ -279,8 +279,8 @@ private:
    TLorentzVector pseudoWMinus_;
    TLorentzVector pseudoWPlus_;
    TLorentzVector pseudoNeutrinoSum_;
-   std::vector<tree::Particle> v_allPseudoJet_;
-   std::vector<tree::Particle> v_allPseudoLepton_;
+   //~std::vector<tree::Particle> v_allPseudoJet_;
+   //~std::vector<tree::Particle> v_allPseudoLepton_;
 };
 
 #endif /* TREEWRITER_HPP__ */
