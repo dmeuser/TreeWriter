@@ -879,7 +879,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    ///////////////////////
    // Keep only events which satisfy the pseudoTop selection (recommended by the LHCTopWG plus additonal dileptoMass cut) or satisfy a loose reco dilepton selection
    bool pseudoDileptonSelection=true;
-   if (ttbarPseudoDecayMode_==0) pseudoDileptonSelection=false;
+   if (ttbarPseudoDecayMode_==0 || pseudoTopInfo_==0) pseudoDileptonSelection=false;
    bool recoDileptonSelection=true;
    
    ee_=false;
@@ -1169,6 +1169,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
             int iNdaugh = genP.numberOfDaughters();
             if (iNdaugh>1) { // skip "decays" V->V
                trIntermP.pdgId = genP.pdgId();
+               trIntermP.status = genP.status();
                trIntermP.isPrompt = genP.statusFlags().isPrompt();
                //~ trIntermP.p.SetPtEtaPhi(genP.pt(), genP.eta(), genP.phi());
                trIntermP.p.SetPtEtaPhiE(genP.pt(), genP.eta(), genP.phi(), genP.energy());
@@ -1176,6 +1177,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
                for (int i=0; i<iNdaugh; i++) { // store the decay products
                   reco::Candidate const& daugh = *genP.daughter(i);
                   trP.pdgId = daugh.pdgId();
+                  trP.status = daugh.status();
                   trP.isPrompt = false;
                   //~ trP.p.SetPtEtaPhi(daugh.pt(), daugh.eta(), daugh.phi());
                   trP.p.SetPtEtaPhiE(daugh.pt(), daugh.eta(), daugh.phi(), daugh.energy());
@@ -1191,6 +1193,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
                (genP.status() == 1 && genP.pt()>10 && (absId==22 || (11 <= absId && absId <= 16)))) { // status 1 photons and leptons (including neutrinos)
             if(genP.numberOfDaughters()==1) continue; //skip particles, which decay like V->V
             trP.pdgId = genP.pdgId();
+            trP.status = genP.status();
             trP.isPrompt = genP.statusFlags().isPrompt();
             trP.fromHardProcess = genP.statusFlags().fromHardProcess();
             //~ trP.p.SetPtEtaPhi(genP.pt(),genP.eta(),genP.phi());
@@ -1290,6 +1293,24 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       }
       
    }
+   
+   // ~if(ttbarPseudoDecayMode_>0){
+      // ~std::cout<<pseudoLepton_.Pt()<<"   "<<genLepton_.Pt()<<std::endl;
+      // ~std::cout<<pseudoAntiLepton_.Pt()<<"   "<<genAntiLepton_.Pt()<<std::endl;
+      // ~std::cout<<pseudoNeutrino_.Pt()<<"   "<<genNeutrino_.Pt()<<std::endl;
+      // ~std::cout<<pseudoAntiNeutrino_.Pt()<<"   "<<genAntiNeutrino_.Pt()<<std::endl;
+   // ~}
+   
+   // ~std::cout<<"---------------------"<<runNo_<<":"<<lumNo_<<":"<<evtNo_<<std::endl;
+   // ~for (const tree::GenParticle genP: vGenParticles_){
+      // ~auto absId = abs(genP.pdgId);
+      // ~if (absId==11 || absId==13) {
+         // ~std::cout<<"Lepton:  "<<genP.p.Pt()<<"   "<<genP.isPrompt<<"   "<<genP.fromHardProcess<<"   "<<genAntiLepton_.Pt()<<"   "<<pseudoAntiLepton_.Pt()<<std::endl;
+      // ~}
+      // ~if (absId==12 || absId==14) {
+         // ~std::cout<<"Neutrino:  "<<genP.p.Pt()<<"   "<<genP.isPrompt<<"   "<<genP.fromHardProcess<<"   "<<genNeutrino_.Pt()<<"   "<<pseudoNeutrino_.Pt()<<std::endl;
+      // ~}
+   // ~}
    
    //////////////////
    // Gen MT2     //
