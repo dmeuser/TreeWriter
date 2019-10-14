@@ -29,6 +29,7 @@ namespace tree
    struct GenParticle: public Particle
    {
       Int_t pdgId=0;
+      Int_t status=0;
       bool isPrompt;
       bool fromHardProcess;
       UChar_t promptStatus;
