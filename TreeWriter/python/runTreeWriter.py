@@ -28,16 +28,17 @@ options.register ('user',
                   "Name the user. If not set by crab, this script will determine it.")
 
 # defaults
-# ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v1/00000/001BCE65-30C3-E811-A357-A4BF0112DD3C.root'
-options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/100000/0C0D1C23-C1EC-E811-8B4B-AC1F6B23C848.root'
-# ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/90000/8A0E1474-26F6-E811-B813-0CC47AFCC37A.root'
+options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v1/00000/80EBB916-A6C4-E811-9A55-A4BF011254E0.root'
+# ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/100000/0C0D1C23-C1EC-E811-8B4B-AC1F6B23C848.root'
+# ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T2tt_mStop-650_mLSP-350_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/20000/868AE3FA-92F2-E811-AE95-0025905A6110.root'
 #~ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016D/MuonEG/MINIAOD/17Jul2018-v1/80000/D48E0B3A-A28E-E811-8A12-7CD30AD08EB4.root'
 # ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/WW_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/270000/9439498F-29EB-E811-B02A-0CC47AFCC626.root'
 # ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/60000/F40DF1A0-E937-E911-AB5B-AC1F6BAC7D12.root'
+# ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/90000/6491126E-26F6-E811-9145-0025905C3D96.root'
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
-options.maxEvents = -1
-# ~options.maxEvents = 1000
+# ~options.maxEvents = -1
+options.maxEvents = 100
 # get and parse the command line arguments
 options.parseArguments()
 
@@ -117,7 +118,8 @@ genParticleCollection = "prunedGenParticles"
 process.load("TopQuarkAnalysis.TopEventProducers.sequences.ttGenEvent_cff")
 process.initSubset.src = genParticleCollection
 process.decaySubset.src = genParticleCollection
-process.decaySubset.fillMode = "kME" # Status3, use kStable for Status2
+# ~process.decaySubset.fillMode = "kME" # Status3, use kStable for Status2
+process.decaySubset.fillMode = "kStable" # Status3, use kStable for Status2
 runMode = "Run2"
 process.decaySubset.runMode = runMode
 
@@ -153,7 +155,8 @@ process.pseudoTop = cms.EDProducer("PseudoTopProducer",
 ################################
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(options.maxEvents))
 #~ process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), lumisToProcess = cms.untracked.VLuminosityBlockRange("276315:134"))#eventsToProcess = cms.untracked.VEventRange("276315:134:185994346"))
-process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles))#, eventsToProcess = cms.untracked.VEventRange("276315:134:186839926"))
+# ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("1:11153:1786638"))
+process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles))
 process.TFileService = cms.Service("TFileService", fileName=cms.string(options.outputFile))
 
 
@@ -173,6 +176,8 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     genJets=cms.InputTag("slimmedGenJets"),
                                     electrons = cms.InputTag("slimmedElectrons"),
                                     mets = cms.InputTag("slimmedMETs"),
+                                    metsPuppi = cms.InputTag("slimmedMETsPuppi"),
+                                    metsNoHF = cms.InputTag("slimmedMETsNoHF"),
                                     metCorr = cms.InputTag(""),
                                     metCorrCal = cms.InputTag(""),
                                     caloMets = cms.InputTag("slimmedMETs"),

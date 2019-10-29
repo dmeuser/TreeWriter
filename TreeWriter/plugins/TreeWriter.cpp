@@ -329,6 +329,8 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    , muonCollectionToken_    (consumes<pat::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons")))
    , electronCollectionToken_(consumes<edm::View<pat::Electron> >(iConfig.getParameter<edm::InputTag>("electrons")))
    , metCollectionToken_     (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("mets")))
+   , metPuppiCollectionToken_     (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metsPuppi")))
+   , metNoHFCollectionToken_     (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metsNoHF")))
    , metCorrectedCollectionToken_  (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metCorrected")))
    , metCalibratedCollectionToken_ (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metCalibrated")))
    , caloMetCollectionToken_ (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("caloMets")))
@@ -381,6 +383,8 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("electrons", &vElectrons_);
    eventTree_->Branch("muons", &vMuons_);
    eventTree_->Branch("met", &met_);
+   eventTree_->Branch("metPuppi", &metPuppi_);
+   eventTree_->Branch("metNoHF", &metNoHF_);
    eventTree_->Branch("metCorrected", &metCorrected_);
    eventTree_->Branch("met_raw", &met_raw_);
    eventTree_->Branch("met_gen", &met_gen_);
@@ -1087,6 +1091,24 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    met_JERu_.sig = met_.sig;
    met_JERd_.sig = met_.sig;
    
+   //PuppiMET
+   edm::Handle<pat::METCollection> metCollPuppi;
+   iEvent.getByToken(metPuppiCollectionToken_, metCollPuppi);
+
+   const pat::MET &metPuppi = metCollPuppi->front();
+   double metPt_Puppi = metPuppi.pt();
+   metPuppi_.p.SetPtEtaPhiE(metPt_Puppi, metPuppi.eta(), metPuppi.phi(), metPuppi.energy());
+   metPuppi_.sig = metPuppi.metSignificance();
+   
+   //MET no HF
+   edm::Handle<pat::METCollection> metCollNoHF;
+   iEvent.getByToken(metNoHFCollectionToken_, metCollNoHF);
+
+   const pat::MET &metNoHF = metCollNoHF->front();
+   double metPt_NoHF = metNoHF.pt();
+   metNoHF_.p.SetPtEtaPhiE(metPt_NoHF, metNoHF.eta(), metNoHF.phi(), metNoHF.energy());
+   metNoHF_.sig = metNoHF.metSignificance();
+   
    ///////////
    //MT2//////
    ///////////
@@ -1301,7 +1323,9 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       // ~std::cout<<pseudoAntiNeutrino_.Pt()<<"   "<<genAntiNeutrino_.Pt()<<std::endl;
    // ~}
    
-   // ~std::cout<<"---------------------"<<runNo_<<":"<<lumNo_<<":"<<evtNo_<<std::endl;
+   std::cout<<"---------------------"<<runNo_<<":"<<lumNo_<<":"<<evtNo_<<std::endl;
+   std::cout<<genB_.Pt()<<"   "<<genAntiB_.Pt()<<std::endl;
+   std::cout<<pseudoBJet_.Pt()<<"   "<<pseudoAntiBJet_.Pt()<<std::endl;
    // ~for (const tree::GenParticle genP: vGenParticles_){
       // ~auto absId = abs(genP.pdgId);
       // ~if (absId==11 || absId==13) {

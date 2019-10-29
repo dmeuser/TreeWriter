@@ -116,6 +116,8 @@ private:
    edm::EDGetTokenT<pat::MuonCollection>       muonCollectionToken_;
    edm::EDGetTokenT<edm::View<pat::Electron>>  electronCollectionToken_;
    edm::EDGetTokenT<pat::METCollection>        metCollectionToken_;
+   edm::EDGetTokenT<pat::METCollection>        metPuppiCollectionToken_;
+   edm::EDGetTokenT<pat::METCollection>        metNoHFCollectionToken_;
    edm::EDGetTokenT<pat::METCollection>        metCorrectedCollectionToken_;
    edm::EDGetTokenT<pat::METCollection>        metCalibratedCollectionToken_;
    edm::EDGetTokenT<pat::METCollection>        caloMetCollectionToken_;
@@ -195,6 +197,8 @@ private:
    std::vector<tree::Electron> vElectrons_;
    std::vector<tree::Muon>     vMuons_;
    tree::MET                   met_;
+   tree::MET                   metPuppi_;
+   tree::MET                   metNoHF_;
    tree::MET                   metCorrected_;
    tree::MET                   metCalibrated_;
    tree::MET                   met_raw_;
