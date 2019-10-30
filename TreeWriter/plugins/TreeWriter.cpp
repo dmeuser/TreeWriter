@@ -383,6 +383,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("electrons", &vElectrons_);
    eventTree_->Branch("muons", &vMuons_);
    eventTree_->Branch("met", &met_);
+   eventTree_->Branch("metCalo", &metCalo_);
    eventTree_->Branch("metPuppi", &metPuppi_);
    eventTree_->Branch("metNoHF", &metNoHF_);
    eventTree_->Branch("metCorrected", &metCorrected_);
@@ -1083,6 +1084,12 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    metShifted = met.shiftedP4(pat::MET::JetResDown);
    //~ met_JERd_.p.SetPtEtaPhi(metShifted.pt(), metShifted.eta(), metShifted.phi());
    met_JERd_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
+   
+   metShifted = met.shiftedP4(pat::MET::NoShift, pat::MET::RawCalo);
+   //~ met_JERd_.p.SetPtEtaPhi(metShifted.pt(), metShifted.eta(), metShifted.phi());
+   metCalo_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
+   
+   
 
    met_.sig = met.metSignificance();
    met_raw_.sig = met_.sig;
@@ -1090,6 +1097,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    met_JESd_.sig = met_.sig;
    met_JERu_.sig = met_.sig;
    met_JERd_.sig = met_.sig;
+   metCalo_.sig = met_.sig;
    
    //PuppiMET
    edm::Handle<pat::METCollection> metCollPuppi;

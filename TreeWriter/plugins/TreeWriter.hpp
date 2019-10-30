@@ -197,6 +197,7 @@ private:
    std::vector<tree::Electron> vElectrons_;
    std::vector<tree::Muon>     vMuons_;
    tree::MET                   met_;
+   tree::MET                   metCalo_;
    tree::MET                   metPuppi_;
    tree::MET                   metNoHF_;
    tree::MET                   metCorrected_;
