@@ -115,6 +115,7 @@ private:
    edm::EDGetTokenT<reco::GenJetCollection>    genJetCollectionToken_;
    edm::EDGetTokenT<pat::MuonCollection>       muonCollectionToken_;
    edm::EDGetTokenT<edm::View<pat::Electron>>  electronCollectionToken_;
+   edm::EDGetTokenT<edm::View<pat::Photon>>    photonCollectionToken_;
    edm::EDGetTokenT<pat::METCollection>        metCollectionToken_;
    edm::EDGetTokenT<pat::METCollection>        metPuppiCollectionToken_;
    edm::EDGetTokenT<pat::METCollection>        metNoHFCollectionToken_;
@@ -134,6 +135,11 @@ private:
    std::string electronLooseIdMapToken_;
    std::string electronMediumIdMapToken_;
    std::string electronTightIdMapToken_;
+   
+   // photon id
+   std::string photonLooseIdMapToken_;
+   std::string photonMediumIdMapToken_;
+   std::string photonTightIdMapToken_;
 
    // met filters to apply
    const std::vector<std::string> metFilterNames_;
@@ -196,6 +202,9 @@ private:
    std::vector<tree::Particle> vGenJets_;
    std::vector<tree::Electron> vElectrons_;
    std::vector<tree::Muon>     vMuons_;
+   std::vector<tree::Electron> vElectrons_add_;
+   std::vector<tree::Muon>     vMuons_add_;
+   std::vector<tree::Photon>   vPhotons_;
    tree::MET                   met_;
    tree::MET                   metCalo_;
    tree::MET                   metPuppi_;

@@ -49,6 +49,8 @@ namespace tree
       float bTagCSVv2;
       float bTagMVAv2;
       float bTagDeepCSV;
+      float bTagSoftMuon;
+      float bTagSoftElectron;
       float uncert;
       float chf;
       float nhf;
@@ -100,6 +102,23 @@ namespace tree
       TVector3 pUncorrected;
       float phiSC;     //Supercluster Phi
       float etaSC;     //Supercluster Eta
+   };
+   
+   struct Photon : public Particle
+   {
+      float sigmaIetaIeta; // full 5x5
+      float hOverE;
+      bool hasPixelSeed;
+      bool passElectronVeto;
+
+      float cIso;
+      float nIso;
+      float pIso;
+
+      // IDs
+      bool  isLoose;
+      bool  isMedium;
+      bool  isTight;
    };
 
    struct MET : public Particle

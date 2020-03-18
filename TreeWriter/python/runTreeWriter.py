@@ -38,7 +38,7 @@ options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16Mi
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
 options.maxEvents = -1
-# ~options.maxEvents = 100
+# ~options.maxEvents = 1000
 # get and parse the command line arguments
 options.parseArguments()
 
@@ -50,7 +50,7 @@ isRealData=not dataset.endswith("SIM")
 process = cms.Process("TreeWriter")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 
 # determine global tag here only 2016
@@ -111,6 +111,16 @@ LeptonFullSimScaleFactorMapPars2016 = cms.PSet(
     dataMCScaleFactorHisto_ele_ID = cms.string('EGamma_SF2D'),
 )
 
+################################
+# Jets                         #
+################################
+# ~from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
+# ~updateJetCollection(
+   # ~process,
+   # ~jetSource = cms.InputTag('slimmedJets'),
+   # ~jetCorrections = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute']), 'None'),
+   # ~btagInfos = ['softPFElectronsTagInfos','softPFMuonsTagInfos']
+# ~)
 ################################
 # Ttbar Gen Info               #
 ################################
@@ -175,6 +185,7 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     muons = cms.InputTag("slimmedMuons"),
                                     genJets=cms.InputTag("slimmedGenJets"),
                                     electrons = cms.InputTag("slimmedElectrons"),
+                                    photons = cms.InputTag("slimmedPhotons"),
                                     mets = cms.InputTag("slimmedMETs"),
                                     metsPuppi = cms.InputTag("slimmedMETsPuppi"),
                                     metsNoHF = cms.InputTag("slimmedMETsNoHF"),
@@ -193,6 +204,10 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     electronLooseIdMap  = cms.untracked.string("cutBasedElectronID-Fall17-94X-V1-loose"),
                                     electronMediumIdMap = cms.untracked.string("cutBasedElectronID-Fall17-94X-V1-medium"),
                                     electronTightIdMap  = cms.untracked.string("cutBasedElectronID-Fall17-94X-V1-tight"),
+                                    # photon IDs
+                                    photonLooseIdMap   = cms.untracked.string("cutBasedPhotonID-Fall17-94X-V2-loose"),
+                                    photonMediumIdMap  = cms.untracked.string("cutBasedPhotonID-Fall17-94X-V2-medium"),
+                                    photonTightIdMap   = cms.untracked.string("cutBasedPhotonID-Fall17-94X-V2-tight"),
                                     # met filters to apply
                                     metFilterNames=cms.untracked.vstring(
                                         "Flag_HBHENoiseFilter",

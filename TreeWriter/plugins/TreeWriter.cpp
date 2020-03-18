@@ -328,6 +328,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    , genJetCollectionToken_  (consumes<reco::GenJetCollection>(iConfig.getParameter<edm::InputTag>("genJets")))
    , muonCollectionToken_    (consumes<pat::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons")))
    , electronCollectionToken_(consumes<edm::View<pat::Electron> >(iConfig.getParameter<edm::InputTag>("electrons")))
+   , photonCollectionToken_  (consumes<edm::View<pat::Photon> >(iConfig.getParameter<edm::InputTag>("photons")))
    , metCollectionToken_     (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("mets")))
    , metPuppiCollectionToken_     (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metsPuppi")))
    , metNoHFCollectionToken_     (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metsNoHF")))
@@ -345,6 +346,10 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    , electronLooseIdMapToken_ (iConfig.getUntrackedParameter<std::string>("electronLooseIdMap"))
    , electronMediumIdMapToken_(iConfig.getUntrackedParameter<std::string>("electronMediumIdMap"))
    , electronTightIdMapToken_ (iConfig.getUntrackedParameter<std::string>("electronTightIdMap"))
+   // photon id
+   , photonLooseIdMapToken_  (iConfig.getUntrackedParameter<std::string>("photonLooseIdMap"  ))
+   , photonMediumIdMapToken_ (iConfig.getUntrackedParameter<std::string>("photonMediumIdMap" ))
+   , photonTightIdMapToken_  (iConfig.getUntrackedParameter<std::string>("photonTightIdMap"  ))
    // met filters to apply
    , metFilterNames_(iConfig.getUntrackedParameter<std::vector<std::string>>("metFilterNames"))
    , phoWorstChargedIsolationToken_(consumes <edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("phoWorstChargedIsolation")))
@@ -382,6 +387,9 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("genJets", &vGenJets_);
    eventTree_->Branch("electrons", &vElectrons_);
    eventTree_->Branch("muons", &vMuons_);
+   eventTree_->Branch("electrons_add", &vElectrons_add_);
+   eventTree_->Branch("muons_add", &vMuons_add_);
+   eventTree_->Branch("photons", &vPhotons_);
    eventTree_->Branch("met", &met_);
    eventTree_->Branch("metCalo", &metCalo_);
    eventTree_->Branch("metPuppi", &metPuppi_);
@@ -725,9 +733,9 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    iEvent.getByToken(muonCollectionToken_, muonColl);
 
    vMuons_.clear();
+   vMuons_add_.clear();
    tree::Muon trMuon;
    for (const pat::Muon &mu : *muonColl) {
-      if (!mu.isTightMuon(firstGoodVertex)) continue; // take only 'tight' muons
       if (! (mu.isPFMuon() || mu.isGlobalMuon() || mu.isTrackerMuon())) continue;
       if (mu.pt()<20 || mu.eta()>2.4) continue;
       //~ trMuon.p.SetPtEtaPhi(mu.pt(), mu.eta(), mu.phi());
@@ -737,15 +745,16 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trMuon.isLoose = mu.isLooseMuon();
       auto const& pfIso = mu.pfIsolationR04();
       trMuon.rIso = (pfIso.sumChargedHadronPt + std::max(0., pfIso.sumNeutralHadronEt + pfIso.sumPhotonEt - 0.5*pfIso.sumPUPt))/mu.pt();
-      if (trMuon.rIso>0.15) continue; //Tight relIso cut
       trMuon.charge = mu.charge();
       trMuon.PFminiIso = getPFIsolation(packedCandidates, mu);
       math::XYZPoint vtx_point = firstGoodVertex.position();
       trMuon.d0 = mu.bestTrack()->dxy( vtx_point );
       trMuon.dZ = mu.bestTrack()->dz( vtx_point );
-      vMuons_.push_back(trMuon);
+      if (mu.isTightMuon(firstGoodVertex) && trMuon.rIso<0.15) vMuons_.push_back(trMuon); // take only 'tight' muons
+      else vMuons_add_.push_back(trMuon); //Save all additional muons, which are not tight
    } // muon loop
    sort(vMuons_.begin(), vMuons_.end(), tree::PtGreater);
+   sort(vMuons_add_.begin(), vMuons_add_.end(), tree::PtGreater);
    
    /////////////
    //Electrons//
@@ -754,11 +763,11 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    iEvent.getByToken(electronCollectionToken_, electronColl);
 
    vElectrons_.clear();
+   vElectrons_add_.clear();
    tree::Electron trEl;
    for (edm::View<pat::Electron>::const_iterator el = electronColl->begin();el != electronColl->end(); el++) {
       if (el->pt()<20 || abs(el->superCluster()->eta())>2.4 || ((1.4442 < abs(el->superCluster()->eta())) && (el->superCluster()->eta()) < 1.5660)) continue;
       const edm::Ptr<pat::Electron> elPtr(electronColl, el - electronColl->begin());
-      if (!el->electronID(electronTightIdMapToken_)) continue; // take only 'tight' electrons
       trEl.isLoose = el->electronID(electronLooseIdMapToken_);
       trEl.isMedium = el->electronID(electronMediumIdMapToken_);
       trEl.isTight = el->electronID(electronTightIdMapToken_);
@@ -796,9 +805,11 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
         //~ trEl.pUncorrected.SetPtEtaPhi(ele.pt(), ele.superCluster()->eta(), ele.superCluster()->phi());
       //~ }
 		
-      vElectrons_.push_back(trEl);
+      if (el->electronID(electronTightIdMapToken_)) vElectrons_.push_back(trEl); // take only 'tight' electrons
+      else vElectrons_add_.push_back(trEl); //Save all additional electrons, which are not tight
    }
    sort(vElectrons_.begin(), vElectrons_.end(), tree::PtGreater);
+   sort(vElectrons_add_.begin(), vElectrons_add_.end(), tree::PtGreater);
    
    /////////////////////////////
    // Pseudo TTbar Information//
@@ -926,6 +937,39 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    if (!recoDileptonSelection && !pseudoDileptonSelection) return;
    
    hCutFlow_->Fill("Dilepton", mc_weight_*pu_weight_);
+   
+   ///////////
+   //Photons//
+   ///////////
+   edm::Handle<edm::View<pat::Photon>> photonColl;
+   iEvent.getByToken(photonCollectionToken_, photonColl);
+
+   vPhotons_.clear();
+   tree::Photon trPho;
+   for (edm::View<pat::Photon>::const_iterator pho = photonColl->begin(); pho != photonColl->end(); pho++) {
+      // Kinematics
+      if (pho->pt() < 20) continue;
+
+      trPho.p.SetPtEtaPhiE(pho->pt(), pho->superCluster()->eta(), pho->superCluster()->phi(), pho->energy());
+      const edm::Ptr<pat::Photon> phoPtr( photonColl, pho - photonColl->begin() );
+      trPho.sigmaIetaIeta = pho->full5x5_sigmaIetaIeta();
+      trPho.hOverE = pho->hadTowOverEm();
+      trPho.hasPixelSeed = pho->hasPixelSeed();
+      trPho.passElectronVeto = pho->passElectronVeto();
+
+      trPho.cIso = pho->chargedHadronIso();
+      trPho.nIso = pho->neutralHadronIso();
+      trPho.pIso = pho->photonIso();
+
+      // check photon working points
+      trPho.isLoose = pho->photonID(photonLooseIdMapToken_);
+      trPho.isMedium = pho->photonID(photonMediumIdMapToken_);
+      trPho.isTight = pho->photonID(photonTightIdMapToken_);
+      // write the photon to collection
+      vPhotons_.push_back(trPho);
+   } // photon loop
+
+   sort(vPhotons_.begin(), vPhotons_.end(), tree::PtGreater);
 
    
    /////////
@@ -954,6 +998,11 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trJet.bTagCSVv2 = jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
       trJet.bTagMVAv2 = jet.bDiscriminator("pfCombinedMVAV2BJetTags");
       trJet.bTagDeepCSV = jet.bDiscriminator("pfDeepCSVJetTags:probb")+jet.bDiscriminator("pfDeepCSVJetTags:probbb");
+      trJet.bTagSoftMuon = (jet.bDiscriminator("softPFMuonBJetTags")<0) ? -1. : jet.bDiscriminator("softPFMuonBJetTags");
+      trJet.bTagSoftElectron = (jet.bDiscriminator("softPFElectronBJetTags")<0) ? -1. : jet.bDiscriminator("softPFElectronBJetTags");
+      
+      std::cout<<trJet.bTagSoftElectron<<"   "<< jet.bDiscriminator("softPFElectronBJetTags")<<std::endl;
+      
       trJet.isLoose = jetIdSelector(jet);
       jecUnc.setJetEta(jet.eta());
       jecUnc.setJetPt(jet.pt());
@@ -1325,15 +1374,13 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    }
    
    // ~if(ttbarPseudoDecayMode_>0){
-      // ~std::cout<<pseudoLepton_.Pt()<<"   "<<genLepton_.Pt()<<std::endl;
-      // ~std::cout<<pseudoAntiLepton_.Pt()<<"   "<<genAntiLepton_.Pt()<<std::endl;
-      // ~std::cout<<pseudoNeutrino_.Pt()<<"   "<<genNeutrino_.Pt()<<std::endl;
-      // ~std::cout<<pseudoAntiNeutrino_.Pt()<<"   "<<genAntiNeutrino_.Pt()<<std::endl;
+      // ~std::cout<<(pseudoNeutrino_+pseudoAntiNeutrino_).Pt()<<"   "<<met_gen_.p.Pt()<<std::endl;
    // ~}
+   // ~std::cout<<"-----------------------------------------------------"<<std::endl;
    
-   std::cout<<"---------------------"<<runNo_<<":"<<lumNo_<<":"<<evtNo_<<std::endl;
-   std::cout<<genB_.Pt()<<"   "<<genAntiB_.Pt()<<std::endl;
-   std::cout<<pseudoBJet_.Pt()<<"   "<<pseudoAntiBJet_.Pt()<<std::endl;
+   // ~std::cout<<"---------------------"<<runNo_<<":"<<lumNo_<<":"<<evtNo_<<std::endl;
+   // ~std::cout<<genB_.Pt()<<"   "<<genAntiB_.Pt()<<std::endl;
+   // ~std::cout<<pseudoBJet_.Pt()<<"   "<<pseudoAntiBJet_.Pt()<<std::endl;
    // ~for (const tree::GenParticle genP: vGenParticles_){
       // ~auto absId = abs(genP.pdgId);
       // ~if (absId==11 || absId==13) {
