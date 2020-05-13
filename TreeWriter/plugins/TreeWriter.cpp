@@ -334,6 +334,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    , metNoHFCollectionToken_     (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metsNoHF")))
    , metCorrectedCollectionToken_  (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metCorrected")))
    , metCalibratedCollectionToken_ (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metCalibrated")))
+   , metDeepCollectionToken_ (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metsDeepMET")))
    , caloMetCollectionToken_ (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("caloMets")))
    , rhoToken_               (consumes<double> (iConfig.getParameter<edm::InputTag>("rho")))
    , ebRecHitsToken_         (consumes<EcalRecHitCollection>(iConfig.getParameter<edm::InputTag>("ebRecHits")))
@@ -387,14 +388,15 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("genJets", &vGenJets_);
    eventTree_->Branch("electrons", &vElectrons_);
    eventTree_->Branch("muons", &vMuons_);
-   eventTree_->Branch("electrons_add", &vElectrons_add_);
-   eventTree_->Branch("muons_add", &vMuons_add_);
-   eventTree_->Branch("photons", &vPhotons_);
+   // ~eventTree_->Branch("electrons_add", &vElectrons_add_);
+   // ~eventTree_->Branch("muons_add", &vMuons_add_);
+   // ~eventTree_->Branch("photons", &vPhotons_);
    eventTree_->Branch("met", &met_);
    eventTree_->Branch("metCalo", &metCalo_);
    eventTree_->Branch("metPuppi", &metPuppi_);
    eventTree_->Branch("metNoHF", &metNoHF_);
    eventTree_->Branch("metCorrected", &metCorrected_);
+   eventTree_->Branch("metDeep", &metDeep_);
    eventTree_->Branch("met_raw", &met_raw_);
    eventTree_->Branch("met_gen", &met_gen_);
    eventTree_->Branch("met_JESu", &met_JESu_);
@@ -1164,6 +1166,14 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    metNoHF_.p.SetPtEtaPhiE(metPt_NoHF, metNoHF.eta(), metNoHF.phi(), metNoHF.energy());
    metNoHF_.sig = metNoHF.metSignificance();
    
+   //DeepMET
+   edm::Handle<pat::METCollection> metCollDeep;
+   iEvent.getByToken(metDeepCollectionToken_, metCollDeep);
+   const pat::MET &metDeep = metCollDeep->front();
+   double metPt_Deep = metDeep.pt();
+   metDeep_.p.SetPtEtaPhiE(metPt_Deep, metDeep.eta(), metDeep.phi(), metDeep.energy());
+   metDeep_.sig = metDeep.metSignificance();
+      
    ///////////
    //MT2//////
    ///////////

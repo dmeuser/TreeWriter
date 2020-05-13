@@ -121,6 +121,7 @@ private:
    edm::EDGetTokenT<pat::METCollection>        metNoHFCollectionToken_;
    edm::EDGetTokenT<pat::METCollection>        metCorrectedCollectionToken_;
    edm::EDGetTokenT<pat::METCollection>        metCalibratedCollectionToken_;
+   edm::EDGetTokenT<pat::METCollection>        metDeepCollectionToken_;
    edm::EDGetTokenT<pat::METCollection>        caloMetCollectionToken_;
    edm::EDGetTokenT<double>                    rhoToken_;
    edm::EDGetTokenT<EcalRecHitCollection>      ebRecHitsToken_;
@@ -217,6 +218,7 @@ private:
    tree::MET                   met_JESd_;
    tree::MET                   met_JERu_;
    tree::MET                   met_JERd_;
+   tree::MET                   metDeep_;
    std::map<std::string,std::vector<tree::Particle>> triggerObjectMap_;
 
    std::vector<tree::GenParticle> vGenParticles_;

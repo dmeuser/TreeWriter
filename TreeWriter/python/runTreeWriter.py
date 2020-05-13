@@ -37,8 +37,8 @@ options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16Mi
 # ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/90000/6491126E-26F6-E811-9145-0025905C3D96.root'
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
-#  ~options.maxEvents = -1
-options.maxEvents = 100
+options.maxEvents = -1
+#  ~options.maxEvents = 100
 # get and parse the command line arguments
 options.parseArguments()
 
@@ -85,6 +85,11 @@ runMetCorAndUncFromMiniAOD(
     process,
     isData=isRealData,
 )
+
+#Add DeepMET
+from RecoMET.METPUSubtraction.deepMETProducer_cfi import deepMETProducer
+process.deepMETProducer = deepMETProducer.clone()
+process.deepMETProducer.graph_path="RecoMET/METPUSubtraction/data/tf_models/deepmet_2016.pb"
 
 
 ################################
@@ -189,6 +194,7 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     mets = cms.InputTag("slimmedMETs"),
                                     metsPuppi = cms.InputTag("slimmedMETsPuppi"),
                                     metsNoHF = cms.InputTag("slimmedMETsNoHF"),
+                                    metsDeepMET = cms.InputTag("deepMETProducer"),
                                     metCorr = cms.InputTag(""),
                                     metCorrCal = cms.InputTag(""),
                                     caloMets = cms.InputTag("slimmedMETs"),
@@ -391,5 +397,6 @@ process.p = cms.Path(
     # ~*process.generatorTopFilter
     *process.pseudoTop
     *process.egammaPostRecoSeq
+    *process.deepMETProducer
     *process.TreeWriter
 )
