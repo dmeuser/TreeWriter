@@ -90,7 +90,7 @@ docs/_build/
 target/
 
 # === ROOT Files === #
-*.root
+#*.root
 # === CRAB Files === #
 crab/crab_*/
 crab/.*_crab_*/
