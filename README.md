@@ -4,10 +4,11 @@
 Get CMSSW environment 10_2X
 
 ```
-cmsrel CMSSW_10_2_11_patch1
-cd CMSSW_10_2_11_patch1/src/
+cmsrel CMSSW_10_2_18
+cd CMSSW_10_2_18/src/
 cmsenv
 git cms-init
+git cms-merge-topic dmeuser:ttbar_tree
 git cms-merge-topic cms-egamma:EgammaID_1023
 git cms-merge-topic cms-egamma:EgammaPostRecoTools
 scram b -j7
