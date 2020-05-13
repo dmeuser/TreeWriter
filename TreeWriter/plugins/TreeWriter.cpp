@@ -1000,9 +1000,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trJet.bTagDeepCSV = jet.bDiscriminator("pfDeepCSVJetTags:probb")+jet.bDiscriminator("pfDeepCSVJetTags:probbb");
       trJet.bTagSoftMuon = (jet.bDiscriminator("softPFMuonBJetTags")<0) ? -1. : jet.bDiscriminator("softPFMuonBJetTags");
       trJet.bTagSoftElectron = (jet.bDiscriminator("softPFElectronBJetTags")<0) ? -1. : jet.bDiscriminator("softPFElectronBJetTags");
-      
-      std::cout<<trJet.bTagSoftElectron<<"   "<< jet.bDiscriminator("softPFElectronBJetTags")<<std::endl;
-      
+            
       trJet.isLoose = jetIdSelector(jet);
       jecUnc.setJetEta(jet.eta());
       jecUnc.setJetPt(jet.pt());
