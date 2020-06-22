@@ -1232,7 +1232,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
                DYptVec += DYptVec_temp;
             }
          } // end particle loop
-         dyPt_ = DYptVec.Pt();
+         if(dyPtInfo_) dyPt_ = DYptVec.Pt();
       } else { // if no lheEventProduct is found
         genHt_ = 0;
         for (const auto& genP : *prunedGenParticles) {
