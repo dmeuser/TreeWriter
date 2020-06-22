@@ -176,6 +176,7 @@ private:
    Float_t MT2_;
    Float_t genMT2_;
    Float_t genMT2neutrino_;
+   Float_t dyPt_;
 
 
    ULong64_t evtNo_;
@@ -297,6 +298,9 @@ private:
    TLorentzVector pseudoNeutrinoSum_;
    //~std::vector<tree::Particle> v_allPseudoJet_;
    //~std::vector<tree::Particle> v_allPseudoLepton_;
+   
+   //DY pt Info
+   const bool dyPtInfo_;
 };
 
 #endif /* TREEWRITER_HPP__ */

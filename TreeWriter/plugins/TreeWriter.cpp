@@ -366,6 +366,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    // Ttbar gen Event Info
    , ttbarGenInfo_(iConfig.getParameter<bool>("ttbarGenInfo"))
    , pseudoTopInfo_(iConfig.getParameter<bool>("ttbarPseudoInfo"))
+   , dyPtInfo_(iConfig.getParameter<bool>("DYptInfo"))
 {
    // declare consumptions that are used "byLabel" in analyze()
    mayConsume<GenLumiInfoHeader,edm::InLumi> (edm::InputTag("generator"));
@@ -484,6 +485,8 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("pseudoWPlus", &pseudoWPlus_);
    //~eventTree_->Branch("allPseudoJets", &v_allPseudoJet_);
    //~eventTree_->Branch("allPseudoLeptons", &v_allPseudoLepton_);
+   
+   eventTree_->Branch("DYgenPt", &dyPt_, "DYgenPt/F");
 
    // Fill trigger maps
    for (const auto& n : triggerNames_) {
@@ -1201,11 +1204,12 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    else MT2_=0;
    
    
-   /////////////////
-   // generated HT//
-   /////////////////
+   ///////////////////////////
+   // generated HT and DY pt//
+   ///////////////////////////
    // copied from https://github.com/Aachen-3A/PxlSkimmer/blob/master/Skimming/src/PxlSkimmer_miniAOD.cc#L590
    genHt_ = -1;
+   dyPt_ = -1;
    if (!isRealData) {
       edm::Handle<LHEEventProduct> lheInfoHandle;
       iEvent.getByToken(LHEEventToken_, lheInfoHandle);
@@ -1215,13 +1219,20 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
          // (Px, Py, Pz, E and M in GeV)
          std::vector<lhef::HEPEUP::FiveVector> allParticles = lheParticleInfo.PUP;
          std::vector<int> statusCodes = lheParticleInfo.ISTUP;
+         TLorentzVector DYptVec(0., 0., 0., 0.);
+         TLorentzVector DYptVec_temp(0., 0., 0., 0.);
          genHt_ = 0;
          for (unsigned int i = 0; i < statusCodes.size(); i++) {
             auto absId = abs(lheParticleInfo.IDUP[i]);
             if (statusCodes[i] == 1 && ( absId < 11 || absId > 16 ) && absId != 22 && !hasAncestor(i, lheParticleInfo, 6)) {
                genHt_ += sqrt(pow(allParticles[i][0], 2) + pow(allParticles[i][1], 2));
             }
-         } // end paricle loop
+            if(dyPtInfo_ && (absId==11 || absId==13 || absId==15)) { //save gen DY pt
+               DYptVec_temp.SetPxPyPzE(allParticles[i][0],allParticles[i][1],allParticles[i][2],allParticles[i][3]);
+               DYptVec += DYptVec_temp;
+            }
+         } // end particle loop
+         dyPt_ = DYptVec.Pt();
       } else { // if no lheEventProduct is found
         genHt_ = 0;
         for (const auto& genP : *prunedGenParticles) {
@@ -1381,24 +1392,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       
    }
    
-   // ~if(ttbarPseudoDecayMode_>0){
-      // ~std::cout<<(pseudoNeutrino_+pseudoAntiNeutrino_).Pt()<<"   "<<met_gen_.p.Pt()<<std::endl;
-   // ~}
-   // ~std::cout<<"-----------------------------------------------------"<<std::endl;
-   
-   // ~std::cout<<"---------------------"<<runNo_<<":"<<lumNo_<<":"<<evtNo_<<std::endl;
-   // ~std::cout<<genB_.Pt()<<"   "<<genAntiB_.Pt()<<std::endl;
-   // ~std::cout<<pseudoBJet_.Pt()<<"   "<<pseudoAntiBJet_.Pt()<<std::endl;
-   // ~for (const tree::GenParticle genP: vGenParticles_){
-      // ~auto absId = abs(genP.pdgId);
-      // ~if (absId==11 || absId==13) {
-         // ~std::cout<<"Lepton:  "<<genP.p.Pt()<<"   "<<genP.isPrompt<<"   "<<genP.fromHardProcess<<"   "<<genAntiLepton_.Pt()<<"   "<<pseudoAntiLepton_.Pt()<<std::endl;
-      // ~}
-      // ~if (absId==12 || absId==14) {
-         // ~std::cout<<"Neutrino:  "<<genP.p.Pt()<<"   "<<genP.isPrompt<<"   "<<genP.fromHardProcess<<"   "<<genNeutrino_.Pt()<<"   "<<pseudoNeutrino_.Pt()<<std::endl;
-      // ~}
-   // ~}
-   
    //////////////////
    // Gen MT2     //
    /////////////////
@@ -1428,7 +1421,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    evtNo_ = iEvent.id().event();
    runNo_ = iEvent.run();
    lumNo_ = iEvent.luminosityBlock();
-
    edm::Handle<edm::EDCollection<DetId>> unreplacedGSFixedHandle;
    iEvent.getByLabel("ecalMultiAndGSGlobalRecHitEB", "hitsNotReplaced", unreplacedGSFixedHandle);
    ecalMultiAndGSGlobalRecHitEB_hitsNotReplaced_ = reMiniAOD_ && (!unreplacedGSFixedHandle.isValid() || !unreplacedGSFixedHandle->empty());
