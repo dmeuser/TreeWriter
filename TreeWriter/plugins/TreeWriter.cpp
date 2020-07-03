@@ -1263,7 +1263,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       for (const reco::GenParticle &genP: *prunedGenParticles){
          auto absId = abs(genP.pdgId());
 
-         if (absId==6||absId==24) { // store intermediate tops and w bosons
+         if (absId==6||absId==24 || absId==22 || absId==23) { // store intermediate tops and w bosons and DY
             int iNdaugh = genP.numberOfDaughters();
             if (iNdaugh>1) { // skip "decays" V->V
                trIntermP.pdgId = genP.pdgId();
