@@ -348,9 +348,9 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    , electronMediumIdMapToken_(iConfig.getUntrackedParameter<std::string>("electronMediumIdMap"))
    , electronTightIdMapToken_ (iConfig.getUntrackedParameter<std::string>("electronTightIdMap"))
    // photon id
-   , photonLooseIdMapToken_  (iConfig.getUntrackedParameter<std::string>("photonLooseIdMap"  ))
-   , photonMediumIdMapToken_ (iConfig.getUntrackedParameter<std::string>("photonMediumIdMap" ))
-   , photonTightIdMapToken_  (iConfig.getUntrackedParameter<std::string>("photonTightIdMap"  ))
+   // ~, photonLooseIdMapToken_  (iConfig.getUntrackedParameter<std::string>("photonLooseIdMap"  ))
+   // ~, photonMediumIdMapToken_ (iConfig.getUntrackedParameter<std::string>("photonMediumIdMap" ))
+   // ~, photonTightIdMapToken_  (iConfig.getUntrackedParameter<std::string>("photonTightIdMap"  ))
    // met filters to apply
    , metFilterNames_(iConfig.getUntrackedParameter<std::vector<std::string>>("metFilterNames"))
    , phoWorstChargedIsolationToken_(consumes <edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("phoWorstChargedIsolation")))
@@ -796,7 +796,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trEl.dZ = el->bestTrack()->dz( vtx_point );
       trEl.phiSC = el->superCluster()->phi();
       trEl.etaSC = el->superCluster()->eta();
-      
+            
       // VID calculation of (1/E - 1/p)
       if (el->ecalEnergy() == 0)   trEl.EoverPInv = 1e30;
       else if (!std::isfinite(el->ecalEnergy()))  trEl.EoverPInv = 1e30;
@@ -943,6 +943,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    
    hCutFlow_->Fill("Dilepton", mc_weight_*pu_weight_);
    
+   /*
    ///////////
    //Photons//
    ///////////
@@ -975,6 +976,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    } // photon loop
 
    sort(vPhotons_.begin(), vPhotons_.end(), tree::PtGreater);
+   */
 
    
    /////////
@@ -1005,7 +1007,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trJet.bTagDeepCSV = jet.bDiscriminator("pfDeepCSVJetTags:probb")+jet.bDiscriminator("pfDeepCSVJetTags:probbb");
       trJet.bTagSoftMuon = (jet.bDiscriminator("softPFMuonBJetTags")<0) ? -1. : jet.bDiscriminator("softPFMuonBJetTags");
       trJet.bTagSoftElectron = (jet.bDiscriminator("softPFElectronBJetTags")<0) ? -1. : jet.bDiscriminator("softPFElectronBJetTags");
-            
       trJet.isLoose = jetIdSelector(jet);
       jecUnc.setJetEta(jet.eta());
       jecUnc.setJetPt(jet.pt());
@@ -1122,7 +1123,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    metShifted = met.shiftedP4(pat::MET::NoShift, pat::MET::Raw);
    //~ met_raw_.p.SetPtEtaPhi(metShifted.pt(), metShifted.eta(), metShifted.phi());
    met_raw_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
-
+   
    metShifted = met.shiftedP4(pat::MET::JetEnUp);
    //~ met_JESu_.p.SetPtEtaPhi(metShifted.pt(), metShifted.eta(), metShifted.phi());
    met_JESu_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
@@ -1159,7 +1160,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    double metPt_Puppi = metPuppi.pt();
    metPuppi_.p.SetPtEtaPhiE(metPt_Puppi, metPuppi.eta(), metPuppi.phi(), metPuppi.energy());
    metPuppi_.sig = metPuppi.metSignificance();
-   
+      
    //MET no HF
    edm::Handle<pat::METCollection> metCollNoHF;
    iEvent.getByToken(metNoHFCollectionToken_, metCollNoHF);

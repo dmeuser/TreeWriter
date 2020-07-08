@@ -28,8 +28,9 @@ options.register ('user',
                   "Name the user. If not set by crab, this script will determine it.")
 
 # defaults
-#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v1/00000/80EBB916-A6C4-E811-9A55-A4BF011254E0.root'
-options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext2-v2/110000/18245CF1-15E9-E811-88F0-0242AC130002.root'
+options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v1/00000/80EBB916-A6C4-E811-9A55-A4BF011254E0.root'
+#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/DYJetsToLL_Pt-650ToInf_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext2-v2/70000/EAD06012-CC56-E911-BE23-AC1F6B8AC3A2.root'
+#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext2-v2/110000/18245CF1-15E9-E811-88F0-0242AC130002.root'
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/DYJetsToLL_Zpt-200toInf_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/270000/4A93B17B-E33A-E911-9E67-3417EBE706C3.root'
 # ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/100000/0C0D1C23-C1EC-E811-8B4B-AC1F6B23C848.root'
 # ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T2tt_mStop-650_mLSP-350_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/20000/868AE3FA-92F2-E811-AE95-0025905A6110.root'
@@ -39,8 +40,8 @@ options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16Mi
 # ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/90000/6491126E-26F6-E811-9145-0025905C3D96.root'
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
-options.maxEvents = -1
-#  ~options.maxEvents = 100
+#  ~options.maxEvents = -1
+options.maxEvents = 100
 # get and parse the command line arguments
 options.parseArguments()
 
@@ -61,11 +62,13 @@ if isRealData:
         process.GlobalTag.globaltag = "94X_dataRun2_v10"
 else:
         process.GlobalTag.globaltag = "94X_mcRun2_asymptotic_v3"
-        
 
 #############
 # ELECTRONS #
 #############
+# https://twiki.cern.ch/twiki/bin/view/CMS/EgammaMiniAODV2
+# https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPostRecoRecipes
+# https://hypernews.cern.ch/HyperNews/CMS/get/egamma/2204/1/1.html because of PUPPI MET: added phoIDModules=[]
 # Geometry neccessary to run setupEgammaPostRecoSeq
 process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi");
 process.load("Geometry.CaloEventSetup.CaloGeometry_cfi");
@@ -75,18 +78,53 @@ process.load("Configuration.Geometry.GeometryECALHCAL_cff")
 from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
 setupEgammaPostRecoSeq(process,
                        runEnergyCorrections=False, #corrections by default are fine so no need to re-run
-                       era='2016-Legacy')
+                       era='2016-Legacy', phoIDModules=[])
                        
+
+#############
+# MUONS     #
+#############
+from TreeWriter.TreeWriter.muonPATUserDataRochesterCorrectionAdder_cfi import muonPATUserDataRochesterCorrectionAdder
+process.rochesterCorrectedMuons = muonPATUserDataRochesterCorrectionAdder.clone(
+   src = "slimmedMuons",
+   applyEnergyCorrections = True,
+   debug = False,
+)
+process.rochesterCorrectedMuons.path = 'TreeWriter/TreeWriter/roccor.Run2.v4/RoccoR2016.txt'
 
 ##########################
 # MET                    #
 ##########################
 # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription
 from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
-runMetCorAndUncFromMiniAOD(
+runMetCorAndUncFromMiniAOD(   #update pfMET 
     process,
     isData=isRealData,
+    fixEE2017 = False,
 )
+
+runMetCorAndUncFromMiniAOD(   #new MET collection with corrected Muons
+    process,
+    isData=isRealData,
+    fixEE2017 = False,
+    muonColl = "rochesterCorrectedMuons",
+    postfix = "MuonCorr",
+)
+#  ~process.patPFMetMuonCorr.muonSource = cms.InputTag("rochesterCorrectedMuons")
+#  ~process.patPFMetMuonCorr.metSource = cms.InputTag("pfMet")
+#  ~process.patPFMetMuonCorr.addMuonCorrections = cms.bool(True)
+
+from PhysicsTools.PatAlgos.slimming.puppiForMET_cff import makePuppiesFromMiniAOD
+makePuppiesFromMiniAOD( process, True);
+runMetCorAndUncFromMiniAOD(process,    #update PuppiMET 
+                           isData=isRealData,
+                           metType="Puppi",
+                           postfix="Puppi",
+                           jetFlavor="AK4PFPuppi",
+                           )
+process.puppiNoLep.useExistingWeights = True
+process.puppi.useExistingWeights = True
+process.puppiMETSequence = cms.Sequence(process.egmPhotonIDSequence * process.puppiMETSequence * process.fullPatMetSequencePuppi)
 
 #Add DeepMET
 from RecoMET.METPUSubtraction.deepMETProducer_cfi import deepMETProducer
@@ -121,13 +159,15 @@ LeptonFullSimScaleFactorMapPars2016 = cms.PSet(
 ################################
 # Jets                         #
 ################################
-# ~from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-# ~updateJetCollection(
-   # ~process,
-   # ~jetSource = cms.InputTag('slimmedJets'),
-   # ~jetCorrections = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute']), 'None'),
-   # ~btagInfos = ['softPFElectronsTagInfos','softPFMuonsTagInfos']
-# ~)
+from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
+updateJetCollection(
+   process,
+   jetSource = cms.InputTag('slimmedJets'),
+   labelName = 'UpdatedJEC',
+   jetCorrections = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']), 'None'),
+)
+process.jecSequence = cms.Sequence(process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC)
+
 ################################
 # Ttbar Gen Info               #
 ################################
@@ -168,6 +208,125 @@ process.pseudoTop = cms.EDProducer("PseudoTopProducer",
 )
 
 ################################
+# Bjet Regression              #
+################################
+# https://github.com/cms-sw/cmssw/blob/master/PhysicsTools/NanoAOD/python/jets_cff.py
+# https://twiki.cern.ch/twiki/bin/view/CMS/HiggsWG/BJetRegression
+
+process.bJetVars = cms.EDProducer("JetRegressionVarProducer",
+   pvsrc = cms.InputTag("offlineSlimmedPrimaryVertices"),
+   src = cms.InputTag("updatedPatJetsUpdatedJEC"),
+   svsrc = cms.InputTag("slimmedSecondaryVertices"),
+   gpsrc = cms.InputTag("prunedGenParticles"),
+)
+
+
+#  ~if opts['sample']['era'] == '2016':
+wgtFile = cms.FileInPath("PhysicsTools/NanoAOD/data/breg_training_2016.pb")
+outputFormulas = cms.vstring(["at(0)*0.31976690888404846+1.047176718711853","0.5*(at(2)-at(1))*0.31976690888404846"])
+wgtFile_c = cms.FileInPath("PhysicsTools/NanoAOD/data/creg_training_2016.pb")
+outputFormulas_c = cms.vstring(["at(0)*0.28862622380256653+0.9908722639083862","0.5*(at(2)-at(1))*0.28862622380256653"])
+#  ~elif opts['sample']['era'] == '2017':
+   #  ~wgtFile = cms.FileInPath("PhysicsTools/NanoAOD/data/breg_training_2017.pb")
+   #  ~outputFormulas = cms.vstring(["at(0)*0.28225210309028625+1.055067777633667","0.5*(at(2)-at(1))*0.28225210309028625"])
+   #  ~wgtFile_c = cms.FileInPath("PhysicsTools/NanoAOD/data/creg_training_2017.pb")
+   #  ~outputFormulas_c = cms.vstring(["at(0)*0.24718524515628815+0.9927206635475159","0.5*(at(2)-at(1))*0.24718524515628815"])
+#  ~elif opts['sample']['era'] == '2018':
+   #  ~wgtFile = cms.FileInPath("PhysicsTools/NanoAOD/data/breg_training_2018.pb")
+   #  ~outputFormulas = cms.vstring(["at(0)*0.27912887930870056+1.0545977354049683","0.5*(at(2)-at(1))*0.27912887930870056"])
+   #  ~wgtFile_c = cms.FileInPath("PhysicsTools/NanoAOD/data/creg_training_2018.pb")
+   #  ~outputFormulas_c = cms.vstring(["at(0)*0.24325256049633026+0.993854820728302","0.5*(at(2)-at(1))*0.24325256049633026"])
+
+process.updatedJetsWithUserData = cms.EDProducer("PATJetUserDataEmbedder",
+    src = cms.InputTag("updatedPatJetsUpdatedJEC"),
+    userFloats = cms.PSet(
+        leadTrackPt = cms.InputTag("bJetVars:leadTrackPt"),
+        leptonPtRel = cms.InputTag("bJetVars:leptonPtRel"),
+        leptonPtRatio = cms.InputTag("bJetVars:leptonPtRatio"),
+        leptonPtRelInv = cms.InputTag("bJetVars:leptonPtRelInv"),
+        leptonPtRelv0 = cms.InputTag("bJetVars:leptonPtRelv0"),
+        leptonPtRatiov0 = cms.InputTag("bJetVars:leptonPtRatiov0"),
+        leptonPtRelInvv0 = cms.InputTag("bJetVars:leptonPtRelInvv0"),
+        leptonDeltaR = cms.InputTag("bJetVars:leptonDeltaR"),
+        leptonPt = cms.InputTag("bJetVars:leptonPt"),
+        vtxPt = cms.InputTag("bJetVars:vtxPt"),
+        vtxMass = cms.InputTag("bJetVars:vtxMass"),
+        vtx3dL = cms.InputTag("bJetVars:vtx3dL"),
+        vtx3deL = cms.InputTag("bJetVars:vtx3deL"),
+        ptD = cms.InputTag("bJetVars:ptD"),
+        genPtwNu = cms.InputTag("bJetVars:genPtwNu"),
+        ),
+    userInts = cms.PSet(
+       vtxNtrk = cms.InputTag("bJetVars:vtxNtrk"),
+       leptonPdgId = cms.InputTag("bJetVars:leptonPdgId"),
+    ),
+)
+#  ~if opts['sample']['era'] == '2016':
+    #  ~process.updatedJetsWithUserData.userInts = cms.PSet(
+       #  ~vtxNtrk = cms.InputTag("bJetVars:vtxNtrk"),
+       #  ~leptonPdgId = cms.InputTag("bJetVars:leptonPdgId"),
+    #  ~)
+collection = 'updatedJetsWithUserData'
+
+process.bjetNN = cms.EDProducer("BJetEnergyRegressionMVA",
+   backend = cms.string("TF"),
+   src = cms.InputTag(collection),
+   pvsrc = cms.InputTag("offlineSlimmedPrimaryVertices"),
+   svsrc = cms.InputTag("slimmedSecondaryVertices"),
+   rhosrc = cms.InputTag("fixedGridRhoFastjetAll"),
+
+   weightFile =  wgtFile,
+   name = cms.string("JetRegNN"),
+   isClassifier = cms.bool(False),
+   variablesOrder = cms.vstring(["Jet_pt","Jet_eta","rho","Jet_mt","Jet_leadTrackPt","Jet_leptonPtRel","Jet_leptonDeltaR","Jet_neHEF",
+                                 "Jet_neEmEF","Jet_vtxPt","Jet_vtxMass","Jet_vtx3dL","Jet_vtxNtrk","Jet_vtx3deL",
+                                 "Jet_numDaughters_pt03","Jet_energyRing_dR0_em_Jet_rawEnergy","Jet_energyRing_dR1_em_Jet_rawEnergy",
+                                 "Jet_energyRing_dR2_em_Jet_rawEnergy","Jet_energyRing_dR3_em_Jet_rawEnergy","Jet_energyRing_dR4_em_Jet_rawEnergy",
+                                 "Jet_energyRing_dR0_neut_Jet_rawEnergy","Jet_energyRing_dR1_neut_Jet_rawEnergy","Jet_energyRing_dR2_neut_Jet_rawEnergy",
+                                 "Jet_energyRing_dR3_neut_Jet_rawEnergy","Jet_energyRing_dR4_neut_Jet_rawEnergy","Jet_energyRing_dR0_ch_Jet_rawEnergy",
+                                 "Jet_energyRing_dR1_ch_Jet_rawEnergy","Jet_energyRing_dR2_ch_Jet_rawEnergy","Jet_energyRing_dR3_ch_Jet_rawEnergy",
+                                 "Jet_energyRing_dR4_ch_Jet_rawEnergy","Jet_energyRing_dR0_mu_Jet_rawEnergy","Jet_energyRing_dR1_mu_Jet_rawEnergy",
+                                 "Jet_energyRing_dR2_mu_Jet_rawEnergy","Jet_energyRing_dR3_mu_Jet_rawEnergy","Jet_energyRing_dR4_mu_Jet_rawEnergy",
+                                 "Jet_chHEF","Jet_chEmEF","Jet_leptonPtRelInv","isEle","isMu","isOther","Jet_mass","Jet_ptd"]),
+   variables = cms.PSet(
+   Jet_pt = cms.string("pt*jecFactor('Uncorrected')"),
+   Jet_mt = cms.string("mt*jecFactor('Uncorrected')"),
+   Jet_eta = cms.string("eta"),
+   Jet_mass = cms.string("mass*jecFactor('Uncorrected')"),
+   Jet_ptd = cms.string("userFloat('ptD')"),
+   Jet_leadTrackPt = cms.string("userFloat('leadTrackPt')"),
+   Jet_vtxNtrk = cms.string("userInt('vtxNtrk')"),
+   Jet_vtxMass = cms.string("userFloat('vtxMass')"),
+   Jet_vtx3dL = cms.string("userFloat('vtx3dL')"),
+   Jet_vtx3deL = cms.string("userFloat('vtx3deL')"),
+   Jet_vtxPt = cms.string("userFloat('vtxPt')"),
+   Jet_leptonPtRel = cms.string("userFloat('leptonPtRelv0')"),
+   Jet_leptonPtRelInv = cms.string("userFloat('leptonPtRelInvv0')*jecFactor('Uncorrected')"),
+   Jet_leptonDeltaR = cms.string("userFloat('leptonDeltaR')"),
+   Jet_neHEF = cms.string("neutralHadronEnergyFraction()"),
+   Jet_neEmEF = cms.string("neutralEmEnergyFraction()"),
+   Jet_chHEF = cms.string("chargedHadronEnergyFraction()"),
+   Jet_chEmEF = cms.string("chargedEmEnergyFraction()"),
+   isMu = cms.string("?abs(userInt('leptonPdgId'))==13?1:0"),
+   isEle = cms.string("?abs(userInt('leptonPdgId'))==11?1:0"),
+   isOther = cms.string("?userInt('leptonPdgId')==0?1:0"),
+   ),
+    inputTensorName = cms.string("ffwd_inp"),
+    outputTensorName = cms.string("ffwd_out/BiasAdd"),
+    outputNames = cms.vstring(["corr","res"]),
+    outputFormulas = outputFormulas,
+    nThreads = cms.uint32(1),
+    singleThreadPool = cms.string("no_threads"),
+)
+
+process.UpdatedPatJetsAK04CHSBCRegressionUserData = cms.EDProducer('PATJetUserDataEmbedder',
+   src = cms.InputTag(collection),
+   userFloats = cms.PSet(
+      BJetEnergyCorrFactor       = cms.InputTag('bjetNN:corr'),
+   ),
+)
+
+################################
 # Define input and output      #
 ################################
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(options.maxEvents))
@@ -188,18 +347,22 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     minNumberElectrons_cut=cms.untracked.uint32(0),
                                     NumberLeptons_cut=cms.untracked.uint32(2),
                                     # physics objects
-                                    jets = cms.InputTag("slimmedJets"),
+                                    #  ~jets = cms.InputTag("slimmedJets"),
+                                    jets = cms.InputTag("UpdatedPatJetsAK04CHSBCRegressionUserData"),
                                     muons = cms.InputTag("slimmedMuons"),
+                                    muons_corr = cms.InputTag("rochesterCorrectedMuons"),
                                     genJets=cms.InputTag("slimmedGenJets"),
                                     electrons = cms.InputTag("slimmedElectrons"),
                                     photons = cms.InputTag("slimmedPhotons"),
-                                    mets = cms.InputTag("slimmedMETs"),
+                                    #  ~mets = cms.InputTag("slimmedMETs"),
+                                    mets = cms.InputTag("slimmedMETsMuonCorr"),
                                     metsPuppi = cms.InputTag("slimmedMETsPuppi"),
                                     metsNoHF = cms.InputTag("slimmedMETsNoHF"),
                                     metsDeepMET = cms.InputTag("deepMETProducer"),
                                     metCorr = cms.InputTag(""),
                                     metCorrCal = cms.InputTag(""),
                                     caloMets = cms.InputTag("slimmedMETs"),
+                                    mets_muonCorr = cms.InputTag("slimmedMETs_MuonCorr"),
                                     rho = cms.InputTag("fixedGridRhoFastjetAll"),
                                     ebRecHits = cms.InputTag("reducedEgamma","reducedEBRecHits"),
                                     vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
@@ -213,9 +376,9 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     electronMediumIdMap = cms.untracked.string("cutBasedElectronID-Fall17-94X-V1-medium"),
                                     electronTightIdMap  = cms.untracked.string("cutBasedElectronID-Fall17-94X-V1-tight"),
                                     # photon IDs
-                                    photonLooseIdMap   = cms.untracked.string("cutBasedPhotonID-Fall17-94X-V2-loose"),
-                                    photonMediumIdMap  = cms.untracked.string("cutBasedPhotonID-Fall17-94X-V2-medium"),
-                                    photonTightIdMap   = cms.untracked.string("cutBasedPhotonID-Fall17-94X-V2-tight"),
+                                    #  ~photonLooseIdMap   = cms.untracked.string("cutBasedPhotonID-Fall17-94X-V2-loose"),
+                                    #  ~photonMediumIdMap  = cms.untracked.string("cutBasedPhotonID-Fall17-94X-V2-medium"),
+                                    #  ~photonTightIdMap   = cms.untracked.string("cutBasedPhotonID-Fall17-94X-V2-tight"),
                                     # met filters to apply
                                     metFilterNames=cms.untracked.vstring(
                                         "Flag_HBHENoiseFilter",
@@ -397,10 +560,19 @@ for trig in process.TreeWriter.triggerPrescales:
 
 process.p = cms.Path(
     #~ process.BadPFMuonFilter*
-    process.makeGenEvt
+    process.jecSequence
+    *process.bJetVars
+    *process.updatedJetsWithUserData
+    *process.bjetNN
+    *process.UpdatedPatJetsAK04CHSBCRegressionUserData
+    *process.egammaPostRecoSeq
+    *process.rochesterCorrectedMuons
+    *process.fullPatMetSequence
+    *process.fullPatMetSequenceMuonCorr
+    *process.puppiMETSequence
+    *process.makeGenEvt
     # ~*process.generatorTopFilter
     *process.pseudoTop
-    *process.egammaPostRecoSeq
     *process.deepMETProducer
     *process.TreeWriter
 )

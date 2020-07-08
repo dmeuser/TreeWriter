@@ -1,0 +1,25 @@
+
+/*
+ *  * version.h
+ *   *
+ *    *  Created on: Jan 13, 2015
+ *     *      Author: kiesej
+ *      */
+
+#ifndef VERSION_H_
+#define VERSION_H_
+
+#define GCC_VERSION (__GNUC__ * 100 + __GNUC_MINOR__ )
+#define CMSSW_LEQ_5
+#if GCC_VERSION > 307
+#undef CMSSW_LEQ_5
+#endif
+
+/*
+#define CMSSW_LEQ_5
+#if __GNUC__ && __GNUC__ > 3 && __GNUC_MINOR__ && (__GNUC_MINOR__ > 7 || __GNUC__ == 5 )
+#undef CMSSW_LEQ_5
+#endif
+*/
+
+#endif /* VERSION_H_ */
