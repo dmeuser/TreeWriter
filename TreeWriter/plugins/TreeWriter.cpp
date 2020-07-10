@@ -335,6 +335,8 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    , metCorrectedCollectionToken_  (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metCorrected")))
    , metCalibratedCollectionToken_ (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metCalibrated")))
    , metDeepCollectionToken_ (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metsDeepMET")))
+   , metBJetRegressionCollectionToken_ (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("mets_BJetRegression")))
+   , metBJetRegressionLooseCollectionToken_ (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("mets_BJetRegressionLoose")))
    , caloMetCollectionToken_ (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("caloMets")))
    , rhoToken_               (consumes<double> (iConfig.getParameter<edm::InputTag>("rho")))
    , ebRecHitsToken_         (consumes<EcalRecHitCollection>(iConfig.getParameter<edm::InputTag>("ebRecHits")))
@@ -398,6 +400,8 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("metNoHF", &metNoHF_);
    eventTree_->Branch("metCorrected", &metCorrected_);
    eventTree_->Branch("metDeep", &metDeep_);
+   eventTree_->Branch("metBJetRegression", &metBJetRegression_);
+   eventTree_->Branch("metBJetRegressionLoose", &metBJetRegressionLoose_);
    eventTree_->Branch("met_raw", &met_raw_);
    eventTree_->Branch("met_gen", &met_gen_);
    eventTree_->Branch("met_JESu", &met_JESu_);
@@ -755,6 +759,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       math::XYZPoint vtx_point = firstGoodVertex.position();
       trMuon.d0 = mu.bestTrack()->dxy( vtx_point );
       trMuon.dZ = mu.bestTrack()->dz( vtx_point );
+      trMuon.rochesterCorrection = mu.hasUserFloat("MuonEnergyCorr") ? mu.userFloat("MuonEnergyCorr") : 1.;
       if (mu.isTightMuon(firstGoodVertex) && trMuon.rIso<0.15) vMuons_.push_back(trMuon); // take only 'tight' muons
       else vMuons_add_.push_back(trMuon); //Save all additional muons, which are not tight
    } // muon loop
@@ -1024,6 +1029,8 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trJet.nef = jet.neutralEmEnergyFraction();
       trJet.nch = jet.chargedMultiplicity();
       trJet.nconstituents = jet.numberOfDaughters();
+      trJet.bJetRegressionCorr = jet.hasUserFloat("BJetEnergyCorrFactor") ? jet.userFloat("BJetEnergyCorrFactor") : 1.;
+      trJet.bJetRegressionRes = jet.hasUserFloat("BJetEnergyCorrResolution") ? jet.userFloat("BJetEnergyCorrResolution") : 1.;
       // object matching
       trJet.hasElectronMatch = false;
       for (tree::Electron const &el: vElectrons_) {
@@ -1114,6 +1121,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       const double d = fabs(met.shiftedPt(pat::MET::METUncertainty(iShift+1))-metPt);
       // average
       const double a = .5*(u+d);
+      if (isinf(a)) continue;    //few events with problems for shift in Muon Energy
       // add deviations in quadrature
       met_.uncertainty += a*a;
    }
@@ -1177,6 +1185,22 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    double metPt_Deep = metDeep.pt();
    metDeep_.p.SetPtEtaPhiE(metPt_Deep, metDeep.eta(), metDeep.phi(), metDeep.energy());
    metDeep_.sig = metDeep.metSignificance();
+   
+   //MET with BJet Regression Jets
+   edm::Handle<pat::METCollection> metCollBJetRegr;
+   iEvent.getByToken(metBJetRegressionCollectionToken_, metCollBJetRegr);
+   const pat::MET &metBJetRegression = metCollBJetRegr->front();
+   double metPt_BJetRegression = metBJetRegression.pt();
+   metBJetRegression_.p.SetPtEtaPhiE(metPt_BJetRegression, metBJetRegression.eta(), metBJetRegression.phi(), metBJetRegression.energy());
+   metBJetRegression_.sig = metBJetRegression.metSignificance();
+   
+   //MET with BJet Regression Jets (only applied to jets with a loose selection)
+   edm::Handle<pat::METCollection> metCollBJetRegrLoose;
+   iEvent.getByToken(metBJetRegressionLooseCollectionToken_, metCollBJetRegrLoose);
+   const pat::MET &metBJetRegressionLoose = metCollBJetRegrLoose->front();
+   double metPt_BJetRegressionLoose = metBJetRegressionLoose.pt();
+   metBJetRegressionLoose_.p.SetPtEtaPhiE(metPt_BJetRegressionLoose, metBJetRegressionLoose.eta(), metBJetRegressionLoose.phi(), metBJetRegressionLoose.energy());
+   metBJetRegressionLoose_.sig = metBJetRegressionLoose.metSignificance();
       
    ///////////
    //MT2//////

@@ -64,6 +64,8 @@ namespace tree
       float sfResUp;
       float sfResDn;
       float uncorJecFactor; // uncorrected jet momentum over corrected jet momentum
+      float bJetRegressionCorr;
+      float bJetRegressionRes;
    };
 
    struct Muon: public Particle
@@ -78,6 +80,7 @@ namespace tree
       float d0;
       float dZ;
       float PFminiIso;
+      float rochesterCorrection;
    };
 
    struct Electron: public Particle

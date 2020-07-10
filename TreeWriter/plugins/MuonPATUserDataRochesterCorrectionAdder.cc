@@ -20,7 +20,7 @@
 
 #include "consumeTemplate.h"
 
-#include "../roccor.Run2.v4/RoccoR.cc"
+#include "../roccor/RoccoR.cc"
 
 #include "TRandom3.h"
 

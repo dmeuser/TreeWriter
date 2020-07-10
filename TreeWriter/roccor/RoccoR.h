@@ -2,6 +2,7 @@
 #define ElectroWeakAnalysis_RoccoR_H
 
 #include <boost/math/special_functions/erf.hpp>
+#include <iostream>
 
 struct CrystalBall{
     static const double pi;
