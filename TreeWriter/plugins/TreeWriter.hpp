@@ -178,7 +178,6 @@ private:
    Float_t MT2_;
    Float_t genMT2_;
    Float_t genMT2neutrino_;
-   Float_t dyPt_;
 
 
    ULong64_t evtNo_;
@@ -303,8 +302,10 @@ private:
    //~std::vector<tree::Particle> v_allPseudoJet_;
    //~std::vector<tree::Particle> v_allPseudoLepton_;
    
-   //DY pt Info
+   //DY gen Info
    const bool dyPtInfo_;
+   Float_t dyPt_;
+   std::vector<tree::GenParticle> v_dyLep_;
 };
 
 #endif /* TREEWRITER_HPP__ */

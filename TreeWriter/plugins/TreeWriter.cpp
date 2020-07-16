@@ -400,8 +400,8 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("metNoHF", &metNoHF_);
    eventTree_->Branch("metCorrected", &metCorrected_);
    eventTree_->Branch("metDeep", &metDeep_);
-   eventTree_->Branch("metBJetRegression", &metBJetRegression_);
-   eventTree_->Branch("metBJetRegressionLoose", &metBJetRegressionLoose_);
+   // ~eventTree_->Branch("metBJetRegression", &metBJetRegression_);
+   // ~eventTree_->Branch("metBJetRegressionLoose", &metBJetRegressionLoose_);
    eventTree_->Branch("met_raw", &met_raw_);
    eventTree_->Branch("met_gen", &met_gen_);
    eventTree_->Branch("met_JESu", &met_JESu_);
@@ -491,6 +491,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    //~eventTree_->Branch("allPseudoLeptons", &v_allPseudoLepton_);
    
    eventTree_->Branch("DYgenPt", &dyPt_, "DYgenPt/F");
+   eventTree_->Branch("DYgenLep", &v_dyLep_);
 
    // Fill trigger maps
    for (const auto& n : triggerNames_) {
@@ -1168,6 +1169,18 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    double metPt_Puppi = metPuppi.pt();
    metPuppi_.p.SetPtEtaPhiE(metPt_Puppi, metPuppi.eta(), metPuppi.phi(), metPuppi.energy());
    metPuppi_.sig = metPuppi.metSignificance();
+   // loop over all up-shifts save for last one (=NoShift)
+   for (uint iShift=0; iShift<(pat::MET::METUncertaintySize-1); iShift+=2) {
+      // up and down shifts
+      const double u = fabs(metPuppi.shiftedPt(pat::MET::METUncertainty(iShift))  -metPt_Puppi);
+      const double d = fabs(metPuppi.shiftedPt(pat::MET::METUncertainty(iShift+1))-metPt_Puppi);
+      // average
+      const double a = .5*(u+d);
+      if (isinf(a)) continue;    //few events with problems for shift in Muon Energy
+      // add deviations in quadrature
+      metPuppi_.uncertainty += a*a;
+   }
+   metPuppi_.uncertainty=TMath::Sqrt(metPuppi_.uncertainty);
       
    //MET no HF
    edm::Handle<pat::METCollection> metCollNoHF;
@@ -1186,21 +1199,22 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    metDeep_.p.SetPtEtaPhiE(metPt_Deep, metDeep.eta(), metDeep.phi(), metDeep.energy());
    metDeep_.sig = metDeep.metSignificance();
    
-   //MET with BJet Regression Jets
-   edm::Handle<pat::METCollection> metCollBJetRegr;
-   iEvent.getByToken(metBJetRegressionCollectionToken_, metCollBJetRegr);
-   const pat::MET &metBJetRegression = metCollBJetRegr->front();
-   double metPt_BJetRegression = metBJetRegression.pt();
-   metBJetRegression_.p.SetPtEtaPhiE(metPt_BJetRegression, metBJetRegression.eta(), metBJetRegression.phi(), metBJetRegression.energy());
-   metBJetRegression_.sig = metBJetRegression.metSignificance();
+   // ~//MET with BJet Regression Jets
+   // ~edm::Handle<pat::METCollection> metCollBJetRegr;
+   // ~iEvent.getByToken(metBJetRegressionCollectionToken_, metCollBJetRegr);
+   // ~const pat::MET &metBJetRegression = metCollBJetRegr->front();
+   // ~double metPt_BJetRegression = metBJetRegression.pt();
+   // ~metBJetRegression_.p.SetPtEtaPhiE(metPt_BJetRegression, metBJetRegression.eta(), metBJetRegression.phi(), metBJetRegression.energy());
+   // ~metBJetRegression_.sig = metBJetRegression.metSignificance();
    
-   //MET with BJet Regression Jets (only applied to jets with a loose selection)
-   edm::Handle<pat::METCollection> metCollBJetRegrLoose;
-   iEvent.getByToken(metBJetRegressionLooseCollectionToken_, metCollBJetRegrLoose);
-   const pat::MET &metBJetRegressionLoose = metCollBJetRegrLoose->front();
-   double metPt_BJetRegressionLoose = metBJetRegressionLoose.pt();
-   metBJetRegressionLoose_.p.SetPtEtaPhiE(metPt_BJetRegressionLoose, metBJetRegressionLoose.eta(), metBJetRegressionLoose.phi(), metBJetRegressionLoose.energy());
-   metBJetRegressionLoose_.sig = metBJetRegressionLoose.metSignificance();
+   // ~//MET with BJet Regression Jets (only applied to jets with a loose selection)
+   // ~edm::Handle<pat::METCollection> metCollBJetRegrLoose;
+   // ~iEvent.getByToken(metBJetRegressionLooseCollectionToken_, metCollBJetRegrLoose);
+   // ~const pat::MET &metBJetRegressionLoose = metCollBJetRegrLoose->front();
+   // ~double metPt_BJetRegressionLoose = metBJetRegressionLoose.pt();
+   // ~metBJetRegressionLoose_.p.SetPtEtaPhiE(metPt_BJetRegressionLoose, metBJetRegressionLoose.eta(), metBJetRegressionLoose.phi(), metBJetRegressionLoose.energy());
+   // ~metBJetRegressionLoose_.sig = metBJetRegressionLoose.metSignificance();
+   // ~std::cout<<metBJetRegressionLoose_.p.Pt()<<std::endl;
       
    ///////////
    //MT2//////
@@ -1235,6 +1249,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    // copied from https://github.com/Aachen-3A/PxlSkimmer/blob/master/Skimming/src/PxlSkimmer_miniAOD.cc#L590
    genHt_ = -1;
    dyPt_ = -1;
+   tree::GenParticle trDYlep;
    if (!isRealData) {
       edm::Handle<LHEEventProduct> lheInfoHandle;
       iEvent.getByToken(LHEEventToken_, lheInfoHandle);
@@ -1255,6 +1270,9 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
             if(dyPtInfo_ && (absId==11 || absId==13 || absId==15)) { //save gen DY pt
                DYptVec_temp.SetPxPyPzE(allParticles[i][0],allParticles[i][1],allParticles[i][2],allParticles[i][3]);
                DYptVec += DYptVec_temp;
+               trDYlep.p = DYptVec_temp;
+               trDYlep.pdgId =absId;
+               v_dyLep_.push_back(trDYlep);
             }
          } // end particle loop
          if(dyPtInfo_) dyPt_ = DYptVec.Pt();
