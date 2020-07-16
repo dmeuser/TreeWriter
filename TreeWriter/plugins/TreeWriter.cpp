@@ -1249,6 +1249,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    // copied from https://github.com/Aachen-3A/PxlSkimmer/blob/master/Skimming/src/PxlSkimmer_miniAOD.cc#L590
    genHt_ = -1;
    dyPt_ = -1;
+   v_dyLep_.clear();
    tree::GenParticle trDYlep;
    if (!isRealData) {
       edm::Handle<LHEEventProduct> lheInfoHandle;
