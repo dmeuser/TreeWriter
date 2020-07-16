@@ -72,7 +72,8 @@ void JetPATBJetRegressionCorrectionAdder::produce(edm::Event& evt, const edm::Ev
     
     if(debug_){ std::cout << jet.pt() << " "; }
     
-    if(applyLooseSelection_ && (jet.pt()<15 || jet.eta()>2.5)) continue;
+    // ~if(applyLooseSelection_ && (jet.pt()<15 || jet.eta()>2.5)) continue;
+    if(applyLooseSelection_ && (jet.pt()<15 || jet.eta()>2.5 || (jet.bDiscriminator("pfDeepCSVJetTags:probb")+jet.bDiscriminator("pfDeepCSVJetTags:probbb"))<0.2217)) continue;
 
     jet.setP4(math::XYZTLorentzVector(jet.px()*scaleFactor, jet.py()*scaleFactor, jet.pz()*scaleFactor, jet.energy()*scaleFactor));
 
