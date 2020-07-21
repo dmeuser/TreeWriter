@@ -1170,6 +1170,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    metPuppi_.p.SetPtEtaPhiE(metPt_Puppi, metPuppi.eta(), metPuppi.phi(), metPuppi.energy());
    metPuppi_.sig = metPuppi.metSignificance();
    // loop over all up-shifts save for last one (=NoShift)
+   metPuppi_.uncertainty = 0;
    for (uint iShift=0; iShift<(pat::MET::METUncertaintySize-1); iShift+=2) {
       // up and down shifts
       const double u = fabs(metPuppi.shiftedPt(pat::MET::METUncertainty(iShift))  -metPt_Puppi);
