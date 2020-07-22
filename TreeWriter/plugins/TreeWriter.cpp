@@ -1178,6 +1178,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       // average
       const double a = .5*(u+d);
       if (isinf(a)) continue;    //few events with problems for shift in Muon Energy
+      if (isnan(a)) continue;    //few events with problems for shift in JetRes
       // add deviations in quadrature
       metPuppi_.uncertainty += a*a;
    }
