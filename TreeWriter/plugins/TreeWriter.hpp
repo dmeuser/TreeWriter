@@ -75,6 +75,8 @@
 
 #include "MT2Functor.h"
 #include <TreeWriter/TreeWriter/plugins/LeptonFullSimScaleFactorMapFunctor.h>
+#include <TreeWriter/TreeWriter/plugins/BTagEffMapFunctor.h>
+#include <TreeWriter/TreeWriter/plugins/BTagCalibrationStandalone.h>
 
 
 typedef std::vector<PileupSummaryInfo> PileupSummaryInfoCollection;
@@ -239,6 +241,21 @@ private:
    Float_t lepton2SF_;
    Float_t lepton1SF_unc_;
    Float_t lepton2SF_unc_;
+   
+   BTagEffMapFunctor fctBTagEff_;
+   BTagCalibration fctBTagCalibFullSim_;
+   BTagCalibrationReader fctBTagCalibReaderFullSimBJets_;
+   BTagCalibrationReader fctBTagCalibReaderFullSimCJets_;
+   BTagCalibrationReader fctBTagCalibReaderFullSimLightJets_;
+   BTagCalibrationReader fctBTagCalibReaderFullSimBJetsUp_;
+   BTagCalibrationReader fctBTagCalibReaderFullSimCJetsUp_;
+   BTagCalibrationReader fctBTagCalibReaderFullSimLightJetsUp_;
+   BTagCalibrationReader fctBTagCalibReaderFullSimBJetsDown_;
+   BTagCalibrationReader fctBTagCalibReaderFullSimCJetsDown_;
+   BTagCalibrationReader fctBTagCalibReaderFullSimLightJetsDown_;
+   Float_t bTagWeight_;
+   Float_t bTagWeightErrHeavy_;
+   Float_t bTagWeightErrLight_;
 
    // File Service to store things to a root file
    edm::Service<TFileService> fs_;

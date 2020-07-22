@@ -29,12 +29,12 @@ options.register ('user',
 
 # defaults
 options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v1/00000/80EBB916-A6C4-E811-9A55-A4BF011254E0.root'
-#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/270000/C0E1EA88-C1ED-E811-BC7F-0CC47AB58BE6.root'
+#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/100000/001AFD43-7CED-E811-8C85-0025904CF974.root'
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/DYJetsToLL_M-50_HT-70to100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/110000/FC23A1C1-1BEA-E811-9671-0025905C445A.root'
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/DYJetsToLL_M-5to50_HT-70to100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/100000/369FAAD7-78EA-E811-A331-24BE05C64601.root'
 # ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/100000/0C0D1C23-C1EC-E811-8B4B-AC1F6B23C848.root'
-# ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T2tt_mStop-650_mLSP-350_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/20000/868AE3FA-92F2-E811-AE95-0025905A6110.root'
-#~ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016D/MuonEG/MINIAOD/17Jul2018-v1/80000/D48E0B3A-A28E-E811-8A12-7CD30AD08EB4.root'
+#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/90000/D2E079F1-29F5-E811-B34D-0CC47AF9B2CA.root'
+#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016B/MuonEG/MINIAOD/17Jul2018_ver2-v1/20000/FABB80BC-6C8D-E811-9351-0025905C3DD8.root'
 # ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/WW_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/270000/9439498F-29EB-E811-B02A-0CC47AFCC626.root'
 # ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/60000/F40DF1A0-E937-E911-AB5B-AC1F6BAC7D12.root'
 # ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/90000/6491126E-26F6-E811-9145-0025905C3D96.root'
@@ -184,6 +184,27 @@ updateJetCollection(
 process.jecSequence = cms.Sequence(process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC)
 
 ################################
+# BTag Event Weights           #
+################################
+BTagCalibrationReaderPars2016 = cms.PSet(
+    measurementType_bJets = cms.string('mujets'),
+    measurementType_cJets = cms.string('mujets'),
+    measurementType_lightJets = cms.string('incl'),
+)
+
+BTagCalibrationPars2016 = cms.PSet(
+    CSVFullSimTagger = cms.string('DeepCSV'),
+    CSVFullSimFileName = cms.string('data/2016/DeepCSV_2016LegacySF_WP_V1.csv'),       
+)
+
+bTagEffMapPars2016 = cms.PSet(
+    fullSimFile = cms.string('${CMSSW_BASE}/src/TreeWriter/data/2016/btageff__ttbar_powheg_pythia8_25ns_Moriond17_deepCSV.root'),
+    bEffFullSimName = cms.string('h2_BTaggingEff_csv_loose_Eff_b'),
+    cEffFullSimName = cms.string('h2_BTaggingEff_csv_loose_Eff_c'),
+    lightEffFullSimName = cms.string('h2_BTaggingEff_csv_loose_Eff_udsg'),
+)
+
+################################
 # Ttbar Gen Info               #
 ################################
 genParticleCollection = "prunedGenParticles"
@@ -221,7 +242,8 @@ process.pseudoTop = cms.EDProducer("PseudoTopProducer",
    minMETSemiLepton = cms.double(30),
    minMtWSemiLepton = cms.double(30)
 )
-
+if not isRealData: process.TTbarGen = cms.Sequence(process.makeGenEvt * process.pseudoTop)
+else: process.TTbarGen = cms.Sequence()
 ################################
 # Bjet Regression              #
 ################################
@@ -360,8 +382,8 @@ process.updatedJetsBJetRegressionLoose = JetPATBJetRegressionCorrectionAdder.clo
 # Define input and output      #
 ################################
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(options.maxEvents))
-#~ process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), lumisToProcess = cms.untracked.VLuminosityBlockRange("276315:134"))#eventsToProcess = cms.untracked.VEventRange("276315:134:185994346"))
-#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("1:391314:74349595"))
+#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), lumisToProcess = cms.untracked.VLuminosityBlockRange("1:1099"))#eventsToProcess = cms.untracked.VEventRange("276315:134:185994346"))
+#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("1:88476:16810303"))
 process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles))
 process.TFileService = cms.Service("TFileService", fileName=cms.string(options.outputFile))
 
@@ -372,7 +394,7 @@ process.TFileService = cms.Service("TFileService", fileName=cms.string(options.o
 process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     # selection configuration
                                     HT_cut=cms.untracked.double(0),
-                                    jet_pT_cut=cms.untracked.double(14), # for all jets
+                                    jet_pT_cut=cms.untracked.double(30), # for all jets
                                     isolatedPhotons=cms.untracked.bool(True), # for all photons in the collection
                                     minNumberElectrons_cut=cms.untracked.uint32(0),
                                     NumberLeptons_cut=cms.untracked.uint32(2),
@@ -436,6 +458,9 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     metCorrected = cms.InputTag("slimmedMETs"),
                                     metCalibrated = cms.InputTag("slimmedMETs"),
                                     LeptonFullSimScaleFactors = LeptonFullSimScaleFactorMapPars2016,
+                                    BTagCalibration = BTagCalibrationPars2016,
+                                    BTagCalibrationReader = BTagCalibrationReaderPars2016,
+                                    bTagEfficiencies = bTagEffMapPars2016,
                                     ttbarGenInfo = cms.bool(False),
                                     ttbarPseudoInfo = cms.bool(False),
                                     DYptInfo = cms.bool(False),
@@ -604,9 +629,8 @@ process.p = cms.Path(
     #  ~*process.fullPatMetSequenceBJetRegressionCorr
     #  ~*process.fullPatMetSequenceBJetRegressionCorrLoose
     *process.puppiMETSequence
-    *process.makeGenEvt
+    *process.TTbarGen
     # ~*process.generatorTopFilter
-    *process.pseudoTop
     *process.deepMETProducer
     *process.TreeWriter
 )

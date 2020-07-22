@@ -66,6 +66,7 @@ namespace tree
       float uncorJecFactor; // uncorrected jet momentum over corrected jet momentum
       float bJetRegressionCorr;
       float bJetRegressionRes;
+      int hadronFlavour; //so far used to derive BTag weight
    };
 
    struct Muon: public Particle
