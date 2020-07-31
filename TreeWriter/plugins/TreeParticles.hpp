@@ -106,6 +106,7 @@ namespace tree
       TVector3 pUncorrected;
       float phiSC;     //Supercluster Phi
       float etaSC;     //Supercluster Eta
+      float corr;
    };
    
    struct Photon : public Particle

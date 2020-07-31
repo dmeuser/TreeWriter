@@ -62,6 +62,8 @@
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
 #include "JetMETCorrections/Modules/interface/JetResolution.h"
+#include "CondFormats/BTauObjects/interface/BTagCalibration.h"
+#include "CondTools/BTau/interface/BTagCalibrationReader.h"
 
 #include "TMVA/Factory.h"
 #include "TMVA/Tools.h"
@@ -76,7 +78,6 @@
 #include "MT2Functor.h"
 #include <TreeWriter/TreeWriter/plugins/LeptonFullSimScaleFactorMapFunctor.h>
 #include <TreeWriter/TreeWriter/plugins/BTagEffMapFunctor.h>
-#include <TreeWriter/TreeWriter/plugins/BTagCalibrationStandalone.h>
 
 
 typedef std::vector<PileupSummaryInfo> PileupSummaryInfoCollection;
@@ -256,6 +257,8 @@ private:
    Float_t bTagWeight_;
    Float_t bTagWeightErrHeavy_;
    Float_t bTagWeightErrLight_;
+   
+   Float_t topPTweight_;
 
    // File Service to store things to a root file
    edm::Service<TFileService> fs_;

@@ -28,20 +28,19 @@ options.register ('user',
                   "Name the user. If not set by crab, this script will determine it.")
 
 # defaults
-options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v1/00000/80EBB916-A6C4-E811-9A55-A4BF011254E0.root'
-#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/100000/001AFD43-7CED-E811-8C85-0025904CF974.root'
+#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v1/00000/80EBB916-A6C4-E811-9A55-A4BF011254E0.root'
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/DYJetsToLL_M-50_HT-70to100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/110000/FC23A1C1-1BEA-E811-9671-0025905C445A.root'
-#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/DYJetsToLL_M-5to50_HT-70to100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/100000/369FAAD7-78EA-E811-A331-24BE05C64601.root'
-# ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/100000/0C0D1C23-C1EC-E811-8B4B-AC1F6B23C848.root'
+#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/DYJetsToLL_M-50_HT-800to1200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v1/270000/BCB3A74B-E5EA-E811-914C-0025905C4270.root',
+options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/270000/20B4527C-D9ED-E811-A928-0CC47AB65046.root',
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/90000/D2E079F1-29F5-E811-B34D-0CC47AF9B2CA.root'
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016B/MuonEG/MINIAOD/17Jul2018_ver2-v1/20000/FABB80BC-6C8D-E811-9351-0025905C3DD8.root'
-# ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/WW_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/270000/9439498F-29EB-E811-B02A-0CC47AFCC626.root'
+#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/ZZ_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/270000/E82E266F-94E3-E811-9BE7-7CD30AC031E8.root',
 # ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/60000/F40DF1A0-E937-E911-AB5B-AC1F6BAC7D12.root'
 # ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/90000/6491126E-26F6-E811-9145-0025905C3D96.root'
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
-options.maxEvents = -1
-#  ~options.maxEvents = 100
+#  ~options.maxEvents = -1
+options.maxEvents = 1000
 # get and parse the command line arguments
 options.parseArguments()
 
@@ -211,8 +210,8 @@ genParticleCollection = "prunedGenParticles"
 process.load("TopQuarkAnalysis.TopEventProducers.sequences.ttGenEvent_cff")
 process.initSubset.src = genParticleCollection
 process.decaySubset.src = genParticleCollection
-# ~process.decaySubset.fillMode = "kME" # Status3, use kStable for Status2
-process.decaySubset.fillMode = "kStable" # Status3, use kStable for Status2
+process.decaySubset.fillMode = "kME" # Status3, use kStable for Status2
+#  ~process.decaySubset.fillMode = "kStable" # Status3, use kStable for Status2
 runMode = "Run2"
 process.decaySubset.runMode = runMode
 
@@ -250,9 +249,11 @@ else: process.TTbarGen = cms.Sequence()
 # https://github.com/cms-sw/cmssw/blob/master/PhysicsTools/NanoAOD/python/jets_cff.py
 # https://twiki.cern.ch/twiki/bin/view/CMS/HiggsWG/BJetRegression
 
+collection="updatedPatJetsUpdatedJEC"
+
 process.bJetVars = cms.EDProducer("JetRegressionVarProducer",
    pvsrc = cms.InputTag("offlineSlimmedPrimaryVertices"),
-   src = cms.InputTag("updatedPatJetsUpdatedJEC"),
+   src = cms.InputTag(collection),
    svsrc = cms.InputTag("slimmedSecondaryVertices"),
    gpsrc = cms.InputTag("prunedGenParticles"),
 )
@@ -260,6 +261,7 @@ process.bJetVars = cms.EDProducer("JetRegressionVarProducer",
 
 #  ~if opts['sample']['era'] == '2016':
 wgtFile = cms.FileInPath("PhysicsTools/NanoAOD/data/breg_training_2016.pb")
+#  ~wgtFile = cms.FileInPath('TreeWriter/data/2016/breg_training_2016_JECv11_Oct_2019.pb')
 outputFormulas = cms.vstring(["at(0)*0.31976690888404846+1.047176718711853","0.5*(at(2)-at(1))*0.31976690888404846"])
 wgtFile_c = cms.FileInPath("PhysicsTools/NanoAOD/data/creg_training_2016.pb")
 outputFormulas_c = cms.vstring(["at(0)*0.28862622380256653+0.9908722639083862","0.5*(at(2)-at(1))*0.28862622380256653"])
@@ -275,7 +277,7 @@ outputFormulas_c = cms.vstring(["at(0)*0.28862622380256653+0.9908722639083862","
    #  ~outputFormulas_c = cms.vstring(["at(0)*0.24325256049633026+0.993854820728302","0.5*(at(2)-at(1))*0.24325256049633026"])
 
 process.updatedJetsWithUserData = cms.EDProducer("PATJetUserDataEmbedder",
-    src = cms.InputTag("updatedPatJetsUpdatedJEC"),
+    src = cms.InputTag(collection),
     userFloats = cms.PSet(
         leadTrackPt = cms.InputTag("bJetVars:leadTrackPt"),
         leptonPtRel = cms.InputTag("bJetVars:leptonPtRel"),
@@ -383,7 +385,7 @@ process.updatedJetsBJetRegressionLoose = JetPATBJetRegressionCorrectionAdder.clo
 ################################
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(options.maxEvents))
 #  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), lumisToProcess = cms.untracked.VLuminosityBlockRange("1:1099"))#eventsToProcess = cms.untracked.VEventRange("276315:134:185994346"))
-#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("1:88476:16810303"))
+#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("1:185:35009"))
 process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles))
 process.TFileService = cms.Service("TFileService", fileName=cms.string(options.outputFile))
 
@@ -402,8 +404,8 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     #  ~jets = cms.InputTag("slimmedJets"),
                                     jets = cms.InputTag("updatedPatJetsUpdatedJEC"),
                                     #  ~jets = cms.InputTag("UpdatedPatJetsAK04CHSBCRegressionUserData"),
-                                    #  ~muons = cms.InputTag("MuonsAddedRochesterCorr"),
-                                    muons = cms.InputTag("slimmedMuons"),
+                                    muons = cms.InputTag("MuonsAddedRochesterCorr"),
+                                    #  ~muons = cms.InputTag("slimmedMuons"),
                                     genJets=cms.InputTag("slimmedGenJets"),
                                     electrons = cms.InputTag("slimmedElectrons"),
                                     photons = cms.InputTag("slimmedPhotons"),
@@ -624,7 +626,7 @@ process.p = cms.Path(
     #  ~*process.updatedJetsBJetRegression
     #  ~*process.updatedJetsBJetRegressionLoose
     *process.egammaPostRecoSeq
-    #  ~*process.MuonsAddedRochesterCorr
+    *process.MuonsAddedRochesterCorr
     *process.fullPatMetSequence
     #  ~*process.fullPatMetSequenceBJetRegressionCorr
     #  ~*process.fullPatMetSequenceBJetRegressionCorrLoose
