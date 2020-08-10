@@ -437,6 +437,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("ee", &ee_);
    eventTree_->Branch("mumu", &mumu_);
    eventTree_->Branch("emu", &emu_);
+   eventTree_->Branch("addLepton", &addLepton_);
    eventTree_->Branch("true_nPV", &true_nPV_, "true_nPV/I");
    eventTree_->Branch("nGoodVertices" , &nGoodVertices_ , "nGoodVertices/I");
    eventTree_->Branch("nTracksPV", &nTracksPV_, "nTracksPV/I");
@@ -773,7 +774,8 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    tree::Muon trMuon;
    for (const pat::Muon &mu : *muonColl) {
       if (! (mu.isPFMuon() || mu.isGlobalMuon() || mu.isTrackerMuon())) continue;
-      if (mu.pt()<20 || abs(mu.eta())>2.4) continue;
+      // ~if (mu.pt()<20 || abs(mu.eta())>2.4) continue;
+      if (abs(mu.eta())>2.4) continue;
       //~ trMuon.p.SetPtEtaPhi(mu.pt(), mu.eta(), mu.phi());
       trMuon.p.SetPtEtaPhiE(mu.pt(), mu.eta(), mu.phi(), mu.energy());
       trMuon.isTight = mu.isTightMuon(firstGoodVertex);
@@ -787,8 +789,9 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trMuon.d0 = mu.bestTrack()->dxy( vtx_point );
       trMuon.dZ = mu.bestTrack()->dz( vtx_point );
       trMuon.rochesterCorrection = mu.hasUserFloat("MuonEnergyCorr") ? mu.userFloat("MuonEnergyCorr") : 1.;
-      if (mu.isTightMuon(firstGoodVertex) && trMuon.rIso<0.15) vMuons_.push_back(trMuon); // take only 'tight' muons
-      else vMuons_add_.push_back(trMuon); //Save all additional muons, which are not tight
+      
+      if (mu.pt()>20 && mu.isTightMuon(firstGoodVertex) && trMuon.rIso<0.15) vMuons_.push_back(trMuon); // take only 'tight' muons
+      else if (mu.pt()>10) vMuons_add_.push_back(trMuon); //Save all additional muons, which are not tight
    } // muon loop
    sort(vMuons_.begin(), vMuons_.end(), tree::PtGreater);
    sort(vMuons_add_.begin(), vMuons_add_.end(), tree::PtGreater);
@@ -803,7 +806,8 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    vElectrons_add_.clear();
    tree::Electron trEl;
    for (edm::View<pat::Electron>::const_iterator el = electronColl->begin();el != electronColl->end(); el++) {
-      if (el->pt()<20 || abs(el->superCluster()->eta())>2.4 || ((1.4442 < abs(el->superCluster()->eta())) && (el->superCluster()->eta()) < 1.5660)) continue;
+      // ~if (el->pt()<20 || abs(el->superCluster()->eta())>2.4 || ((1.4442 < abs(el->superCluster()->eta())) && abs(el->superCluster()->eta()) < 1.5660)) continue;
+      if (abs(el->superCluster()->eta())>2.4 || ((1.4442 < abs(el->superCluster()->eta())) && abs(el->superCluster()->eta()) < 1.5660)) continue;
       const edm::Ptr<pat::Electron> elPtr(electronColl, el - electronColl->begin());
       trEl.isLoose = el->electronID(electronLooseIdMapToken_);
       trEl.isMedium = el->electronID(electronMediumIdMapToken_);
@@ -843,8 +847,8 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
         //~ trEl.pUncorrected.SetPtEtaPhi(ele.pt(), ele.superCluster()->eta(), ele.superCluster()->phi());
       //~ }
 		
-      if (el->electronID(electronTightIdMapToken_)) vElectrons_.push_back(trEl); // take only 'tight' electrons
-      else vElectrons_add_.push_back(trEl); //Save all additional electrons, which are not tight
+      if (el->pt()>20 && el->electronID(electronTightIdMapToken_)) vElectrons_.push_back(trEl); // take only 'tight' electrons
+      else if (el->pt()>10 && el->electronID(electronVetoIdMapToken_)) vElectrons_add_.push_back(trEl); //Save all additional electrons, which are at least 'veto' electrons
    }
    sort(vElectrons_.begin(), vElectrons_.end(), tree::PtGreater);
    sort(vElectrons_add_.begin(), vElectrons_add_.end(), tree::PtGreater);
@@ -935,7 +939,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    bool pseudoDileptonSelection=true;
    if (ttbarPseudoDecayMode_==0 || pseudoTopInfo_==0) pseudoDileptonSelection=false;
    bool recoDileptonSelection=true;
-   
+
    ee_=false;
    mumu_=false;
    emu_=false;
@@ -946,30 +950,36 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    
       if (vElectrons_.size()==2){
          if (vElectrons_[0].charge*vElectrons_[1].charge!=-1) recoDileptonSelection=false;
-         mll_=(vElectrons_[0].p+vElectrons_[1].p).M();
-         ee_=true;
-         lepton1SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[0];
-         lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[1];
-         lepton2SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[1],vElectrons_[1].p.Pt(),vElectrons_[1].etaSC))[0];
-         lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[1],vElectrons_[1].p.Pt(),vElectrons_[1].etaSC))[1];
+         else{
+            mll_=(vElectrons_[0].p+vElectrons_[1].p).M();
+            ee_=true;
+            lepton1SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[0];
+            lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[1];
+            lepton2SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[1],vElectrons_[1].p.Pt(),vElectrons_[1].etaSC))[0];
+            lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[1],vElectrons_[1].p.Pt(),vElectrons_[1].etaSC))[1];
+         }
       }
       else if (vMuons_.size()==2){
          if (vMuons_[0].charge*vMuons_[1].charge!=-1) recoDileptonSelection=false;
-         mll_=(vMuons_[0].p+vMuons_[1].p).M();
-         mumu_=true;
-         lepton1SF_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[0];
-         lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[1];
-         lepton2SF_=(fctLeptonFullSimScaleFactors_(vMuons_[1],vMuons_[1].p.Pt(),vMuons_[1].p.Eta()))[0];
-         lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vMuons_[1],vMuons_[1].p.Pt(),vMuons_[1].p.Eta()))[1];
+         else{
+            mll_=(vMuons_[0].p+vMuons_[1].p).M();
+            mumu_=true;
+            lepton1SF_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[0];
+            lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[1];
+            lepton2SF_=(fctLeptonFullSimScaleFactors_(vMuons_[1],vMuons_[1].p.Pt(),vMuons_[1].p.Eta()))[0];
+            lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vMuons_[1],vMuons_[1].p.Pt(),vMuons_[1].p.Eta()))[1];
+         }
       }
       else {
          if (vMuons_[0].charge*vElectrons_[0].charge!=-1) recoDileptonSelection=false;
-         mll_=(vMuons_[0].p+vElectrons_[0].p).M();
-         emu_=true;
-         lepton1SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[0];
-         lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[1];
-         lepton2SF_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[0];
-         lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[1];
+         else{
+            mll_=(vMuons_[0].p+vElectrons_[0].p).M();
+            emu_=true;
+            lepton1SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[0];
+            lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[1];
+            lepton2SF_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[0];
+            lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[1];
+         }
       }
    }
    else recoDileptonSelection=false;
@@ -977,6 +987,9 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    if (!recoDileptonSelection && !pseudoDileptonSelection) return;
    
    hCutFlow_->Fill("Dilepton", mc_weight_*pu_weight_);
+   
+   addLepton_=false;
+   if((vElectrons_add_.size()+vMuons_add_.size())>0) addLepton_=true;
    
    /*
    ///////////

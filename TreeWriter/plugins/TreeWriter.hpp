@@ -275,6 +275,9 @@ private:
    bool ee_;
    bool emu_;
    
+   // Add lepton veto
+   bool addLepton_;
+   
    //MT2 functor
    MT2Functor fctMT2_;
    double pa[3];
