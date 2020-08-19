@@ -39,8 +39,8 @@ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016B/DoubleM
 # ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/90000/6491126E-26F6-E811-9145-0025905C3D96.root'
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
-options.maxEvents = -1
-#  ~options.maxEvents = 1000
+#  ~options.maxEvents = -1
+options.maxEvents = 100
 # get and parse the command line arguments
 options.parseArguments()
 

@@ -78,6 +78,7 @@
 #include "MT2Functor.h"
 #include <TreeWriter/TreeWriter/plugins/LeptonFullSimScaleFactorMapFunctor.h>
 #include <TreeWriter/TreeWriter/plugins/BTagEffMapFunctor.h>
+#include <TreeWriter/TreeWriter/plugins/XYMETCorrection.h>
 
 
 typedef std::vector<PileupSummaryInfo> PileupSummaryInfoCollection;
@@ -215,8 +216,6 @@ private:
    tree::MET                   metCalo_;
    tree::MET                   metPuppi_;
    tree::MET                   metNoHF_;
-   tree::MET                   metCorrected_;
-   tree::MET                   metCalibrated_;
    tree::MET                   met_raw_;
    tree::MET                   met_gen_;
    tree::MET                   met_JESu_;
@@ -224,6 +223,7 @@ private:
    tree::MET                   met_JERu_;
    tree::MET                   met_JERd_;
    tree::MET                   metDeep_;
+   tree::MET                   metXYcorr_;
    tree::MET                   metBJetRegression_;
    tree::MET                   metBJetRegressionLoose_;
    std::map<std::string,std::vector<tree::Particle>> triggerObjectMap_;

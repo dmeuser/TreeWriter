@@ -418,8 +418,8 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("metCalo", &metCalo_);
    eventTree_->Branch("metPuppi", &metPuppi_);
    eventTree_->Branch("metNoHF", &metNoHF_);
-   eventTree_->Branch("metCorrected", &metCorrected_);
    eventTree_->Branch("metDeep", &metDeep_);
+   eventTree_->Branch("metXYcorr", &metXYcorr_);
    // ~eventTree_->Branch("metBJetRegression", &metBJetRegression_);
    // ~eventTree_->Branch("metBJetRegressionLoose", &metBJetRegressionLoose_);
    eventTree_->Branch("met_raw", &met_raw_);
@@ -439,6 +439,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("emu", &emu_);
    eventTree_->Branch("addLepton", &addLepton_);
    eventTree_->Branch("true_nPV", &true_nPV_, "true_nPV/I");
+   eventTree_->Branch("nPV", &nPV_, "nPV/I");
    eventTree_->Branch("nGoodVertices" , &nGoodVertices_ , "nGoodVertices/I");
    eventTree_->Branch("nTracksPV", &nTracksPV_, "nTracksPV/I");
    eventTree_->Branch("rho", &rho_, "rho/F");
@@ -1207,16 +1208,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    iEvent.getByToken(caloMetCollectionToken_, metCollCalo);
    caloMetPt_ = metCollCalo->front().caloMETPt();
 
-   edm::Handle<pat::METCollection> metCorrectedColl;
-   iEvent.getByToken(metCorrectedCollectionToken_, metCorrectedColl);
-   //~ metCorrected_.p.SetPtEtaPhi(metCorrectedColl->front().pt(), metCorrectedColl->front().eta(), metCorrectedColl->front().phi());
-   metCorrected_.p.SetPtEtaPhiE(metCorrectedColl->front().pt(), metCorrectedColl->front().eta(), metCorrectedColl->front().phi(), metCorrectedColl->front().energy());
-
-   edm::Handle<pat::METCollection> metCalibratedColl;
-   iEvent.getByToken(metCalibratedCollectionToken_, metCalibratedColl);
-   //~ metCalibrated_.p.SetPtEtaPhi(metCalibratedColl->front().pt(), metCalibratedColl->front().eta(), metCalibratedColl->front().phi());
-   metCalibrated_.p.SetPtEtaPhiE(metCalibratedColl->front().pt(), metCalibratedColl->front().eta(), metCalibratedColl->front().phi(), metCalibratedColl->front().energy());
-
    edm::Handle<pat::METCollection> metColl;
    iEvent.getByToken(metCollectionToken_, metColl);
 
@@ -1318,6 +1309,12 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    double metPt_Deep = metDeep.pt();
    metDeep_.p.SetPtEtaPhiE(metPt_Deep, metDeep.eta(), metDeep.phi(), metDeep.energy());
    metDeep_.sig = metDeep.metSignificance();
+   
+   //XY Corrected MET
+   std::pair<double,double> MET_XYpair = METXYCorr_Met_MetPhi(metPt, met.phi(), iEvent.run(), 2016, !isRealData, nPV_);
+   metXYcorr_.p.SetPtEtaPhiE(MET_XYpair.first, met.eta(), MET_XYpair.second, met.energy());
+   metXYcorr_.sig = met.metSignificance();
+   metXYcorr_.uncertainty = met_.uncertainty;   //should probably be changed
    
    // ~//MET with BJet Regression Jets
    // ~edm::Handle<pat::METCollection> metCollBJetRegr;
