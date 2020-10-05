@@ -29,18 +29,20 @@ options.register ('user',
 
 # defaults
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v1/00000/80EBB916-A6C4-E811-9A55-A4BF011254E0.root'
-#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/DYJetsToLL_M-50_HT-70to100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/110000/FC23A1C1-1BEA-E811-9671-0025905C445A.root'
+#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext2-v1/100000/AA72240A-9EC2-E811-9D0A-008CFA1C6414.root'
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/120000/FEF559B1-95DF-E811-9528-D4AE52900EF9.root',
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/270000/20B4527C-D9ED-E811-A928-0CC47AB65046.root',
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/90000/D2E079F1-29F5-E811-B34D-0CC47AF9B2CA.root'
-options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016B/DoubleMuon/MINIAOD/17Jul2018_ver2-v1/40000/A4DF1FC2-E28B-E811-8D40-509A4C838D01.root'
+#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016B/DoubleMuon/MINIAOD/17Jul2018_ver2-v1/40000/A4DF1FC2-E28B-E811-8D40-509A4C838D01.root'
+#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016H/DoubleEG/MINIAOD/17Jul2018-v1/80000/A896F673-5C8D-E811-AE20-0242AC1C0502.root'
+options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016H/MET/MINIAOD/17Jul2018-v2/270000/FC265DF1-71B9-E811-AF11-34E6D7BEAF0E.root'
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/ZZTo2L2Nu_13TeV_powheg_pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/40000/00D06C25-A823-E911-AE44-001E67792800.root',
 # ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/60000/F40DF1A0-E937-E911-AB5B-AC1F6BAC7D12.root'
 # ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/90000/6491126E-26F6-E811-9145-0025905C3D96.root'
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
-#  ~options.maxEvents = -1
-options.maxEvents = 100
+options.maxEvents = -1
+#  ~options.maxEvents = 100
 # get and parse the command line arguments
 options.parseArguments()
 
@@ -61,6 +63,10 @@ if isRealData:
         process.GlobalTag.globaltag = "94X_dataRun2_v10"
 else:
         process.GlobalTag.globaltag = "94X_mcRun2_asymptotic_v3"
+#  ~if isRealData:
+        #  ~process.GlobalTag.globaltag = "102X_dataRun2_v13"
+#  ~else:
+        #  ~process.GlobalTag.globaltag = "102X_mcRun2_asymptotic_v8"
         
 #timing information
 process.Timing = cms.Service("Timing",
@@ -550,7 +556,6 @@ if user=="jschulz" or user=="dmeuser":
         "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v",
         "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v",
         "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v",
-        "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v",
         # mumu Chanel
         #2016
         "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v",
@@ -579,6 +584,15 @@ if user=="jschulz" or user=="dmeuser":
         "HLT_PFMET400_v",
         "HLT_PFMET500_v",
         "HLT_PFMET600_v",
+        # MET 2016 (top recomm.)
+        "HLT_PFHT500_PFMET100_PFMHT100_IDTight_v",
+        "HLT_PFHT700_PFMET85_PFMHT85_IDTight_v",
+        "HLT_PFHT800_PFMET75_PFMHT75_IDTight_v",
+        "HLT_PFMET120_PFMHT120_IDTight_PFHT60_v",
+        "HLT_PFMET200_HBHE_BeamHaloCleaned_v",
+        "HLT_PFMETTypeOne200_HBHE_BeamHaloCleaned_v",
+        "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v",
+        "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60_v",
     ]
     process.TreeWriter.triggerPrescales=[
         # HT 2016

@@ -3,21 +3,20 @@ config = Configuration()
 config.section_('General')
 config.General.transferOutputs = True
 config.General.transferLogs = True
-config.General.requestName = 'SingleElectron_Run2016H-17Jul2018-v1'
+config.General.requestName = 'ZToMuMu_NNPDF30_13TeV-powheg_M_50_120'
 config.section_('JobType')
 config.JobType.maxJobRuntimeMin = 1200
-config.JobType.pyCfgParams = ['dataset=/SingleElectron/Run2016H-17Jul2018-v1/MINIAOD', 'user=dmeuser']
+config.JobType.pyCfgParams = ['dataset=/ZToMuMu_NNPDF30_13TeV-powheg_M_50_120/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v1/MINIAODSIM', 'user=dmeuser']
 config.JobType.pluginName = 'Analysis'
 config.JobType.allowUndistributedCMSSW = True
 config.JobType.psetName = '/.automount/home/home__home4/institut_1b/dmeuser/CMSSW_ttbarTree/CMSSW_10_2_18/src/TreeWriter/TreeWriter/python/runTreeWriter.py'
 config.JobType.inputFiles = ['/.automount/home/home__home4/institut_1b/dmeuser/CMSSW_ttbarTree/CMSSW_10_2_18/src/TreeWriter/data']
 config.section_('Data')
-config.Data.inputDataset = '/SingleElectron/Run2016H-17Jul2018-v1/MINIAOD'
+config.Data.inputDataset = '/ZToMuMu_NNPDF30_13TeV-powheg_M_50_120/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v1/MINIAODSIM'
 config.Data.outputDatasetTag = 'v18'
 config.Data.publication = False
-config.Data.unitsPerJob = 50
-config.Data.splitting = 'LumiBased'
-config.Data.lumiMask = '/home/home4/institut_1b/dmeuser/CMSSW_ttbar/CMSSW_10_2_11_patch1/src/TreeWriter/PUreweighting/JSONS/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
+config.Data.unitsPerJob = 1
+config.Data.splitting = 'FileBased'
 config.Data.outLFNDirBase = '/store/user/dmeuser/run2_top/'
 config.section_('Site')
 config.Site.storageSite = 'T2_DE_RWTH'
