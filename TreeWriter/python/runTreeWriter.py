@@ -573,26 +573,13 @@ if user=="jschulz" or user=="dmeuser":
         "HLT_PFHT600_v",
         "HLT_PFHT650_v",
         "HLT_PFHT800_v",
-        # MET 2016
-        "HLT_PFMET110_PFMHT110_IDTight_v",
-        "HLT_PFMET120_PFMHT120_IDTight_v",
-        "HLT_PFMET170_NoiseCleaned_v",
-        "HLT_PFMET170_HBHECleaned_v",
-        "HLT_PFMET170_JetIdCleaned_v",
-        "HLT_PFMET170_NotCleaned_v",
-        "HLT_PFMET300_v",
-        "HLT_PFMET400_v",
-        "HLT_PFMET500_v",
-        "HLT_PFMET600_v",
         # MET 2016 (top recomm.)
-        "HLT_PFHT500_PFMET100_PFMHT100_IDTight_v",
-        "HLT_PFHT700_PFMET85_PFMHT85_IDTight_v",
-        "HLT_PFHT800_PFMET75_PFMHT75_IDTight_v",
-        "HLT_PFMET120_PFMHT120_IDTight_PFHT60_v",
-        "HLT_PFMET200_HBHE_BeamHaloCleaned_v",
-        "HLT_PFMETTypeOne200_HBHE_BeamHaloCleaned_v",
+        "HLT_PFHT300_PFMET110_v",
+        "HLT_PFMET120_PFMHT120_IDTight_v",
+        "HLT_PFMET170_HBHECleaned_v",
+        "HLT_PFMET300_v",
         "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v",
-        "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60_v",
+        "HLT_MET200_v",
     ]
     process.TreeWriter.triggerPrescales=[
         # HT 2016
@@ -606,17 +593,6 @@ if user=="jschulz" or user=="dmeuser":
         "HLT_PFHT600_v",
         "HLT_PFHT650_v",
         "HLT_PFHT800_v",
-        # MET 2016
-        "HLT_PFMET110_PFMHT110_IDTight_v",
-        "HLT_PFMET120_PFMHT120_IDTight_v",
-        "HLT_PFMET170_NoiseCleaned_v",
-        "HLT_PFMET170_HBHECleaned_v",
-        "HLT_PFMET170_JetIdCleaned_v",
-        "HLT_PFMET170_NotCleaned_v",
-        "HLT_PFMET300_v",
-        "HLT_PFMET400_v",
-        "HLT_PFMET500_v",
-        "HLT_PFMET600_v",
     ]
 else:
     print "you shall not pass!"

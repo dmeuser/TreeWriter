@@ -1,9 +1,8 @@
 #doku in https://twiki.cern.ch/twiki/bin/view/CMS/PileupJSONFileforData
 # JSON: 36.459/fb https://hypernews.cern.ch/HyperNews/CMS/get/physics-validation/2766.html
 #2016
-# ~ANA_JSON=/home/home4/institut_1b/dmeuser/CMSSW_ttbar/CMSSW_10_2_11_patch1/src/TreeWriter/PUreweighting/JSONS/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt
-ANA_JSON=/home/home4/institut_1b/dmeuser/CMSSW_ttbar/CMSSW_10_2_11_patch1/src/TreeWriter/PUreweighting/JSONS/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt 
-PU_JSON=/home/home4/institut_1b/dmeuser/CMSSW_ttbar/CMSSW_10_2_11_patch1/src/TreeWriter/PUreweighting/JSONS/pileup_latest_2016.txt
+ANA_JSON=/home/home4/institut_1b/dmeuser/CMSSW_ttbarTree/CMSSW_10_2_18/src/TreeWriter/PUreweighting/JSONS/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt
+PU_JSON=/home/home4/institut_1b/dmeuser/CMSSW_ttbarTree/CMSSW_10_2_11_patch1/src/TreeWriter/PUreweighting/JSONS/pileup_latest_2016.txt
 MC_TRUEVERTEX=nTrueVertexMC_2016.root
 DATA_TRUEVERTEX=nTrueVertexData_2016.root
 #2017
