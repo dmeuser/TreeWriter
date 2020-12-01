@@ -116,6 +116,7 @@ private:
 
    edm::EDGetTokenT<reco::VertexCollection>    vtxToken_;
    edm::EDGetTokenT<pat::JetCollection>        jetCollectionToken_;
+   edm::EDGetTokenT<pat::JetCollection>        jetPuppiCollectionToken_;
    edm::EDGetTokenT<reco::GenJetCollection>    genJetCollectionToken_;
    edm::EDGetTokenT<pat::MuonCollection>       muonCollectionToken_;
    edm::EDGetTokenT<edm::View<pat::Electron>>  electronCollectionToken_;
@@ -206,6 +207,7 @@ private:
 
    // physics Objects
    std::vector<tree::Jet>      vJets_;
+   std::vector<tree::Jet>      vJetsPuppi_;
    std::vector<tree::Particle> vGenJets_;
    std::vector<tree::Electron> vElectrons_;
    std::vector<tree::Muon>     vMuons_;

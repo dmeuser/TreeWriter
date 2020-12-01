@@ -31,14 +31,14 @@ options.register ('user',
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v1/00000/80EBB916-A6C4-E811-9A55-A4BF011254E0.root'
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext2-v1/100000/AA72240A-9EC2-E811-9D0A-008CFA1C6414.root'
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/120000/FEF559B1-95DF-E811-9528-D4AE52900EF9.root',
-#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/270000/20B4527C-D9ED-E811-A928-0CC47AB65046.root',
+#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v1/00000/A6781AB0-A774-E911-8648-0425C5903030.root',
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/90000/D2E079F1-29F5-E811-B34D-0CC47AF9B2CA.root'
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016B/DoubleMuon/MINIAOD/17Jul2018_ver2-v1/40000/A4DF1FC2-E28B-E811-8D40-509A4C838D01.root'
-#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016H/DoubleEG/MINIAOD/17Jul2018-v1/80000/A896F673-5C8D-E811-AE20-0242AC1C0502.root'
-options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016H/MET/MINIAOD/17Jul2018-v2/270000/FC265DF1-71B9-E811-AF11-34E6D7BEAF0E.root'
+options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016H/DoubleEG/MINIAOD/17Jul2018-v1/80000/A896F673-5C8D-E811-AE20-0242AC1C0502.root'
+#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016H/MET/MINIAOD/17Jul2018-v2/270000/FC265DF1-71B9-E811-AF11-34E6D7BEAF0E.root'
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/ZZTo2L2Nu_13TeV_powheg_pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/40000/00D06C25-A823-E911-AE44-001E67792800.root',
-# ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/60000/F40DF1A0-E937-E911-AB5B-AC1F6BAC7D12.root'
-# ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/90000/6491126E-26F6-E811-9145-0025905C3D96.root'
+#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/60000/F40DF1A0-E937-E911-AB5B-AC1F6BAC7D12.root'
+#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T1tttt_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSummer16v3Fast_94X_mcRun2_asymptotic_v3-v1/10000/009FB1D8-0117-E911-B425-A4BF01125E66.root'
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
 options.maxEvents = -1
@@ -188,6 +188,43 @@ updateJetCollection(
 )
 process.jecSequence = cms.Sequence(process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC)
 
+from PhysicsTools.SelectorUtils.pfJetIDSelector_cfi import pfJetIDSelector
+process.PFJetIDTightLepVeto = cms.EDProducer('PatJetIDValueMapProducer',
+    src = cms.InputTag("updatedPatJetsUpdatedJEC"),
+    filterParams = cms.PSet(
+        version = cms.string('WINTER16'),
+        quality = cms.string('TIGHTLEPVETO')
+    )
+)
+process.updatedPatJetsUpdatedJECID = cms.EDProducer('PATJetUserDataEmbedder',
+    src = cms.InputTag("updatedPatJetsUpdatedJEC"),
+    userInts = cms.PSet(
+        PFJetIDTightLepVeto = cms.InputTag('PFJetIDTightLepVeto')
+    ),
+)
+process.jetIDSequence = cms.Sequence(process.PFJetIDTightLepVeto * process.updatedPatJetsUpdatedJECID)
+
+################################
+# Puppi Jets                   #
+################################
+updateJetCollection(
+   process,
+   jetSource = cms.InputTag('slimmedJetsPuppi'),
+   labelName = 'UpdatedJECPuppi',
+   jetCorrections = ('AK4PFPuppi', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']), 'None'),
+)
+process.jecSequencePuppi = cms.Sequence(process.patJetCorrFactorsUpdatedJECPuppi * process.updatedPatJetsUpdatedJECPuppi)
+
+process.PFJetIDTightLepVetoPuppi = process.PFJetIDTightLepVeto.clone()
+process.PFJetIDTightLepVetoPuppi.src = cms.InputTag("updatedPatJetsUpdatedJECPuppi")
+
+process.updatedPatJetsUpdatedJECIDPuppi = process.updatedPatJetsUpdatedJECID.clone()
+process.updatedPatJetsUpdatedJECIDPuppi.src = cms.InputTag("updatedPatJetsUpdatedJECPuppi")
+process.updatedPatJetsUpdatedJECIDPuppi.userInts.PFJetIDTightLepVeto = cms.InputTag("PFJetIDTightLepVetoPuppi")
+
+process.jetIDSequencePuppi = cms.Sequence(process.PFJetIDTightLepVetoPuppi * process.updatedPatJetsUpdatedJECIDPuppi)
+
+
 ################################
 # BTag Event Weights           #
 ################################
@@ -245,7 +282,8 @@ process.pseudoTop = cms.EDProducer("PseudoTopProducer",
    minVetoLeptonPtSemilepton = cms.double(15),
    maxVetoLeptonEtaSemilepton = cms.double(2.5),
    minMETSemiLepton = cms.double(30),
-   minMtWSemiLepton = cms.double(30)
+   minMtWSemiLepton = cms.double(30),
+   clusterNeutrinosFromHadronsIntoJetsDilepton = cms.bool(True)
 )
 if not isRealData: process.TTbarGen = cms.Sequence(process.makeGenEvt * process.pseudoTop)
 else: process.TTbarGen = cms.Sequence()
@@ -391,7 +429,7 @@ process.updatedJetsBJetRegressionLoose = JetPATBJetRegressionCorrectionAdder.clo
 ################################
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(options.maxEvents))
 #  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), lumisToProcess = cms.untracked.VLuminosityBlockRange("273302:322"))#eventsToProcess = cms.untracked.VEventRange("276315:134:185994346"))
-#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("273302:322:401977005"))
+#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("1:260919:52183687"))
 process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles))
 process.TFileService = cms.Service("TFileService", fileName=cms.string(options.outputFile))
 
@@ -408,8 +446,10 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     NumberLeptons_cut=cms.untracked.uint32(2),
                                     # physics objects
                                     #  ~jets = cms.InputTag("slimmedJets"),
-                                    jets = cms.InputTag("updatedPatJetsUpdatedJEC"),
+                                    #  ~jets = cms.InputTag("updatedPatJetsUpdatedJEC"),
+                                    jets = cms.InputTag("updatedPatJetsUpdatedJECID"),
                                     #  ~jets = cms.InputTag("UpdatedPatJetsAK04CHSBCRegressionUserData"),
+                                    jets_puppi = cms.InputTag("updatedPatJetsUpdatedJECIDPuppi"),
                                     muons = cms.InputTag("MuonsAddedRochesterCorr"),
                                     #  ~muons = cms.InputTag("slimmedMuons"),
                                     genJets=cms.InputTag("slimmedGenJets"),
@@ -432,10 +472,10 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     lheEventProduct = cms.InputTag('externalLHEProducer'),
                                     packedCandidates=cms.InputTag("packedPFCandidates"),
                                     # electron IDs
-                                    electronVetoIdMap   = cms.untracked.string("cutBasedElectronID-Fall17-94X-V1-veto"),
-                                    electronLooseIdMap  = cms.untracked.string("cutBasedElectronID-Fall17-94X-V1-loose"),
-                                    electronMediumIdMap = cms.untracked.string("cutBasedElectronID-Fall17-94X-V1-medium"),
-                                    electronTightIdMap  = cms.untracked.string("cutBasedElectronID-Fall17-94X-V1-tight"),
+                                    electronVetoIdMap   = cms.untracked.string("cutBasedElectronID-Fall17-94X-V2-veto"),
+                                    electronLooseIdMap  = cms.untracked.string("cutBasedElectronID-Fall17-94X-V2-loose"),
+                                    electronMediumIdMap = cms.untracked.string("cutBasedElectronID-Fall17-94X-V2-medium"),
+                                    electronTightIdMap  = cms.untracked.string("cutBasedElectronID-Fall17-94X-V2-tight"),
                                     # photon IDs
                                     #  ~photonLooseIdMap   = cms.untracked.string("cutBasedPhotonID-Fall17-94X-V2-loose"),
                                     #  ~photonMediumIdMap  = cms.untracked.string("cutBasedPhotonID-Fall17-94X-V2-medium"),
@@ -532,11 +572,9 @@ if "03Feb2017" in dataset:
 
 if not isRealData:
     process.TreeWriter.metFilterNames.remove("Flag_eeBadScFilter")
-#~ if "Fast" in dataset:
-    #~ process.TreeWriter.metFilterNames.remove("Flag_globalTightHalo2016Filter")
-    #~ process.TreeWriter.lheEventProduct = "source"
-    #~ if "T5Wg" in dataset or "T6Wg" in dataset:
-        #~ process.TreeWriter.minNumberBinos_cut = 1
+    if "Fast" in dataset:
+        process.TreeWriter.metFilterNames.remove("Flag_globalSuperTightHalo2016Filter")
+        process.TreeWriter.lheEventProduct = "source"
 
 # determine user if not set by crab
 user=options.user or getpass.getuser()
@@ -609,6 +647,9 @@ for trig in process.TreeWriter.triggerPrescales:
 process.p = cms.Path(
     #~ process.BadPFMuonFilter*
     process.jecSequence
+    *process.jetIDSequence
+    *process.jecSequencePuppi
+    *process.jetIDSequencePuppi
     #  ~*process.bJetVars
     #  ~*process.updatedJetsWithUserData
     #  ~*process.bjetNN
@@ -623,6 +664,6 @@ process.p = cms.Path(
     *process.puppiMETSequence
     *process.TTbarGen
     # ~*process.generatorTopFilter
-    *process.deepMETProducer
+    #  ~*process.deepMETProducer
     *process.TreeWriter
 )

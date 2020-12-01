@@ -323,6 +323,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    , newLumiBlock_(true)
    , vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices")))
    , jetCollectionToken_     (consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets")))
+   , jetPuppiCollectionToken_     (consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets_puppi")))
    , genJetCollectionToken_  (consumes<reco::GenJetCollection>(iConfig.getParameter<edm::InputTag>("genJets")))
    , muonCollectionToken_    (consumes<pat::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons")))
    , electronCollectionToken_(consumes<edm::View<pat::Electron> >(iConfig.getParameter<edm::InputTag>("electrons")))
@@ -408,6 +409,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    // setup tree and define branches
    eventTree_ = fs_->make<TTree> ("eventTree", "event data");
    eventTree_->Branch("jets", &vJets_);
+   eventTree_->Branch("jetsPuppi", &vJetsPuppi_);
    eventTree_->Branch("genJets", &vGenJets_);
    eventTree_->Branch("electrons", &vElectrons_);
    eventTree_->Branch("muons", &vMuons_);
@@ -418,7 +420,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("metCalo", &metCalo_);
    eventTree_->Branch("metPuppi", &metPuppi_);
    eventTree_->Branch("metNoHF", &metNoHF_);
-   eventTree_->Branch("metDeep", &metDeep_);
+   // ~eventTree_->Branch("metDeep", &metDeep_);
    eventTree_->Branch("metXYcorr", &metXYcorr_);
    // ~eventTree_->Branch("metBJetRegression", &metBJetRegression_);
    // ~eventTree_->Branch("metBJetRegressionLoose", &metBJetRegressionLoose_);
@@ -684,7 +686,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    }
 
    edm::Handle<pat::TriggerObjectStandAloneCollection> triggerObjects;
-   //~ edm::InputTag triggerObjects_("selectedPatTrigger"); 80x
+   // ~edm::InputTag triggerObjects_("selectedPatTrigger"); //80x
    edm::InputTag triggerObjects_("slimmedPatTrigger");
    iEvent.getByLabel(triggerObjects_, triggerObjects);
 
@@ -792,7 +794,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trMuon.rochesterCorrection = mu.hasUserFloat("MuonEnergyCorr") ? mu.userFloat("MuonEnergyCorr") : 1.;
       
       if (mu.pt()>20 && mu.isTightMuon(firstGoodVertex) && trMuon.rIso<0.15) vMuons_.push_back(trMuon); // take only 'tight' muons
-      else if (mu.pt()>10) vMuons_add_.push_back(trMuon); //Save all additional muons, which are not tight
+      else if (mu.pt()>10 && trMuon.isMedium) vMuons_add_.push_back(trMuon); //Save all additional muons, which are at least medium
    } // muon loop
    sort(vMuons_.begin(), vMuons_.end(), tree::PtGreater);
    sort(vMuons_add_.begin(), vMuons_add_.end(), tree::PtGreater);
@@ -1057,6 +1059,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trJet.bTagSoftMuon = (jet.bDiscriminator("softPFMuonBJetTags")<0) ? -1. : jet.bDiscriminator("softPFMuonBJetTags");
       trJet.bTagSoftElectron = (jet.bDiscriminator("softPFElectronBJetTags")<0) ? -1. : jet.bDiscriminator("softPFElectronBJetTags");
       trJet.isLoose = jetIdSelector(jet);
+      trJet.TightIDlepVeto = jet.hasUserInt("PFJetIDTightLepVeto") ? jet.userInt("PFJetIDTightLepVeto") : 0;
       jecUnc.setJetEta(jet.eta());
       jecUnc.setJetPt(jet.pt());
       trJet.uncert = jecUnc.getUncertainty(true);
@@ -1071,6 +1074,8 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trJet.nhf = jet.neutralHadronEnergyFraction();
       trJet.cef = jet.chargedEmEnergyFraction();
       trJet.nef = jet.neutralEmEnergyFraction();
+      trJet.muonf = jet.muonEnergyFraction();
+      trJet.electronf = jet.electronEnergyFraction();
       trJet.nch = jet.chargedMultiplicity();
       trJet.nconstituents = jet.numberOfDaughters();
       trJet.bJetRegressionCorr = jet.hasUserFloat("BJetEnergyCorrFactor") ? jet.userFloat("BJetEnergyCorrFactor") : 1.;
@@ -1097,6 +1102,76 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    } // jet loop
    sort(vJets_.begin(), vJets_.end(), tree::PtGreater);
    
+   ///////////////
+   // Puppi Jets//
+   ///////////////
+   edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl_Puppi;
+   iSetup.get<JetCorrectionsRecord>().get("AK4PFPuppi", JetCorParColl_Puppi);
+   JetCorrectorParameters const & JetCorPar_Puppi = (*JetCorParColl_Puppi)["Uncertainty"];
+   JetCorrectionUncertainty jecUnc_Puppi(JetCorPar_Puppi);
+
+   JME::JetResolution resolution_pt_Puppi = JME::JetResolution::get(iSetup, "AK4PFPuppi_pt");
+   JME::JetResolution resolution_phi_Puppi = JME::JetResolution::get(iSetup, "AK4PFPuppi_phi");
+   JME::JetResolutionScaleFactor resolution_sf_Puppi = JME::JetResolutionScaleFactor::get(iSetup, "AK4PFPuppi");
+
+   edm::Handle<pat::JetCollection> jetColl_Puppi;
+   iEvent.getByToken(jetPuppiCollectionToken_, jetColl_Puppi);
+
+   vJetsPuppi_.clear();
+   tree::Jet trJet_Puppi;
+   for (const pat::Jet& jet : *jetColl_Puppi) {
+      if (fabs(jet.eta())>2.4) continue;
+      if (jet.pt()<dJet_pT_cut_) continue;
+      //~ trJet_Puppi.p.SetPtEtaPhi(jet.pt(), jet.eta(), jet.phi());
+      trJet_Puppi.p.SetPtEtaPhiM(jet.pt(), jet.eta(), jet.phi(), jet.energy());
+      trJet_Puppi.bTagCSVv2 = jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+      trJet_Puppi.bTagMVAv2 = jet.bDiscriminator("pfCombinedMVAV2BJetTags");
+      trJet_Puppi.bTagDeepCSV = jet.bDiscriminator("pfDeepCSVJetTags:probb")+jet.bDiscriminator("pfDeepCSVJetTags:probbb");
+      trJet_Puppi.bTagSoftMuon = (jet.bDiscriminator("softPFMuonBJetTags")<0) ? -1. : jet.bDiscriminator("softPFMuonBJetTags");
+      trJet_Puppi.bTagSoftElectron = (jet.bDiscriminator("softPFElectronBJetTags")<0) ? -1. : jet.bDiscriminator("softPFElectronBJetTags");
+      trJet_Puppi.isLoose = jetIdSelector(jet);
+      trJet_Puppi.TightIDlepVeto = jet.hasUserInt("PFJetIDTightLepVeto") ? jet.userInt("PFJetIDTightLepVeto") : 0;
+      jecUnc.setJetEta(jet.eta());
+      jecUnc.setJetPt(jet.pt());
+      trJet_Puppi.uncert = jecUnc.getUncertainty(true);
+      JME::JetParameters parameters = {{JME::Binning::JetPt, jet.pt()}, {JME::Binning::JetEta, jet.eta()}, {JME::Binning::Rho, rho_}};
+      trJet_Puppi.ptRes = resolution_pt_Puppi.getResolution(parameters);
+      trJet_Puppi.phiRes = resolution_phi_Puppi.getResolution(parameters);
+      trJet_Puppi.sfRes = resolution_sf_Puppi.getScaleFactor(parameters);
+      trJet_Puppi.sfResUp = resolution_sf_Puppi.getScaleFactor(parameters, Variation::UP);
+      trJet_Puppi.sfResDn = resolution_sf_Puppi.getScaleFactor(parameters, Variation::DOWN);
+      trJet_Puppi.uncorJecFactor = jet.jecFactor(0);
+      trJet_Puppi.chf = jet.chargedHadronEnergyFraction();
+      trJet_Puppi.nhf = jet.neutralHadronEnergyFraction();
+      trJet_Puppi.cef = jet.chargedEmEnergyFraction();
+      trJet_Puppi.nef = jet.neutralEmEnergyFraction();
+      trJet_Puppi.muonf = jet.muonEnergyFraction();
+      trJet_Puppi.electronf = jet.electronEnergyFraction();
+      trJet_Puppi.nch = jet.chargedMultiplicity();
+      trJet_Puppi.nconstituents = jet.numberOfDaughters();
+      trJet_Puppi.bJetRegressionCorr = jet.hasUserFloat("BJetEnergyCorrFactor") ? jet.userFloat("BJetEnergyCorrFactor") : 1.;
+      trJet_Puppi.bJetRegressionRes = jet.hasUserFloat("BJetEnergyCorrResolution") ? jet.userFloat("BJetEnergyCorrResolution") : 1.;
+      trJet_Puppi.hadronFlavour = jet.hadronFlavour();
+      
+      // object matching
+      trJet_Puppi.hasElectronMatch = false;
+      for (tree::Electron const &el: vElectrons_) {
+         if (el.isTight && el.p.Pt()>=20 && trJet_Puppi.p.DeltaR(el.p)<0.4) {
+            trJet_Puppi.hasElectronMatch = true;
+            break;
+         }
+      }
+      trJet_Puppi.hasMuonMatch = false;
+      for (tree::Muon const &mu: vMuons_){
+         if (mu.isTight && mu.p.Pt()>=20 && trJet_Puppi.p.DeltaR(mu.p)<0.4){
+            trJet_Puppi.hasMuonMatch = true;
+            break;
+         }
+      }
+      vJetsPuppi_.push_back(trJet_Puppi);
+   } // jet loop
+   sort(vJetsPuppi_.begin(), vJetsPuppi_.end(), tree::PtGreater);
+   
    
    //////////////
    //BTagWeight//
@@ -1110,7 +1185,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       float err4 = 0.;
       
       for(std::vector<tree::Jet>::const_iterator it = vJets_.begin(); it != vJets_.end() ; ++it){
-         if (it->p.Pt() >=30.0 && fabs(it->p.Eta())<2.4 && !it->hasMuonMatch && !it->hasElectronMatch && it->isLoose){
+         if (it->p.Pt() >=30.0 && fabs(it->p.Eta())<2.4 && !it->hasMuonMatch && !it->hasElectronMatch && it->TightIDlepVeto){
            
             int jetFlavor;
             float eff;
@@ -1303,12 +1378,12 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    metNoHF_.sig = metNoHF.metSignificance();
    
    //DeepMET
-   edm::Handle<pat::METCollection> metCollDeep;
-   iEvent.getByToken(metDeepCollectionToken_, metCollDeep);
-   const pat::MET &metDeep = metCollDeep->front();
-   double metPt_Deep = metDeep.pt();
-   metDeep_.p.SetPtEtaPhiE(metPt_Deep, metDeep.eta(), metDeep.phi(), metDeep.energy());
-   metDeep_.sig = metDeep.metSignificance();
+   // ~edm::Handle<pat::METCollection> metCollDeep;
+   // ~iEvent.getByToken(metDeepCollectionToken_, metCollDeep);
+   // ~const pat::MET &metDeep = metCollDeep->front();
+   // ~double metPt_Deep = metDeep.pt();
+   // ~metDeep_.p.SetPtEtaPhiE(metPt_Deep, metDeep.eta(), metDeep.phi(), metDeep.energy());
+   // ~metDeep_.sig = metDeep.metSignificance();
    
    //XY Corrected MET
    std::pair<double,double> MET_XYpair = METXYCorr_Met_MetPhi(metPt, met.phi(), iEvent.run(), 2016, !isRealData, nPV_);

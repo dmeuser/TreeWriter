@@ -44,6 +44,7 @@ namespace tree
    struct Jet : public Particle
    {
       bool isLoose;
+      bool TightIDlepVeto;
       bool hasElectronMatch;
       bool hasMuonMatch;
       float bTagCSVv2;
@@ -56,6 +57,8 @@ namespace tree
       float nhf;
       float cef;
       float nef;
+      float muonf;
+      float electronf;
       int nch;
       int nconstituents;
       float ptRes;
