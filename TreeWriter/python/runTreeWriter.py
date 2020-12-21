@@ -87,7 +87,6 @@ process.load("Geometry.CaloEventSetup.CaloTopology_cfi");
 process.load("Configuration.Geometry.GeometryECALHCAL_cff")
 
 from EgammaUser.EgammaPostRecoTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
-#  ~from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
 setupEgammaPostRecoSeq(process,
                        runEnergyCorrections=False, #corrections by default are fine so no need to re-run
                        era='2016-Legacy', phoIDModules=[])

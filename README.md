@@ -9,14 +9,12 @@ cd CMSSW_10_2_18/src/
 cmsenv
 git cms-init
 git cms-merge-topic dmeuser:ttbar_tree
-git cms-merge-topic cms-egamma:EgammaID_1023
-git cms-merge-topic cms-egamma:EgammaPostRecoTools
+git cms-merge-topic yongbinfeng:DeepMET
 scram b -j7
-git clone git@github.com:cms-egamma/EgammaAnalysis-ElectronTools.git EgammaAnalysis/ElectronTools/data
-cd EgammaAnalysis/ElectronTools/data
-git checkout ScalesSmearing2018_Dev
+git clone git@github.com:cms-egamma/EgammaPostRecoTools.git  EgammaUser/EgammaPostRecoTools
+cd  EgammaUser/EgammaPostRecoTools
+git checkout master
 cd -
-git cms-merge-topic cms-egamma:EgammaPostRecoTools_dev
 scram b -j7
 git clone git@github.com:dmeuser/TreeWriter.git
 scram b -j7
@@ -38,11 +36,11 @@ cmsRun TreeWriter/python/runTreeWriter.py
 . /cvmfs/cms.cern.ch/crab3/crab.sh
 cd crab
 ```
-for a single dataset
-```
-crab submit -c crabConfig.py
-```
 for all datasets
 ```
-python2 crabConfig.py
+python crabConfig.py
+```
+Download,resubmitting and killing multiple crab jobs with
+```
+python multicrab.py
 ```
