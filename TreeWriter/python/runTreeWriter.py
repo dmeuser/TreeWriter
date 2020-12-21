@@ -41,8 +41,8 @@ options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016H/DoubleE
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T1tttt_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSummer16v3Fast_94X_mcRun2_asymptotic_v3-v1/10000/009FB1D8-0117-E911-B425-A4BF01125E66.root'
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
-options.maxEvents = -1
-#  ~options.maxEvents = 100
+#  ~options.maxEvents = -1
+options.maxEvents = 1000
 # get and parse the command line arguments
 options.parseArguments()
 
@@ -86,7 +86,8 @@ process.load("Geometry.CaloEventSetup.CaloGeometry_cfi");
 process.load("Geometry.CaloEventSetup.CaloTopology_cfi");
 process.load("Configuration.Geometry.GeometryECALHCAL_cff")
 
-from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
+from EgammaUser.EgammaPostRecoTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
+#  ~from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
 setupEgammaPostRecoSeq(process,
                        runEnergyCorrections=False, #corrections by default are fine so no need to re-run
                        era='2016-Legacy', phoIDModules=[])
