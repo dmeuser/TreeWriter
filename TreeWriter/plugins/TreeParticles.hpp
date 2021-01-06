@@ -50,6 +50,7 @@ namespace tree
       float bTagCSVv2;
       float bTagMVAv2;
       float bTagDeepCSV;
+      float bTagDeepJet;
       float bTagSoftMuon;
       float bTagSoftElectron;
       float uncert;
