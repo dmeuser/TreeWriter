@@ -413,8 +413,8 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("genJets", &vGenJets_);
    eventTree_->Branch("electrons", &vElectrons_);
    eventTree_->Branch("muons", &vMuons_);
-   // ~eventTree_->Branch("electrons_add", &vElectrons_add_);
-   // ~eventTree_->Branch("muons_add", &vMuons_add_);
+   eventTree_->Branch("electrons_add", &vElectrons_add_);
+   eventTree_->Branch("muons_add", &vMuons_add_);
    // ~eventTree_->Branch("photons", &vPhotons_);
    eventTree_->Branch("met", &met_);
    eventTree_->Branch("metCalo", &metCalo_);
@@ -776,7 +776,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    vMuons_add_.clear();
    tree::Muon trMuon;
    for (const pat::Muon &mu : *muonColl) {
-      if (! (mu.isPFMuon() || mu.isGlobalMuon() || mu.isTrackerMuon())) continue;
+      if (! (mu.isPFMuon() || mu.isGlobalMuon() || mu.isTrackerMuon())) continue; //(can probably be removed, not sure about the veto with looser lepton)
       // ~if (mu.pt()<20 || abs(mu.eta())>2.4) continue;
       if (abs(mu.eta())>2.4) continue;
       //~ trMuon.p.SetPtEtaPhi(mu.pt(), mu.eta(), mu.phi());
@@ -794,7 +794,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trMuon.rochesterCorrection = mu.hasUserFloat("MuonEnergyCorr") ? mu.userFloat("MuonEnergyCorr") : 1.;
       
       if (mu.pt()>20 && mu.isTightMuon(firstGoodVertex) && trMuon.rIso<0.15) vMuons_.push_back(trMuon); // take only 'tight' muons
-      else if (mu.pt()>10 && trMuon.isMedium) vMuons_add_.push_back(trMuon); //Save all additional muons, which are at least medium
+      else if (mu.pt()>10 && trMuon.isLoose) vMuons_add_.push_back(trMuon); //Save all additional muons, which are at least loose
    } // muon loop
    sort(vMuons_.begin(), vMuons_.end(), tree::PtGreater);
    sort(vMuons_add_.begin(), vMuons_add_.end(), tree::PtGreater);
