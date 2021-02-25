@@ -413,8 +413,8 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("genJets", &vGenJets_);
    eventTree_->Branch("electrons", &vElectrons_);
    eventTree_->Branch("muons", &vMuons_);
-   eventTree_->Branch("electrons_add", &vElectrons_add_);
-   eventTree_->Branch("muons_add", &vMuons_add_);
+   // ~eventTree_->Branch("electrons_add", &vElectrons_add_);
+   // ~eventTree_->Branch("muons_add", &vMuons_add_);
    // ~eventTree_->Branch("photons", &vPhotons_);
    eventTree_->Branch("met", &met_);
    eventTree_->Branch("metCalo", &metCalo_);
@@ -792,9 +792,9 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trMuon.d0 = mu.bestTrack()->dxy( vtx_point );
       trMuon.dZ = mu.bestTrack()->dz( vtx_point );
       trMuon.rochesterCorrection = mu.hasUserFloat("MuonEnergyCorr") ? mu.userFloat("MuonEnergyCorr") : 1.;
-      
-      if (mu.pt()>20 && mu.isTightMuon(firstGoodVertex) && trMuon.rIso<0.15) vMuons_.push_back(trMuon); // take only 'tight' muons
-      else if (mu.pt()>10 && trMuon.isLoose) vMuons_add_.push_back(trMuon); //Save all additional muons, which are at least loose
+            
+      if (mu.pt()*trMuon.rochesterCorrection>20 && mu.isTightMuon(firstGoodVertex) && trMuon.rIso<0.15) vMuons_.push_back(trMuon); // take only 'tight' muons
+      else if (mu.pt()*trMuon.rochesterCorrection>10 && trMuon.isLoose) vMuons_add_.push_back(trMuon); //Save all additional muons, which are at least loose
    } // muon loop
    sort(vMuons_.begin(), vMuons_.end(), tree::PtGreater);
    sort(vMuons_add_.begin(), vMuons_add_.end(), tree::PtGreater);
@@ -850,8 +850,8 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
         //~ trEl.pUncorrected.SetPtEtaPhi(ele.pt(), ele.superCluster()->eta(), ele.superCluster()->phi());
       //~ }
 		
-      if (el->pt()>20 && el->electronID(electronTightIdMapToken_)) vElectrons_.push_back(trEl); // take only 'tight' electrons
-      else if (el->pt()>10 && el->electronID(electronVetoIdMapToken_)) vElectrons_add_.push_back(trEl); //Save all additional electrons, which are at least 'veto' electrons
+      if (el->pt()*trEl.corr>20 && el->electronID(electronTightIdMapToken_)) vElectrons_.push_back(trEl); // take only 'tight' electrons
+      else if (el->pt()*trEl.corr>10 && el->electronID(electronVetoIdMapToken_)) vElectrons_add_.push_back(trEl); //Save all additional electrons, which are at least 'veto' electrons
    }
    sort(vElectrons_.begin(), vElectrons_.end(), tree::PtGreater);
    sort(vElectrons_add_.begin(), vElectrons_add_.end(), tree::PtGreater);
