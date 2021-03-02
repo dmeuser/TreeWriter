@@ -1,3 +1,5 @@
+**Old README, needs to be updated for UL**
+
 **TreeWriter** to build a ROOT tree from MiniAOD. Designed for ttbar, starting from https://github.com/cms-susy-photon-rwth-1b/TreeWriter
 
 ## Building and Running ##
