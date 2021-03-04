@@ -6,17 +6,17 @@
 Get CMSSW environment 10_2X
 
 ```
-cmsrel CMSSW_10_2_18
-cd CMSSW_10_2_18/src/
+cmsrel CMSSW_10_6_20
+cd CMSSW_10_6_20/src/
 cmsenv
 git cms-init
-git cms-merge-topic dmeuser:ttbar_tree
-git cms-merge-topic yongbinfeng:DeepMET
+git cms-merge-topic dmeuser:ttbar_treeUL
 scram b -j7
-git clone git@github.com:cms-egamma/EgammaPostRecoTools.git  EgammaUser/EgammaPostRecoTools
-cd  EgammaUser/EgammaPostRecoTools
-git checkout master
-cd -
+git cms-addpkg RecoEgamma/EgammaTools  ### essentially just checkout the package from CMSSW
+git clone https://github.com/cms-egamma/EgammaPostRecoTools.git
+mv EgammaPostRecoTools/python/EgammaPostRecoTools.py RecoEgamma/EgammaTools/python/.
+git clone https://github.com/jainshilpi/EgammaAnalysis-ElectronTools.git -b UL2018 EgammaAnalysis/ElectronTools/data/
+git cms-addpkg EgammaAnalysis/ElectronTools
 scram b -j7
 git clone git@github.com:dmeuser/TreeWriter.git
 scram b -j7
