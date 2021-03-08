@@ -77,12 +77,12 @@ public:
     if(pt > 120.) pt= 119.;
     else if(pt < 20.) pt= 21.;
     
-    double ID = dataMCScaleFactorHisto_mu_ID_->GetBinContent(dataMCScaleFactorHisto_mu_ID_->GetXaxis()->FindBin(eta),dataMCScaleFactorHisto_mu_ID_->GetYaxis()->FindBin(fabs(pt)));
-    double ISO = dataMCScaleFactorHisto_mu_Iso_->GetBinContent(dataMCScaleFactorHisto_mu_Iso_->GetXaxis()->FindBin(eta),dataMCScaleFactorHisto_mu_Iso_->GetYaxis()->FindBin(fabs(pt)));
+    double ID = dataMCScaleFactorHisto_mu_ID_->GetBinContent(dataMCScaleFactorHisto_mu_ID_->GetXaxis()->FindBin(fabs(eta)),dataMCScaleFactorHisto_mu_ID_->GetYaxis()->FindBin(fabs(pt)));
+    double ISO = dataMCScaleFactorHisto_mu_Iso_->GetBinContent(dataMCScaleFactorHisto_mu_Iso_->GetXaxis()->FindBin(fabs(eta)),dataMCScaleFactorHisto_mu_Iso_->GetYaxis()->FindBin(fabs(pt)));
     result[0] = ID*ISO;
     
-    double err_ID = dataMCScaleFactorHisto_mu_ID_->GetBinError(dataMCScaleFactorHisto_mu_ID_->GetXaxis()->FindBin(eta),dataMCScaleFactorHisto_mu_ID_->GetYaxis()->FindBin(fabs(pt)));
-    double err_ISO = dataMCScaleFactorHisto_mu_Iso_->GetBinError(dataMCScaleFactorHisto_mu_Iso_->GetXaxis()->FindBin(eta),dataMCScaleFactorHisto_mu_Iso_->GetYaxis()->FindBin(fabs(pt)));
+    double err_ID = dataMCScaleFactorHisto_mu_ID_->GetBinError(dataMCScaleFactorHisto_mu_ID_->GetXaxis()->FindBin(fabs(eta)),dataMCScaleFactorHisto_mu_ID_->GetYaxis()->FindBin(fabs(pt)));
+    double err_ISO = dataMCScaleFactorHisto_mu_Iso_->GetBinError(dataMCScaleFactorHisto_mu_Iso_->GetXaxis()->FindBin(fabs(eta)),dataMCScaleFactorHisto_mu_Iso_->GetYaxis()->FindBin(fabs(pt)));
     result[1] = sqrt((ISO*err_ID)*(ISO*err_ID)+(ID*err_ISO)*(ID*err_ISO));
     
     return result;

@@ -43,7 +43,7 @@ namespace tree
 
    struct Jet : public Particle
    {
-      bool isLoose;
+      bool isTight;
       bool TightIDlepVeto;
       bool hasElectronMatch;
       bool hasMuonMatch;

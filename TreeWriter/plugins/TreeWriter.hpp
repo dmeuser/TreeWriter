@@ -107,9 +107,7 @@ private:
    TH1F* createCutFlowHist(std::string modelName = "");
 
    // ----------member data ---------------------------
-   double dHT_cut_;
    double dJet_pT_cut_;
-   unsigned minNumberElectrons_cut_;
    unsigned NumberLeptons_cut_;
 
    bool newLumiBlock_;
@@ -124,11 +122,6 @@ private:
    edm::EDGetTokenT<pat::METCollection>        metCollectionToken_;
    edm::EDGetTokenT<pat::METCollection>        metPuppiCollectionToken_;
    edm::EDGetTokenT<pat::METCollection>        metNoHFCollectionToken_;
-   edm::EDGetTokenT<pat::METCollection>        metCorrectedCollectionToken_;
-   edm::EDGetTokenT<pat::METCollection>        metCalibratedCollectionToken_;
-   edm::EDGetTokenT<pat::METCollection>        metDeepCollectionToken_;
-   edm::EDGetTokenT<pat::METCollection>        metBJetRegressionCollectionToken_;
-   edm::EDGetTokenT<pat::METCollection>        metBJetRegressionLooseCollectionToken_;
    edm::EDGetTokenT<pat::METCollection>        caloMetCollectionToken_;
    edm::EDGetTokenT<double>                    rhoToken_;
    edm::EDGetTokenT<EcalRecHitCollection>      ebRecHitsToken_;
@@ -152,12 +145,7 @@ private:
    // met filters to apply
    const std::vector<std::string> metFilterNames_;
 
-   // from photon ID value map producer
-   edm::EDGetTokenT<edm::ValueMap<float>> phoWorstChargedIsolationToken_;
-
    const std::string pileupHistogramName_;
-   const bool hardPUveto_;
-   const bool reMiniAOD_; // 03Feb2017 campaign
 
    PFJetIDSelectionFunctor jetIdSelector;
 
@@ -189,8 +177,6 @@ private:
    UInt_t    runNo_;
    UInt_t    lumNo_;
 
-   Bool_t particleFlowEGammaGSFixed_dupECALClusters_;
-   Bool_t ecalMultiAndGSGlobalRecHitEB_hitsNotReplaced_;
 
    UShort_t signal_m1_; // usually mass of first particle in decay chain
    UShort_t signal_m2_; // usually neutarlino mass
@@ -224,19 +210,12 @@ private:
    tree::MET                   met_JESd_;
    tree::MET                   met_JERu_;
    tree::MET                   met_JERd_;
-   tree::MET                   metDeep_;
    tree::MET                   metXYcorr_;
-   tree::MET                   metBJetRegression_;
-   tree::MET                   metBJetRegressionLoose_;
    std::map<std::string,std::vector<tree::Particle>> triggerObjectMap_;
 
    std::vector<tree::GenParticle> vGenParticles_;
    std::vector<tree::IntermediateGenParticle> vIntermediateGenParticles_;
    
-   // TrackIsolation
-   Bool_t electronTrackIsoVeto;
-   Bool_t muonTrackIsoVeto;
-   Bool_t pionTrackIsoVeto;
    
    // Scale factors
    LeptonFullSimScaleFactorMapFunctor fctLeptonFullSimScaleFactors_;

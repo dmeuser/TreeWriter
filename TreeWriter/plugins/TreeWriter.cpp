@@ -8,19 +8,6 @@
 
 using namespace std;
 
-// compute HT using RECO objects to "reproduce" the trigger requirements
-static double computeHT(const std::vector<tree::Jet>& jets) {
-   double HT = 0;
-   double pt = 0;
-   for (const tree::Jet& jet: jets) {
-      pt = jet.p.Pt();
-      if (fabs(jet.p.Eta())<3 && pt>30) {
-         HT += pt;
-      }
-   }
-   return HT;
-}
-
 // checks if a particle has a special mother. Treats anti-particles as particles
 bool hasAncestor(int index, const lhef::HEPEUP& info, int searchId) {
    if (index < 2 or index > info.NUP) {
@@ -136,126 +123,6 @@ double getPFIsolation(edm::Handle<pat::PackedCandidateCollection> const &pfcands
     return iso;
 }
 
-// Calculate TrackIsolation
-void GetTrkIso(edm::Handle<pat::PackedCandidateCollection> pfcands, const unsigned tkInd, float& trkiso, float& activity) {
-  if (tkInd>pfcands->size()) {
-	  trkiso = -999.;
-	  activity = -999.;
-	  return;
-  }
-  trkiso = 0.;
-  activity = 0.;
-  double r_iso = 0.3;
-  for (unsigned int iPF(0); iPF<pfcands->size(); iPF++) {
-    const pat::PackedCandidate &pfc = pfcands->at(iPF);
-    if (pfc.charge()==0) continue;
-    if (iPF==tkInd) continue; // don't count track in its own sum
-    float dz_other = pfc.dz();
-    if( fabs(dz_other) > 0.1 ) continue;
-    double dr = deltaR(pfc, pfcands->at(tkInd));
-    // activity annulus
-    if (dr >= r_iso && dr <= 0.4) activity += pfc.pt();
-    // mini iso cone
-    if (dr <= r_iso) trkiso += pfc.pt();
-  }
-  trkiso = trkiso/pfcands->at(tkInd).pt();
-  activity = activity/pfcands->at(tkInd).pt();
-}
-
-// Check TrackIsolation
-bool TrackIsolation(edm::Handle<pat::PackedCandidateCollection> const &pfcands,edm::Handle<pat::METCollection> const &metColl,
-                    edm::Handle<reco::VertexCollection> const &vertices, int const &pdgId_){
-    
-    //Get MET
-    reco::MET::LorentzVector metLorentz(0,0,0,0);
-    if (metColl.isValid()){
-        metLorentz = metColl->at(0).p4();
-    }
-    
-    //Good Vertices
-    bool hasGoodVtx = false;
-    if(vertices->size() > 0) hasGoodVtx = true;
-    
-    //Define MinPt cut and iso cut
-    float minPt_ = 5.0;
-    float isoCut_ = 0.2;
-    if (pdgId_ == 211){
-        minPt_ = 10.0;
-        isoCut_ = 0.1;
-    }
-    
-    //Define other cuts
-    float maxEta_ = 2.5; //?????? correct for all three particle types
-    float mTCut_ = 100.;
-    float dzcut_ = 0.1;
-    
-    //Define TrackIso veto
-    bool TrackIso = false;
-    
-    //loop over PFCandidates and calculate the trackIsolation
-    for(size_t i=0; i<pfcands->size();i++)
-    {
-		const pat::PackedCandidate pfCand = (*pfcands)[i];
-		
-		//calculated mT value
-		double dphiMET = fabs(pfCand.phi()-metLorentz.phi());
-		double mT = sqrt(2 *metLorentz.pt() * pfCand.pt() * (1 - cos(dphiMET)));
-		
-		//-------------------------------------------------------------------------------------
-		// skip events with no good vertices
-		//-------------------------------------------------------------------------------------
-		if(!hasGoodVtx) {
-            continue;
-		}
-		//-------------------------------------------------------------------------------------
-		// only consider charged tracks
-		//-------------------------------------------------------------------------------------
-		if (pfCand.charge() == 0) {
-            continue;
-		}
-		//-------------------------------------------------------------------------------------
-		// only store PFCandidate values if PFCandidate.pdgId() == pdgId_
-		//-------------------------------------------------------------------------------------
-		if( pdgId_ != 0 && abs( pfCand.pdgId() ) != pdgId_ ) {
-            continue;
-		}
-		//-------------------------------------------------------------------------------------
-		// only store PFCandidate values if pt > minPt
-		//-------------------------------------------------------------------------------------
-		if(pfCand.pt() <minPt_) {
-            continue;
-		}
-		if(fabs(pfCand.eta()) >maxEta_) {
-            continue;
-		}
-		//-------------------------------------------------------------------------------------
-		// cut on mT of track and MET
-		//-------------------------------------------------------------------------------------
-		if(mTCut_>0.01 && mT>mTCut_) {
-            continue;
-		}
-		//----------------------------------------------------------------------------
-		// now make cuts on isolation and dz
-		//----------------------------------------------------------------------------
-		float trkiso = 0.;
-		float activity = 0.;
-		GetTrkIso(pfcands, i, trkiso, activity);
-		float dz_it = pfCand.dz();
-
-		if( isoCut_>0 && trkiso > isoCut_ ) {
-            continue;
-		}
-		if( std::abs(dz_it) > dzcut_ ) {
-            continue;
-		}
-        
-        //Change TrackIso Veto
-        TrackIso = true;
-        }
-    
-    return TrackIso;
-}
-
 // Caracterize ttbar decay
 const TLorentzVector nullP4_(0., 0., 0., 0.);
 void GenLorentzVector(const reco::GenParticle* gen, TLorentzVector& TLV)
@@ -316,9 +183,7 @@ template <typename T> int sign(T val) {
 }
 
 TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
-   : dHT_cut_(iConfig.getUntrackedParameter<double>("HT_cut"))
-   , dJet_pT_cut_(iConfig.getUntrackedParameter<double>("jet_pT_cut"))
-   , minNumberElectrons_cut_(iConfig.getUntrackedParameter<unsigned>("minNumberElectrons_cut"))
+   : dJet_pT_cut_(iConfig.getUntrackedParameter<double>("jet_pT_cut"))
    , NumberLeptons_cut_(iConfig.getUntrackedParameter<unsigned>("NumberLeptons_cut"))
    , newLumiBlock_(true)
    , vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices")))
@@ -331,11 +196,6 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    , metCollectionToken_     (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("mets")))
    , metPuppiCollectionToken_     (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metsPuppi")))
    , metNoHFCollectionToken_     (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metsNoHF")))
-   , metCorrectedCollectionToken_  (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metCorrected")))
-   , metCalibratedCollectionToken_ (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metCalibrated")))
-   , metDeepCollectionToken_ (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metsDeepMET")))
-   , metBJetRegressionCollectionToken_ (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("mets_BJetRegression")))
-   , metBJetRegressionLooseCollectionToken_ (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("mets_BJetRegressionLoose")))
    , caloMetCollectionToken_ (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("caloMets")))
    , rhoToken_               (consumes<double> (iConfig.getParameter<edm::InputTag>("rho")))
    , ebRecHitsToken_         (consumes<EcalRecHitCollection>(iConfig.getParameter<edm::InputTag>("ebRecHits")))
@@ -354,10 +214,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    // ~, photonTightIdMapToken_  (iConfig.getUntrackedParameter<std::string>("photonTightIdMap"  ))
    // met filters to apply
    , metFilterNames_(iConfig.getUntrackedParameter<std::vector<std::string>>("metFilterNames"))
-   , phoWorstChargedIsolationToken_(consumes <edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("phoWorstChargedIsolation")))
    , pileupHistogramName_(iConfig.getUntrackedParameter<std::string>("pileupHistogramName"))
-   , hardPUveto_(iConfig.getUntrackedParameter<bool>("hardPUveto"))
-   , reMiniAOD_(iConfig.getUntrackedParameter<bool>("reMiniAOD"))
    , jetIdSelector(iConfig.getParameter<edm::ParameterSet>("pfJetIDSelector"))
    , triggerNames_(iConfig.getParameter<std::vector<std::string>>("triggerNames"))
    , triggerPrescales_(iConfig.getParameter<std::vector<std::string>>("triggerPrescales"))
@@ -365,7 +222,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    // scale factor map
    , fctLeptonFullSimScaleFactors_(iConfig.getParameter<edm::ParameterSet>("LeptonFullSimScaleFactors"))
    , fctBTagEff_    (iConfig.getParameter<edm::ParameterSet>("bTagEfficiencies") )
-   , fctBTagCalibFullSim_    (iConfig.getParameter<edm::ParameterSet>("BTagCalibration").getParameter<std::string>("CSVFullSimTagger"),iConfig.getParameter<edm::ParameterSet>("BTagCalibration").getParameter<std::string>("CSVFullSimFileName") )
+   , fctBTagCalibFullSim_    (iConfig.getParameter<edm::ParameterSet>("BTagCalibration").getParameter<std::string>("FullSimTagger"),iConfig.getParameter<edm::ParameterSet>("BTagCalibration").getParameter<std::string>("FullSimFileName") )
    , fctBTagCalibReaderFullSimBJets_    (BTagEntry::OP_LOOSE,"central" )
    , fctBTagCalibReaderFullSimCJets_    (BTagEntry::OP_LOOSE,"central" )
    , fctBTagCalibReaderFullSimLightJets_    (BTagEntry::OP_LOOSE,"central" )
@@ -387,8 +244,6 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    consumes<edm::TriggerResults>(edm::InputTag("TriggerResults", "",edm::InputTag::kSkipCurrentProcess));
    consumes<pat::PackedTriggerPrescales>(edm::InputTag("patTrigger"));
    consumes<std::vector<pat::TriggerObjectStandAlone>>(edm::InputTag("slimmedPatTrigger"));
-   consumes<bool>(edm::InputTag("particleFlowEGammaGSFixed", "dupECALClusters"));
-   consumes<edm::EDCollection<DetId>>(edm::InputTag("ecalMultiAndGSGlobalRecHitEB", "hitsNotReplaced"));
    consumes<TtGenEvent>(edm::InputTag("genEvt"));
    consumes<int>(edm::InputTag("generatorTopFilter","decayMode"));
    consumes<std::vector<reco::GenParticle>>(edm::InputTag("pseudoTop"));
@@ -420,10 +275,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("metCalo", &metCalo_);
    eventTree_->Branch("metPuppi", &metPuppi_);
    eventTree_->Branch("metNoHF", &metNoHF_);
-   // ~eventTree_->Branch("metDeep", &metDeep_);
    eventTree_->Branch("metXYcorr", &metXYcorr_);
-   // ~eventTree_->Branch("metBJetRegression", &metBJetRegression_);
-   // ~eventTree_->Branch("metBJetRegressionLoose", &metBJetRegressionLoose_);
    eventTree_->Branch("met_raw", &met_raw_);
    eventTree_->Branch("met_gen", &met_gen_);
    eventTree_->Branch("met_JESu", &met_JESu_);
@@ -473,17 +325,11 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("evtNo", &evtNo_, "evtNo/l");
    eventTree_->Branch("runNo", &runNo_, "runNo/i");
    eventTree_->Branch("lumNo", &lumNo_, "lumNo/i");
-   eventTree_->Branch("gs_duplicate", &particleFlowEGammaGSFixed_dupECALClusters_, "gs_duplicate/O");
-   eventTree_->Branch("gs_notReplaced", &ecalMultiAndGSGlobalRecHitEB_hitsNotReplaced_, "gs_notReplaced/O");
 
    eventTree_->Branch("signal_m1", &signal_m1_, "signal_m1/s");
    eventTree_->Branch("signal_m2", &signal_m2_, "signal_m2/s");
    eventTree_->Branch("signal_nBinos", &signal_nBinos_, "signal_nBinos/s");
    eventTree_->Branch("signal_nNeutralinoDecays", &signal_nNeutralinoDecays_, "signal_nNeutralinoDecays/s");
-   
-   eventTree_->Branch("electronTrackIsoVeto", &electronTrackIsoVeto);
-   eventTree_->Branch("muonTrackIsoVeto", &muonTrackIsoVeto);
-   eventTree_->Branch("pionTrackIsoVeto", &pionTrackIsoVeto);
    
    eventTree_->Branch("ttbarProductionMode", &ttbarProductionMode_);
    eventTree_->Branch("ttbarDecayMode", &ttbarDecayMode_);
@@ -566,7 +412,6 @@ TH1F* TreeWriter::createCutFlowHist(std::string modelName)
       "METfilters",
       "nGoodVertices",
       "Dilepton",
-      "HT",
       "final"}};
    TH1F* h = fs_->make<TH1F>(name.c_str(), name.c_str(), vCutBinNames.size(), 0, vCutBinNames.size());
    for (uint i=0; i<vCutBinNames.size(); i++) { h->GetXaxis()->SetBinLabel(i+1, vCutBinNames.at(i)); }
@@ -686,7 +531,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    }
 
    edm::Handle<pat::TriggerObjectStandAloneCollection> triggerObjects;
-   // ~edm::InputTag triggerObjects_("selectedPatTrigger"); //80x
    edm::InputTag triggerObjects_("slimmedPatTrigger");
    iEvent.getByLabel(triggerObjects_, triggerObjects);
 
@@ -759,9 +603,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    // get gen particles before photons for the truth match
    edm::Handle<edm::View<reco::GenParticle>> prunedGenParticles;
    if (!isRealData) { iEvent.getByToken(prunedGenToken_,prunedGenParticles); }
-
-   edm::Handle<edm::ValueMap<float>> phoWorstChargedIsolationMap;
-   iEvent.getByToken(phoWorstChargedIsolationToken_, phoWorstChargedIsolationMap);
 
    edm::Handle<EcalRecHitCollection> ebRecHits;
    iEvent.getByToken(ebRecHitsToken_, ebRecHits);
@@ -912,26 +753,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
          pseudoNeutrino_ = nullP4_;
          pseudoAntiNeutrino_ = nullP4_;
       }
-      
-      //~// All particle jets
-      //~v_allPseudoJet_.clear();
-      //~tree::Particle tempParticle_;
-      //~edm::Handle<reco::GenJetCollection> pseudoJets;
-      //~iEvent.getByLabel("pseudoTop","jets", pseudoJets);
-      //~for(std::vector<reco::GenJet>::const_iterator i_jet = pseudoJets->begin(); i_jet != pseudoJets->end(); ++i_jet){
-         //~GenLorentzVector_Jet(&(*i_jet),tempParticle_.p);
-         //~v_allPseudoJet_.push_back(tempParticle_);
-      //~}
-
-      //~// All particle leptons
-      //~v_allPseudoLepton_.clear();
-      //~edm::Handle<reco::GenJetCollection> pseudoLeptons;
-      //~iEvent.getByLabel("pseudoTop","leptons",pseudoLeptons);
-      //~for(std::vector<reco::GenJet>::const_iterator i_lepton = pseudoLeptons->begin(); i_lepton != pseudoLeptons->end(); ++i_lepton){
-         //~GenLorentzVector_Jet(&(*i_lepton),tempParticle_.p);
-         //~v_allPseudoLepton_.push_back(tempParticle_);
-      //~}
-
 
    }
    
@@ -1059,7 +880,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trJet.bTagDeepJet = jet.bDiscriminator("pfDeepFlavourJetTags:probb")+jet.bDiscriminator("pfDeepFlavourJetTags:probbb")+jet.bDiscriminator("pfDeepFlavourJetTags:problepb");
       trJet.bTagSoftMuon = (jet.bDiscriminator("softPFMuonBJetTags")<0) ? -1. : jet.bDiscriminator("softPFMuonBJetTags");
       trJet.bTagSoftElectron = (jet.bDiscriminator("softPFElectronBJetTags")<0) ? -1. : jet.bDiscriminator("softPFElectronBJetTags");
-      trJet.isLoose = jetIdSelector(jet);
+      trJet.isTight = jetIdSelector(jet);
       trJet.TightIDlepVeto = jet.hasUserInt("PFJetIDTightLepVeto") ? jet.userInt("PFJetIDTightLepVeto") : 0;
       jecUnc.setJetEta(jet.eta());
       jecUnc.setJetPt(jet.pt());
@@ -1079,8 +900,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trJet.electronf = jet.electronEnergyFraction();
       trJet.nch = jet.chargedMultiplicity();
       trJet.nconstituents = jet.numberOfDaughters();
-      trJet.bJetRegressionCorr = jet.hasUserFloat("BJetEnergyCorrFactor") ? jet.userFloat("BJetEnergyCorrFactor") : 1.;
-      trJet.bJetRegressionRes = jet.hasUserFloat("BJetEnergyCorrResolution") ? jet.userFloat("BJetEnergyCorrResolution") : 1.;
       trJet.hadronFlavour = jet.hadronFlavour();
       
       // object matching
@@ -1130,7 +949,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trJet_Puppi.bTagDeepCSV = jet.bDiscriminator("pfDeepCSVJetTags:probb")+jet.bDiscriminator("pfDeepCSVJetTags:probbb");
       trJet_Puppi.bTagSoftMuon = (jet.bDiscriminator("softPFMuonBJetTags")<0) ? -1. : jet.bDiscriminator("softPFMuonBJetTags");
       trJet_Puppi.bTagSoftElectron = (jet.bDiscriminator("softPFElectronBJetTags")<0) ? -1. : jet.bDiscriminator("softPFElectronBJetTags");
-      trJet_Puppi.isLoose = jetIdSelector(jet);
+      trJet_Puppi.isTight = jetIdSelector(jet);
       trJet_Puppi.TightIDlepVeto = jet.hasUserInt("PFJetIDTightLepVeto") ? jet.userInt("PFJetIDTightLepVeto") : 0;
       jecUnc.setJetEta(jet.eta());
       jecUnc.setJetPt(jet.pt());
@@ -1150,8 +969,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trJet_Puppi.electronf = jet.electronEnergyFraction();
       trJet_Puppi.nch = jet.chargedMultiplicity();
       trJet_Puppi.nconstituents = jet.numberOfDaughters();
-      trJet_Puppi.bJetRegressionCorr = jet.hasUserFloat("BJetEnergyCorrFactor") ? jet.userFloat("BJetEnergyCorrFactor") : 1.;
-      trJet_Puppi.bJetRegressionRes = jet.hasUserFloat("BJetEnergyCorrResolution") ? jet.userFloat("BJetEnergyCorrResolution") : 1.;
       trJet_Puppi.hadronFlavour = jet.hadronFlavour();
       
       // object matching
@@ -1219,7 +1036,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
             SF_err = std::max(fabs(SF_up-SF),fabs(SF_down-SF));
              
             // check if jet is btagged
-            bool tagged = it->bTagDeepCSV>0.2217;
+            bool tagged = it->bTagDeepJet>0.0490;
            
             if (tagged){
                P_MC = P_MC * eff;
@@ -1264,18 +1081,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
      sort(vGenJets_.begin(), vGenJets_.end(), tree::PtGreater);
    } // gen-jet loop
 
-   if (hardPUveto_) {
-      for (tree::Jet const &j: vJets_) {
-         if (j.isLoose) {
-            if (j.p.Pt()>300) return;
-            break; // only check first loose jet
-         }
-      }
-   }
-
-   double const HT = computeHT(vJets_);
-   if (HT<dHT_cut_) return;
-   hCutFlow_->Fill("HT", mc_weight_*pu_weight_);
 
    ////////
    // MET//
@@ -1378,36 +1183,11 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    metNoHF_.p.SetPtEtaPhiE(metPt_NoHF, metNoHF.eta(), metNoHF.phi(), metNoHF.energy());
    metNoHF_.sig = metNoHF.metSignificance();
    
-   //DeepMET
-   // ~edm::Handle<pat::METCollection> metCollDeep;
-   // ~iEvent.getByToken(metDeepCollectionToken_, metCollDeep);
-   // ~const pat::MET &metDeep = metCollDeep->front();
-   // ~double metPt_Deep = metDeep.pt();
-   // ~metDeep_.p.SetPtEtaPhiE(metPt_Deep, metDeep.eta(), metDeep.phi(), metDeep.energy());
-   // ~metDeep_.sig = metDeep.metSignificance();
-   
    //XY Corrected MET
    std::pair<double,double> MET_XYpair = METXYCorr_Met_MetPhi(metPt, met.phi(), iEvent.run(), 2016, !isRealData, nPV_);
    metXYcorr_.p.SetPtEtaPhiE(MET_XYpair.first, met.eta(), MET_XYpair.second, met.energy());
    metXYcorr_.sig = met.metSignificance();
    metXYcorr_.uncertainty = met_.uncertainty;   //should probably be changed
-   
-   // ~//MET with BJet Regression Jets
-   // ~edm::Handle<pat::METCollection> metCollBJetRegr;
-   // ~iEvent.getByToken(metBJetRegressionCollectionToken_, metCollBJetRegr);
-   // ~const pat::MET &metBJetRegression = metCollBJetRegr->front();
-   // ~double metPt_BJetRegression = metBJetRegression.pt();
-   // ~metBJetRegression_.p.SetPtEtaPhiE(metPt_BJetRegression, metBJetRegression.eta(), metBJetRegression.phi(), metBJetRegression.energy());
-   // ~metBJetRegression_.sig = metBJetRegression.metSignificance();
-   
-   // ~//MET with BJet Regression Jets (only applied to jets with a loose selection)
-   // ~edm::Handle<pat::METCollection> metCollBJetRegrLoose;
-   // ~iEvent.getByToken(metBJetRegressionLooseCollectionToken_, metCollBJetRegrLoose);
-   // ~const pat::MET &metBJetRegressionLoose = metCollBJetRegrLoose->front();
-   // ~double metPt_BJetRegressionLoose = metBJetRegressionLoose.pt();
-   // ~metBJetRegressionLoose_.p.SetPtEtaPhiE(metPt_BJetRegressionLoose, metBJetRegressionLoose.eta(), metBJetRegressionLoose.phi(), metBJetRegressionLoose.energy());
-   // ~metBJetRegressionLoose_.sig = metBJetRegressionLoose.metSignificance();
-   // ~std::cout<<metBJetRegressionLoose_.p.Pt()<<std::endl;
       
    ///////////
    //MT2//////
@@ -1662,20 +1442,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    evtNo_ = iEvent.id().event();
    runNo_ = iEvent.run();
    lumNo_ = iEvent.luminosityBlock();
-   edm::Handle<edm::EDCollection<DetId>> unreplacedGSFixedHandle;
-   iEvent.getByLabel("ecalMultiAndGSGlobalRecHitEB", "hitsNotReplaced", unreplacedGSFixedHandle);
-   ecalMultiAndGSGlobalRecHitEB_hitsNotReplaced_ = reMiniAOD_ && (!unreplacedGSFixedHandle.isValid() || !unreplacedGSFixedHandle->empty());
-
-   edm::Handle<bool> duplicateGSFixedHandle;
-   iEvent.getByLabel("particleFlowEGammaGSFixed", "dupECALClusters", duplicateGSFixedHandle);
-   particleFlowEGammaGSFixed_dupECALClusters_ = reMiniAOD_ && *duplicateGSFixedHandle;
-   
-   //////////////////
-   //TrackIsolation//
-   //////////////////
-   electronTrackIsoVeto = TrackIsolation(packedCandidates, metColl, vertices, 11);
-   muonTrackIsoVeto = TrackIsolation(packedCandidates, metColl, vertices, 13);
-   pionTrackIsoVeto = TrackIsolation(packedCandidates, metColl, vertices, 211);
    
    // write the event
    eventTree_->Fill();

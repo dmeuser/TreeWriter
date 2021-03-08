@@ -1,5 +1,3 @@
-**Old README, needs to be updated for UL**
-
 **TreeWriter** to build a ROOT tree from MiniAOD. Designed for ttbar, starting from https://github.com/cms-susy-photon-rwth-1b/TreeWriter
 
 ## Building and Running ##
@@ -12,17 +10,17 @@ cmsenv
 git cms-init
 git cms-merge-topic dmeuser:ttbar_treeUL
 scram b -j7
-git cms-addpkg RecoEgamma/EgammaTools  ### essentially just checkout the package from CMSSW
+git cms-addpkg RecoEgamma/EgammaTools
 git clone https://github.com/cms-egamma/EgammaPostRecoTools.git
 mv EgammaPostRecoTools/python/EgammaPostRecoTools.py RecoEgamma/EgammaTools/python/.
 git clone https://github.com/jainshilpi/EgammaAnalysis-ElectronTools.git -b UL2018 EgammaAnalysis/ElectronTools/data/
 git cms-addpkg EgammaAnalysis/ElectronTools
 scram b -j7
-git clone git@github.com:dmeuser/TreeWriter.git
+git clone git@github.com:dmeuser/TreeWriter.git -b UltraLegacy
 scram b -j7
 cd TreeWriter
 ```
-Create Pileup Histograms (Source different CMSSW version before, due to https://hypernews.cern.ch/HyperNews/CMS/get/luminosity/816/1/1.html or use manual fix described there)
+Create Pileup Histograms
 
 ```
 make -C PUreweighting
@@ -31,7 +29,7 @@ Run the TreeWriter
 - locally
 ```
 voms-proxy-init -voms cms
-cmsRun TreeWriter/python/runTreeWriter.py
+cmsRun TreeWriter/python/runTreeWriter2018.py
 ```
 - on the Grid using CRAB3
 ```
