@@ -28,12 +28,12 @@ options.register ('user',
                   "Name the user. If not set by crab, this script will determine it.")
 
 # defaults
-#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/00000/531C1968-9806-4346-834C-2A1EE1A86AEB.root',
-options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018B/MuonEG/MINIAOD/12Nov2019_UL2018-v1/100000/00BE9C7C-F659-EB4C-A6C4-EAC5054243B2.root',
+options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/00000/531C1968-9806-4346-834C-2A1EE1A86AEB.root',
+#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018B/MuonEG/MINIAOD/12Nov2019_UL2018-v1/100000/00BE9C7C-F659-EB4C-A6C4-EAC5054243B2.root',
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
 #options.maxEvents = -1
-options.maxEvents = 1000
+options.maxEvents = 100
 # get and parse the command line arguments
 options.parseArguments()
 
@@ -46,7 +46,6 @@ process = cms.Process("TreeWriter")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
-
 
 # determine global tag
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
@@ -101,18 +100,7 @@ runMetCorAndUncFromMiniAOD(   #update pfMET
     fixEE2017 = False,
 )
 
-# Should update Puppi to most recent tune!! https://twiki.cern.ch/twiki/bin/viewauth/CMS/PUPPI#Recipe_for_106X
-from PhysicsTools.PatAlgos.slimming.puppiForMET_cff import makePuppiesFromMiniAOD
-makePuppiesFromMiniAOD( process, True);
-runMetCorAndUncFromMiniAOD(process,    #update PuppiMET 
-                           isData=isRealData,
-                           metType="Puppi",
-                           postfix="Puppi",
-                           jetFlavor="AK4PFPuppi",
-                           )
-process.puppiNoLep.useExistingWeights = True
-process.puppi.useExistingWeights = True
-process.puppiMETSequence = cms.Sequence(process.egmPhotonIDSequence * process.puppiMETSequence * process.fullPatMetSequencePuppi)
+# Puppi MET is correct when applying new Puppi Tune
 
 
 ################################
@@ -161,6 +149,9 @@ process.jetIDSequence = cms.Sequence(process.PFJetIDTightLepVeto * process.updat
 ################################
 # Puppi Jets                   #
 ################################
+from CommonTools.PileupAlgos.customizePuppiTune_cff import UpdatePuppiTuneV15
+UpdatePuppiTuneV15(process, runOnMC=(isRealData==False))
+
 updateJetCollection(
    process,
    jetSource = cms.InputTag('slimmedJetsPuppi'),
@@ -264,6 +255,7 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     #  ~jets = cms.InputTag("updatedPatJetsUpdatedJEC"),
                                     jets = cms.InputTag("updatedPatJetsUpdatedJECID"),
                                     jets_puppi = cms.InputTag("updatedPatJetsUpdatedJECIDPuppi"),
+                                    #  ~jets_puppi = cms.InputTag("slimmedJetsPuppi"),
                                     muons = cms.InputTag("MuonsAddedRochesterCorr"),
                                     #  ~muons = cms.InputTag("slimmedMuons"),
                                     genJets=cms.InputTag("slimmedGenJets"),
@@ -307,7 +299,7 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     # with the strings given here. E.g. "HLT" would always be true if any of the triggers fired.
                                     triggerNames=cms.vstring(),
                                     triggerObjectNames=cms.vstring(),
-                                    pfJetIDSelector=cms.PSet(version=cms.string('RUNIIULCHS'), quality=cms.string('TIGHT')),    ###Could be redundant, need to check!!#####
+                                    pfJetIDSelector=cms.PSet(version=cms.string('RUNIIULCHS'), quality=cms.string('TIGHT')),
                                     triggerPrescales=cms.vstring(), # also useful to check whether a trigger was run
                                     LeptonFullSimScaleFactors = LeptonFullSimScaleFactorMapPars,
                                     BTagCalibration = BTagCalibrationPars,
@@ -379,12 +371,12 @@ for trig in process.TreeWriter.triggerPrescales:
 process.p = cms.Path(
     process.jecSequence
     *process.jetIDSequence
-    *process.jecSequencePuppi
-    *process.jetIDSequencePuppi
     *process.egammaPostRecoSeq
     *process.MuonsAddedRochesterCorr
     *process.fullPatMetSequence
-    *process.puppiMETSequence
+    *process.puppiSequence
+    *process.jecSequencePuppi
+    *process.jetIDSequencePuppi
     *process.TTbarGen
     *process.TreeWriter
 )
