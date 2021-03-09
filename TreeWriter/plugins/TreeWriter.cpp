@@ -249,6 +249,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    consumes<std::vector<reco::GenParticle>>(edm::InputTag("pseudoTop"));
    //~consumes<reco::GenJetCollection>(edm::InputTag("pseudoTop","leptons"));
    //~consumes<reco::GenJetCollection>(edm::InputTag("pseudoTop","jets"));
+   consumes<LHERunInfoProduct,edm::InRun>(edm::InputTag("externalLHEProducer"));
    
    // load BTagCalibrations
    fctBTagCalibReaderFullSimBJets_.load(fctBTagCalibFullSim_,BTagEntry::FLAV_B,iConfig.getParameter<edm::ParameterSet>("BTagCalibrationReader").getParameter<std::string>("measurementType_bJets"));
@@ -302,6 +303,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("pu_weight", &pu_weight_, "pu_weight/F");
    eventTree_->Branch("mc_weight", &mc_weight_, "mc_weight/B");
    eventTree_->Branch("pdf_weights", &vPdf_weights_);
+   eventTree_->Branch("ps_weights", &vPS_weights_);
 
    eventTree_->Branch("mll", &mll_, "mll/F");
    eventTree_->Branch("Ht", &Ht_, "Ht/F");
@@ -418,6 +420,25 @@ TH1F* TreeWriter::createCutFlowHist(std::string modelName)
    return h;
 }
 
+void TreeWriter::beginRun(edm::Run const& iRun, edm::EventSetup const& iSetup){ }
+
+
+void TreeWriter::endRun(edm::Run const& iRun, edm::EventSetup const& iSetup){
+   // ~edm::Handle<LHERunInfoProduct> run; 
+   // ~typedef std::vector<LHERunInfoProduct::Header>::const_iterator headers_const_iterator;
+   
+   // ~iRun.getByLabel( "externalLHEProducer", run );
+   // ~LHERunInfoProduct myLHERunInfoProduct = *(run.product());
+    
+   // ~for (headers_const_iterator iter=myLHERunInfoProduct.headers_begin(); iter!=myLHERunInfoProduct.headers_end(); iter++){
+     // ~std::cout << iter->tag() << std::endl;
+     // ~std::vector<std::string> lines = iter->lines();
+     // ~for (unsigned int iLine = 0; iLine<lines.size(); iLine++) {
+      // ~std::cout << lines.at(iLine);
+     // ~}
+   // ~} 
+}
+
 // ------------ method called for each event  ------------
 void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
@@ -454,38 +475,34 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    // generator weights//
    //////////////////////
    mc_weight_ = 1; // 1 for data
-   if (!isRealData) {
+   if (!isRealData) {   //https://twiki.cern.ch/twiki/bin/view/CMS/TopModGen#Event_Generation
       edm::Handle<GenEventInfoProduct> GenEventInfoHandle;
       iEvent.getByLabel("generator", GenEventInfoHandle);
-      mc_weight_ = sign(GenEventInfoHandle->weight());
-      auto weightsize = GenEventInfoHandle->weights().size();
-      if (weightsize < 2) {   // for most SM samples
-         edm::Handle<LHEEventProduct> LHEEventProductHandle;
-         iEvent.getByToken(LHEEventToken_, LHEEventProductHandle);
-         if (LHEEventProductHandle.isValid()) {
-            unsigned iMax = 110; // these are 9 scale variations and 100 variation of the first pdf set
-            if (iMax>LHEEventProductHandle->weights().size()) iMax = LHEEventProductHandle->weights().size();
-            vPdf_weights_ = std::vector<float>(iMax, 1.0);
-            for (unsigned i=0; i<iMax; i++) {
-               // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideDataFormatGeneratorInterface#Retrieving_information_on_LHE_ev
-               vPdf_weights_[i] = LHEEventProductHandle->weights()[i].wgt/LHEEventProductHandle->originalXWGTUP();
-            }
+      // PS weight
+      if (GenEventInfoHandle.isValid()) {
+         mc_weight_ = sign(GenEventInfoHandle->weight());
+         auto weightsize = GenEventInfoHandle->weights().size();
+         vPS_weights_ = std::vector<float>(weightsize, 1.0);
+         for (unsigned i=0; i<weightsize; i++) {
+            vPS_weights_[i] = GenEventInfoHandle->weights()[i]/GenEventInfoHandle->weights()[0];
          }
-      } else { // for SMS scans
-         unsigned iMax = 110;
-         if (iMax>GenEventInfoHandle->weights().size()-1) iMax=GenEventInfoHandle->weights().size()-1;
+      }
+      // PDF and scale variations
+      edm::Handle<LHEEventProduct> LHEEventProductHandle;
+      iEvent.getByToken(LHEEventToken_, LHEEventProductHandle);
+      if (LHEEventProductHandle.isValid()) {
+         unsigned iMax = 112; // these are 9 scale variations and 103 variation of the first pdf set (NNPDF31_nnlo_hessian_pdfas)
+         if (iMax>LHEEventProductHandle->weights().size()) iMax = LHEEventProductHandle->weights().size();
          vPdf_weights_ = std::vector<float>(iMax, 1.0);
-         for (unsigned i=0; i<iMax; i++) {
-            // 0 and 1 are the same for 80X scans
-            // https://hypernews.cern.ch/HyperNews/CMS/get/susy-interpretations/242/1/1.html
-            vPdf_weights_[i] = GenEventInfoHandle->weights()[i+1]/GenEventInfoHandle->weights()[1];
+         for (unsigned i=0; i<iMax; i++) {   // https://twiki.cern.ch/twiki/bin/view/CMS/HowToPDF
+            vPdf_weights_[i] = LHEEventProductHandle->weights()[i].wgt/LHEEventProductHandle->originalXWGTUP();
          }
       }
    }
 
    hCutFlow_->Fill("initial_mc_weighted", mc_weight_);
    hCutFlow_->Fill("initial", mc_weight_*pu_weight_);
-   
+      
    ////////////
    // Trigger//
    ////////////

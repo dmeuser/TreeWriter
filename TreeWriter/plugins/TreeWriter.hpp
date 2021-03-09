@@ -15,6 +15,7 @@
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
+#include "FWCore/Framework/interface/Run.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
@@ -89,7 +90,7 @@ typedef edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit>> Ec
 // class declaration
 //
 
-class TreeWriter : public edm::one::EDAnalyzer<edm::one::WatchLuminosityBlocks> {
+class TreeWriter : public edm::one::EDAnalyzer<edm::one::WatchLuminosityBlocks,edm::one::WatchRuns> {
 public:
    explicit TreeWriter(const edm::ParameterSet&);
    ~TreeWriter() {};
@@ -100,6 +101,9 @@ private:
    virtual void beginJob() override {};
    virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
    virtual void endJob() override {};
+   
+   virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
+   virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
 
    virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
    virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override {};
@@ -162,6 +166,7 @@ private:
    Float_t pu_weight_;
    Char_t  mc_weight_; // +1 or -1 event weights (take care when reading with python, this is a character!)
    std::vector<float> vPdf_weights_;
+   std::vector<float> vPS_weights_;
    
    Float_t mll_;
    Float_t Ht_;
