@@ -16,7 +16,7 @@ def getLumiMask(cmssw_src):
     with open(cmssw_src+"TreeWriter/PUreweighting/Makefile") as f:
         lines = f.readlines()
     for l in lines:
-        if l.startswith("ANA_JSON2018="):
+        if l.startswith("ANA_JSON2017="):
             out = l[13:-1]
     if not out:
         print "ERROR: could not find lumi mask"
@@ -33,7 +33,7 @@ def getRequestName(dataset, isSim):
         elif "ext4" in dataset: out += "_ext4"
         elif "ext5" in dataset: out += "_ext5"
         elif "backup" in dataset: out += "_backup"
-        out += "_2018"
+        out += "_2017"
     else:
         out = "{}_{}".format(d2,d3)
     # CRABClient.ClientExceptions.ConfigurationException: Invalid CRAB configuration: Parameter General.requestName should not be longer than 100 characters.
@@ -45,45 +45,58 @@ cmssw_src = os.environ['CMSSW_BASE']+'/src/'
 
 datasets={}
 
-datasets["DoubleMuon"] = [
-    "/DoubleMuon/Run2018A-12Nov2019_UL2018-v2/MINIAOD",
-    "/DoubleMuon/Run2018B-12Nov2019_UL2018-v2/MINIAOD",
-    "/DoubleMuon/Run2018C-12Nov2019_UL2018-v2/MINIAOD",
-    "/DoubleMuon/Run2018D-12Nov2019_UL2018-v3/MINIAOD",
+datasets["DoubleEG"] = [
+    "/DoubleEG/Run2017B-09Aug2019_UL2017-v1/MINIAOD",
+    "/DoubleEG/Run2017C-09Aug2019_UL2017-v1/MINIAOD",
+    "/DoubleEG/Run2017D-09Aug2019_UL2017-v1/MINIAOD",
+    "/DoubleEG/Run2017E-09Aug2019_UL2017-v1/MINIAOD",
+    "/DoubleEG/Run2017F-09Aug2019_UL2017-v1/MINIAOD",
 ]
 
-datasets["EGamma"] = [
-    "/EGamma/Run2018A-12Nov2019_UL2018-v2/MINIAOD",
-    "/EGamma/Run2018B-12Nov2019_UL2018-v2/MINIAOD",
-    "/EGamma/Run2018C-12Nov2019_UL2018-v2/MINIAOD",
-    "/EGamma/Run2018D-12Nov2019_UL2018-v4/MINIAOD",
+datasets["DoubleMuon"] = [
+    "/DoubleMuon/Run2017B-09Aug2019_UL2017-v1/MINIAOD",
+    "/DoubleMuon/Run2017C-09Aug2019_UL2017-v1/MINIAOD",
+    #  ~"/DoubleMuon/Run2017D-09Aug2019_UL2017-v1/MINIAOD",
+    #  ~"/DoubleMuon/Run2017E-09Aug2019_UL2017-v1/MINIAOD",
+    #  ~"/DoubleMuon/Run2017F-09Aug2019_UL2017-v1/MINIAOD",
 ]
 
 datasets["MuonEG"] = [
-    "/MuonEG/Run2018A-12Nov2019_UL2018_rsb-v1/MINIAOD",
-    "/MuonEG/Run2018B-12Nov2019_UL2018-v1/MINIAOD",
-    "/MuonEG/Run2018C-12Nov2019_UL2018-v1/MINIAOD",
-    "/MuonEG/Run2018D-12Nov2019_UL2018_rsb-v1/MINIAOD",
+    "/MuonEG/Run2017B-09Aug2019_UL2017-v1/MINIAOD",
+    "/MuonEG/Run2017C-09Aug2019_UL2017-v1/MINIAOD",
+    "/MuonEG/Run2017D-09Aug2019_UL2017-v1/MINIAOD",
+    "/MuonEG/Run2017E-09Aug2019_UL2017-v1/MINIAOD",
+    "/MuonEG/Run2017F-09Aug2019_UL2017-v1/MINIAOD",
+]
+
+datasets["SingleElectron"] = [
+    "/SingleElectron/Run2017B-09Aug2019_UL2017_rsb-v1/MINIAOD",
+    "/SingleElectron/Run2017C-09Aug2019_UL2017_rsb-v1/MINIAOD",
+    "/SingleElectron/Run2017D-09Aug2019_UL2017_rsb-v1/MINIAOD",
+    "/SingleElectron/Run2017E-09Aug2019_UL2017_rsb-v1/MINIAOD",
+    "/SingleElectron/Run2017F-09Aug2019_UL2017_rsb-v2/MINIAOD",
 ]
 
 datasets["SingleMuon"] = [
-    "/SingleMuon/Run2018A-12Nov2019_UL2018_rsb-v1/MINIAOD",
-    "/SingleMuon/Run2018B-12Nov2019_UL2018-v2/MINIAOD",
-    "/SingleMuon/Run2018C-12Nov2019_UL2018-v2/MINIAOD",
-    "/SingleMuon/Run2018D-12Nov2019_UL2018-v4/MINIAOD",
+    "/SingleMuon/Run2017B-09Aug2019_UL2017-v1/MINIAOD",
+    "/SingleMuon/Run2017C-09Aug2019_UL2017-v1/MINIAOD",
+    "/SingleMuon/Run2017D-09Aug2019_UL2017-v1/MINIAOD",
+    "/SingleMuon/Run2017E-09Aug2019_UL2017-v1/MINIAOD",
+    "/SingleMuon/Run2017F-09Aug2019_UL2017-v1/MINIAOD",
 ]
 
 datasets["MET"] = [
-    "/MET/Run2018A-12Nov2019_UL2018_rsb-v1/MINIAOD",
-    "/MET/Run2018B-12Nov2019_UL2018_rsb-v1/MINIAOD",
-    "/MET/Run2018C-12Nov2019_UL2018_rsb-v1/MINIAOD",
-    "/MET/Run2018D-12Nov2019_UL2018_rsb-v2/MINIAOD",
+    "/MET/Run2017B-09Aug2019_UL2017_rsb-v1/MINIAOD",
+    "/MET/Run2017C-09Aug2019_UL2017_rsb-v1/MINIAOD",
+    "/MET/Run2017D-09Aug2019_UL2017_rsb-v1/MINIAOD",
+    "/MET/Run2017E-09Aug2019_UL2017_rsb-v1/MINIAOD",
+    "/MET/Run2017F-09Aug2019_UL2017_rsb-v1/MINIAOD",
 ]
 
 datasets["Standard_ttbar"] = [
-    "/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
-    "/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
-    "/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
+    "/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
+    "/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
+    "/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
 ]
 
 datasets["SingleTop"] = [
@@ -96,21 +109,21 @@ datasets["SingleTop"] = [
 ]
 
 datasets["V+Jets"] = [
-    "/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAOD-Pilot_106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
-    "/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v1/MINIAODSIM",
+    "/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL17MiniAOD-Pilot_106X_mc2017_realistic_v6-v2/MINIAODSIM",
+    "/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v1/MINIAODSIM",
     #missing:
     #"DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8"
 ]
 
 datasets["Diboson"] = [
-    "/WW_TuneCP5_13TeV-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
-    "/WZ_TuneCP5_13TeV-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
+    "/WW_TuneCP5_13TeV-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
+    "/WZ_TuneCP5_13TeV-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
     #missing:
     #"ZZ_TuneCP5_13TeV-pythia8"
 ]
 
 datasets["tt+X"] = [
-    "/TTZToQQ_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
+    "/TTZToQQ_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
     #missing:
     #"TTWJetsToQQ_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8"
     #"TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8"
@@ -119,12 +132,13 @@ datasets["tt+X"] = [
 ]
 
 datasets["dmeuser"] = []
+#  ~datasets["dmeuser"] += datasets["DoubleEG"]
 datasets["dmeuser"] += datasets["DoubleMuon"]
-datasets["dmeuser"] += datasets["EGamma"]
-datasets["dmeuser"] += datasets["MuonEG"]
-datasets["dmeuser"] += datasets["SingleMuon"]
-datasets["dmeuser"] += datasets["MET"]
-datasets["dmeuser"] += datasets["Standard_ttbar"]
+#  ~datasets["dmeuser"] += datasets["MuonEG"]
+#  ~datasets["dmeuser"] += datasets["SingleMuon"]
+#  ~datasets["dmeuser"] += datasets["SingleElectron"]
+#  ~datasets["dmeuser"] += datasets["MET"]
+#  ~datasets["dmeuser"] += datasets["Standard_ttbar"]
 
 # call with 'python crabConfig.py'
 if __name__ == '__main__':
@@ -148,7 +162,7 @@ if __name__ == '__main__':
 
         config.section_("JobType")
         config.JobType.pluginName = 'Analysis'
-        config.JobType.psetName = cmssw_src + 'TreeWriter/TreeWriter/python/runTreeWriter_2018.py'
+        config.JobType.psetName = cmssw_src + 'TreeWriter/TreeWriter/python/runTreeWriter_2017.py'
         config.JobType.pyCfgParams = ["dataset="+dataset,"user="+user]
         config.JobType.inputFiles  = [cmssw_src + "TreeWriter/" + x for x in ["data"]]
         config.JobType.allowUndistributedCMSSW = True
@@ -173,7 +187,7 @@ if __name__ == '__main__':
 
         if user=="dmeuser":
             config.Data.outputDatasetTag = 'v01'
-            config.Data.outLFNDirBase = "/store/user/dmeuser/run2_topUL/2018/"
+            config.Data.outLFNDirBase = "/store/user/dmeuser/run2_topUL/2017/"
         else:
             print "you shall not pass!"
             print "(unkown user '%s')"%user

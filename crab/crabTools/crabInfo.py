@@ -129,7 +129,9 @@ class CrabInfo:
                 modifiedDatasetName+="_"+self.datasetMiddle
             elif "Run2016" in self.datasetMiddle: # distinguish different data runs/recos
                 modifiedDatasetName+="_"+self.datasetMiddle
-            elif "UL2018" in self.datasetMiddle: # distinguish different data runs/recos
+            elif "UL2017" in self.datasetMiddle or "UL17" in self.datasetMiddle: # distinguish different data runs/recos
+                modifiedDatasetName+="_"+self.datasetMiddle
+            elif "UL2018" in self.datasetMiddle or "UL18" in self.datasetMiddle: # distinguish different data runs/recos
                 modifiedDatasetName+="_"+self.datasetMiddle
             elif "T5gg" in self.datasetName: # extract mass
                 m=re.search(".*_mGluino-(.*)_mNeutralino-(.*)-.*",self.datasetMiddle)
@@ -139,9 +141,9 @@ class CrabInfo:
                     modifiedDatasetName="UNKOWNPATTERN"
             if "RunIISummer16" in self.datasetMiddle or "Run2016" in self.datasetMiddle:
                 return "/net/data_cms1b/user/dmeuser/top_analysis/2016/v23/{}.root".format(modifiedDatasetName)
-            elif "Run2017" in self.datasetMiddle:
+            elif "UL2017" in self.datasetMiddle or "UL17" in self.datasetMiddle:
                 return "/net/data_cms1b/user/dmeuser/top_analysis/2017/v01/{}.root".format(modifiedDatasetName)
-            elif "UL2018" in self.datasetMiddle:
+            elif "UL2018" in self.datasetMiddle or "UL18" in self.datasetMiddle:
                 return "/net/data_cms1b/user/dmeuser/top_analysis/2018/v01/{}.root".format(modifiedDatasetName)
         return "outputFile.root"
 
