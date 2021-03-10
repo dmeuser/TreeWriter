@@ -34,8 +34,8 @@ if __name__ == "__main__":
 
     hists = []
     #  ~hists.append( generateHistoFromMixingModule( "mix_2016_25ns_UltraLegacy_PoissonOOTPU" ) )
-    hists.append( generateHistoFromMixingModule( "mix_2017_25ns_UltraLegacy_PoissonOOTPU" ) ) #CHANGE YEAR IN MAKEFILE BEFORE RUNNIG THESE!!!!!
-    #  ~hists.append( generateHistoFromMixingModule( "mix_2018_25ns_UltraLegacy_PoissonOOTPU" ) )
+    #  ~hists.append( generateHistoFromMixingModule( "mix_2017_25ns_UltraLegacy_PoissonOOTPU" ) ) #CHANGE YEAR IN MAKEFILE BEFORE RUNNIG THESE!!!!!
+    hists.append( generateHistoFromMixingModule( "mix_2018_25ns_UltraLegacy_PoissonOOTPU" ) )
 
     writeObjectsToFile( hists, filename )
 
