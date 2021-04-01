@@ -136,7 +136,7 @@ class CrabInfo:
                 else:
                     modifiedDatasetName="UNKOWNPATTERN"
             if "RunIISummer16" in self.datasetMiddle or "Run2016" in self.datasetMiddle:
-                return "/net/data_cms1b/user/dmeuser/top_analysis/2016/v23/{}.root".format(modifiedDatasetName)
+                return "/net/data_cms1b/user/dmeuser/top_analysis/2016/v24/{}.root".format(modifiedDatasetName)
             elif "Run2017" in self.datasetMiddle:
                 return "/net/data_cms1b/user/dmeuser/top_analysis/2017/v02/{}.root".format(modifiedDatasetName)
             elif "Run2018" in self.datasetMiddle:

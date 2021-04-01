@@ -32,11 +32,13 @@ def crabUpdate( dir ):
 
 def crabResubmit(directory,silent=False):
     with open(os.devnull, "w") as FNULL:
-        out=subprocess.check_output(["crab","resubmit",directory],stdin=FNULL,stderr=subprocess.STDOUT)
+        try:
+            out=subprocess.check_output(["crab","resubmit",directory],stdin=FNULL,stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            print(e.output)
         if "No credentials found!" in out:
             print "No credentials found! Initialize your VOMS proxy."
             exit(0)
-        if not silent: print out
 
 def crabKill(directory,silent=False):
     with open(os.devnull, "w") as FNULL:

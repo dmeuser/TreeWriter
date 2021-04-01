@@ -33,16 +33,11 @@ options.register ('user',
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/120000/FEF559B1-95DF-E811-9528-D4AE52900EF9.root',
 options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v1/00000/A6781AB0-A774-E911-8648-0425C5903030.root',
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/90000/D2E079F1-29F5-E811-B34D-0CC47AF9B2CA.root'
-#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016G/SingleElectron/MINIAOD/17Jul2018-v1/50000/02EEB508-D88E-E811-9658-0CC47AF9B2B6.root'
-#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016H/DoubleEG/MINIAOD/17Jul2018-v1/80000/A896F673-5C8D-E811-AE20-0242AC1C0502.root'
-#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016H/MET/MINIAOD/17Jul2018-v2/270000/FC265DF1-71B9-E811-AF11-34E6D7BEAF0E.root'
-#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/ZZTo2L2Nu_13TeV_powheg_pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/40000/00D06C25-A823-E911-AE44-001E67792800.root',
-#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/60000/F40DF1A0-E937-E911-AB5B-AC1F6BAC7D12.root'
-#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv3/SMS-T1tttt_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSummer16v3Fast_94X_mcRun2_asymptotic_v3-v1/10000/009FB1D8-0117-E911-B425-A4BF01125E66.root'
+#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2016G/DoubleEG/MINIAOD/17Jul2018-v1/20000/FCA1F6F9-279B-E811-B35B-0425C5DE7BEE.root'
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
-options.maxEvents = -1
-#  ~options.maxEvents = 1000
+#  ~options.maxEvents = -1
+options.maxEvents = 1000
 # get and parse the command line arguments
 options.parseArguments()
 
@@ -65,6 +60,12 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
         #  ~process.GlobalTag.globaltag = "94X_mcRun2_asymptotic_v3"
 if isRealData:
         process.GlobalTag.globaltag = "102X_dataRun2_v13"
+        process.GlobalTag.toGet = cms.VPSet(
+            cms.PSet(
+                record = cms.string('JetCorrectionsRecord'),
+                label = cms.untracked.string('AK4PFchs'),
+                tag = cms.string('JetCorrectorParametersCollection_Sum16_07Aug2017V11_and_Fall17_17Nov2017V6_DATA_AK4PFchs')))
+
 else:
         process.GlobalTag.globaltag = "102X_mcRun2_asymptotic_v8"
         
@@ -429,7 +430,7 @@ process.updatedJetsBJetRegressionLoose = JetPATBJetRegressionCorrectionAdder.clo
 ################################
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(options.maxEvents))
 #  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), lumisToProcess = cms.untracked.VLuminosityBlockRange("273302:322"))#eventsToProcess = cms.untracked.VEventRange("276315:134:185994346"))
-#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("279694:2133:3845835844"))
+#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("280016:11:17896469"))
 process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles))
 process.TFileService = cms.Service("TFileService", fileName=cms.string(options.outputFile))
 
