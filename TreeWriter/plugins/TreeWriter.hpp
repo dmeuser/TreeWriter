@@ -221,6 +221,9 @@ private:
    std::vector<tree::GenParticle> vGenParticles_;
    std::vector<tree::IntermediateGenParticle> vIntermediateGenParticles_;
    
+   // BTag cut values
+   Double_t BTag_DeepJet_looseWP_cut_;
+   Double_t BTag_DeepCSV_looseWP_cut_;
    
    // Scale factors
    LeptonFullSimScaleFactorMapFunctor fctLeptonFullSimScaleFactors_;
@@ -243,6 +246,21 @@ private:
    Float_t bTagWeight_;
    Float_t bTagWeightErrHeavy_;
    Float_t bTagWeightErrLight_;
+   
+   BTagEffMapFunctor fctBTagEff_DeepCSV_;
+   BTagCalibration fctBTagCalibFullSim_DeepCSV_;
+   BTagCalibrationReader fctBTagCalibReaderFullSimBJets_DeepCSV_;
+   BTagCalibrationReader fctBTagCalibReaderFullSimCJets_DeepCSV_;
+   BTagCalibrationReader fctBTagCalibReaderFullSimLightJets_DeepCSV_;
+   BTagCalibrationReader fctBTagCalibReaderFullSimBJetsUp_DeepCSV_;
+   BTagCalibrationReader fctBTagCalibReaderFullSimCJetsUp_DeepCSV_;
+   BTagCalibrationReader fctBTagCalibReaderFullSimLightJetsUp_DeepCSV_;
+   BTagCalibrationReader fctBTagCalibReaderFullSimBJetsDown_DeepCSV_;
+   BTagCalibrationReader fctBTagCalibReaderFullSimCJetsDown_DeepCSV_;
+   BTagCalibrationReader fctBTagCalibReaderFullSimLightJetsDown_DeepCSV_;
+   Float_t bTagWeight_DeepCSV_;
+   Float_t bTagWeightErrHeavy_DeepCSV_;
+   Float_t bTagWeightErrLight_DeepCSV_;
    
    Float_t topPTweight_;
 
