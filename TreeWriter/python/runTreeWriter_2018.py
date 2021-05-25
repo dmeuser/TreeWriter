@@ -30,10 +30,12 @@ options.register ('user',
 # defaults
 options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/00000/531C1968-9806-4346-834C-2A1EE1A86AEB.root',
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018B/MuonEG/MINIAOD/12Nov2019_UL2018-v1/100000/00BE9C7C-F659-EB4C-A6C4-EAC5054243B2.root',
+#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018D/MuonEG/MINIAOD/12Nov2019_UL2018_rsb-v1/250000/6BD21B6E-7CC6-F247-88B8-D9D6BF336968.root',
+#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v1/00000/0095F60C-3B5B-C44F-A15B-E923A692B6F5.root',
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
-#options.maxEvents = -1
-options.maxEvents = 100
+options.maxEvents = -1
+#  ~options.maxEvents = 100
 # get and parse the command line arguments
 options.parseArguments()
 
@@ -170,9 +172,12 @@ process.updatedPatJetsUpdatedJECIDPuppi.userInts.PFJetIDTightLepVeto = cms.Input
 process.jetIDSequencePuppi = cms.Sequence(process.PFJetIDTightLepVetoPuppi * process.updatedPatJetsUpdatedJECIDPuppi)
 
 
-################################
-# BTag Event Weights           #
-################################
+################################################
+# BTag Event Weights DeepJet loose WP          #
+################################################
+
+BTag_DeepJet_looseWP_cut=cms.double(0.0490)
+
 BTagCalibrationReaderPars = cms.PSet(
     measurementType_bJets = cms.string('mujets'),
     measurementType_cJets = cms.string('mujets'),
@@ -184,11 +189,41 @@ BTagCalibrationPars = cms.PSet(
     FullSimFileName = cms.string('data/2018/DeepJet_106XUL18SF_WPonly.csv'),       
 )
 
-bTagEffMapPars = cms.PSet(      #########Has to be updated with own eff. measurement!!####################
-    fullSimFile = cms.string('${CMSSW_BASE}/src/TreeWriter/data/2016/btageff__ttbar_powheg_pythia8_25ns_Moriond17_deepCSV.root'),
-    bEffFullSimName = cms.string('h2_BTaggingEff_csv_loose_Eff_b'),
-    cEffFullSimName = cms.string('h2_BTaggingEff_csv_loose_Eff_c'),
-    lightEffFullSimName = cms.string('h2_BTaggingEff_csv_loose_Eff_udsg'),
+bTagEffMapPars = cms.PSet(
+    fullSimFile = cms.string('data/2018/bTagEff_2018.root'),
+    bEffFullSimName_ee = cms.string('ee/B_DeepJet_loose'),
+    cEffFullSimName_ee = cms.string('ee/C_DeepJet_loose'),
+    lightEffFullSimName_ee = cms.string('ee/Light_DeepJet_loose'),
+    bEffFullSimName_mumu = cms.string('mumu/B_DeepJet_loose'),
+    cEffFullSimName_mumu = cms.string('mumu/C_DeepJet_loose'),
+    lightEffFullSimName_mumu = cms.string('mumu/Light_DeepJet_loose'),
+    bEffFullSimName_emu = cms.string('emu/B_DeepJet_loose'),
+    cEffFullSimName_emu = cms.string('emu/C_DeepJet_loose'),
+    lightEffFullSimName_emu = cms.string('emu/Light_DeepJet_loose'),
+)
+
+################################################
+# BTag Event Weights DeepCSV loose WP          #
+################################################
+
+BTag_DeepCSV_looseWP_cut=cms.double(0.1208)
+
+BTagCalibrationPars_DeepCSV = cms.PSet(
+    FullSimTagger = cms.string('DeepCSV'),
+    FullSimFileName = cms.string('data/2018/DeepCSV_106XUL18SF_WPonly.csv'),       
+)
+
+bTagEffMapPars_DeepCSV = cms.PSet(
+    fullSimFile = cms.string('data/2018/bTagEff_2018.root'),
+    bEffFullSimName_ee = cms.string('ee/B_DeepCSV_loose'),
+    cEffFullSimName_ee = cms.string('ee/C_DeepCSV_loose'),
+    lightEffFullSimName_ee = cms.string('ee/Light_DeepCSV_loose'),
+    bEffFullSimName_mumu = cms.string('mumu/B_DeepCSV_loose'),
+    cEffFullSimName_mumu = cms.string('mumu/C_DeepCSV_loose'),
+    lightEffFullSimName_mumu = cms.string('mumu/Light_DeepCSV_loose'),
+    bEffFullSimName_emu = cms.string('emu/B_DeepCSV_loose'),
+    cEffFullSimName_emu = cms.string('emu/C_DeepCSV_loose'),
+    lightEffFullSimName_emu = cms.string('emu/Light_DeepCSV_loose'),
 )
 
 
@@ -238,7 +273,7 @@ else: process.TTbarGen = cms.Sequence()
 # Define input and output      #
 ################################
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(options.maxEvents))
-#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), lumisToProcess = cms.untracked.VLuminosityBlockRange("273302:322"))#eventsToProcess = cms.untracked.VEventRange("276315:134:185994346"))
+#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), lumisToProcess = cms.untracked.VLuminosityBlockRange("321393:46"))#eventsToProcess = cms.untracked.VEventRange("276315:134:185994346"))
 #  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("279694:2133:3845835844"))
 process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles))
 process.TFileService = cms.Service("TFileService", fileName=cms.string(options.outputFile))
@@ -302,9 +337,13 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     pfJetIDSelector=cms.PSet(version=cms.string('RUNIIULCHS'), quality=cms.string('TIGHT')),
                                     triggerPrescales=cms.vstring(), # also useful to check whether a trigger was run
                                     LeptonFullSimScaleFactors = LeptonFullSimScaleFactorMapPars,
+                                    BTag_DeepJet_looseWP_cut=BTag_DeepJet_looseWP_cut,
+                                    BTag_DeepCSV_looseWP_cut=BTag_DeepCSV_looseWP_cut,
                                     BTagCalibration = BTagCalibrationPars,
+                                    BTagCalibration_DeepCSV = BTagCalibrationPars_DeepCSV,
                                     BTagCalibrationReader = BTagCalibrationReaderPars,
                                     bTagEfficiencies = bTagEffMapPars,
+                                    bTagEfficiencies_DeepCSV = bTagEffMapPars_DeepCSV,
                                     ttbarGenInfo = cms.bool(False),
                                     ttbarPseudoInfo = cms.bool(False),
                                     DYptInfo = cms.bool(False),
