@@ -28,14 +28,15 @@ options.register ('user',
                   "Name the user. If not set by crab, this script will determine it.")
 
 # defaults
-options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/00000/531C1968-9806-4346-834C-2A1EE1A86AEB.root',
-#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018B/MuonEG/MINIAOD/12Nov2019_UL2018-v1/100000/00BE9C7C-F659-EB4C-A6C4-EAC5054243B2.root',
+#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/00000/531C1968-9806-4346-834C-2A1EE1A86AEB.root',
+#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAODv2/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/00000/04A0B676-D63A-6D41-B47F-F4CF8CBE7DB8.root',      # miniAODv2
+options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018B/MuonEG/MINIAOD/12Nov2019_UL2018-v1/100000/00BE9C7C-F659-EB4C-A6C4-EAC5054243B2.root',
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018D/MuonEG/MINIAOD/12Nov2019_UL2018_rsb-v1/250000/6BD21B6E-7CC6-F247-88B8-D9D6BF336968.root',
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v1/00000/0095F60C-3B5B-C44F-A15B-E923A692B6F5.root',
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
 options.maxEvents = -1
-#  ~options.maxEvents = 100
+#  ~options.maxEvents = 1000
 # get and parse the command line arguments
 options.parseArguments()
 
@@ -53,8 +54,10 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 if isRealData:
         process.GlobalTag.globaltag = "106X_dataRun2_v32"
+        #  ~process.GlobalTag.globaltag = "106X_dataRun2_v33"       #miniAODv2
 else:
         process.GlobalTag.globaltag = "106X_upgrade2018_realistic_v15_L1v1"
+        #  ~process.GlobalTag.globaltag = "106X_upgrade2018_realistic_v16_L1v1"     #miniAODv2
         
 #timing information
 process.Timing = cms.Service("Timing",
@@ -100,9 +103,24 @@ runMetCorAndUncFromMiniAOD(   #update pfMET
     process,
     isData=isRealData,
     fixEE2017 = False,
+    #  ~jetCollUnskimmed="updatedPatJetsUpdatedJECID",
+    #  ~reapplyJEC=False,
 )
-
+# If using patSmearedJETS is removing too many jets due to lepton matching, use the following to keep all jets: https://indico.cern.ch/event/882528/contributions/3718330/attachments/1974802/3286397/Sync_summary.pdf
 # Puppi MET is correct when applying new Puppi Tune
+
+#########################################
+# MET Filter (not needed in MiniAODv2   #
+#########################################
+# https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2#Recipe_for_BadPFMuonDz_filter_in
+from RecoMET.METFilters.BadPFMuonDzFilter_cfi import BadPFMuonDzFilter
+process.BadPFMuonFilterUpdateDz=BadPFMuonDzFilter.clone(
+    muons = cms.InputTag("slimmedMuons"),
+    vtx   = cms.InputTag("offlineSlimmedPrimaryVertices"),
+    PFCandidates = cms.InputTag("packedPFCandidates"),
+    minDzBestTrack = cms.double(0.5),
+    taggingMode    = cms.bool(True)
+)
 
 
 ################################
@@ -124,7 +142,7 @@ LeptonFullSimScaleFactorMapPars = cms.PSet(
 # Jets                         #
 ################################
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-updateJetCollection(
+updateJetCollection(        #JEC
    process,
    jetSource = cms.InputTag('slimmedJets'),
    labelName = 'UpdatedJEC',
@@ -147,6 +165,29 @@ process.updatedPatJetsUpdatedJECID = cms.EDProducer('PATJetUserDataEmbedder',
     ),
 )
 process.jetIDSequence = cms.Sequence(process.PFJetIDTightLepVeto * process.updatedPatJetsUpdatedJECID)
+
+#from https://github.com/cms-sw/cmssw/blob/master/PhysicsTools/PatUtils/test/runJERsmearingOnMiniAOD.py
+process.updatedPatJetsUpdatedJECIDsmeared = cms.EDProducer('SmearedPATJetProducer',        #JER
+       src = cms.InputTag('updatedPatJetsUpdatedJECID'),
+       enabled = cms.bool(True),
+       rho = cms.InputTag("fixedGridRhoFastjetAll"),
+       algo = cms.string('AK4PFchs'),
+       algopt = cms.string('AK4PFchs_pt'),
+       #resolutionFile = cms.FileInPath('Autumn18_V7_MC_PtResolution_AK4PFchs.txt'),
+       #scaleFactorFile = cms.FileInPath('combined_SFs_uncertSources.txt'),
+
+       genJets = cms.InputTag('slimmedGenJets'),
+       dRMax = cms.double(0.2),
+       dPtMaxFactor = cms.double(3),
+
+       debug = cms.untracked.bool(False),
+   # Systematic variation
+   # 0: Nominal
+   # -1: -1 sigma (down variation)
+   # 1: +1 sigma (up variation)
+   variation = cms.int32(0),  # If not specified, default to 0
+   uncertaintySource = cms.string(""), # If not specified, default to Total
+       )
 
 ################################
 # Puppi Jets                   #
@@ -287,8 +328,9 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     NumberLeptons_cut=cms.untracked.uint32(2),
                                     # physics objects
                                     #  ~jets = cms.InputTag("slimmedJets"),
-                                    #  ~jets = cms.InputTag("updatedPatJetsUpdatedJEC"),
-                                    jets = cms.InputTag("updatedPatJetsUpdatedJECID"),
+                                    #  ~jets = cms.InputTag("patSmearedJets"),
+                                    jets = cms.InputTag("updatedPatJetsUpdatedJECIDsmeared"),
+                                    #  ~jets = cms.InputTag("updatedPatJetsUpdatedJECID"),
                                     jets_puppi = cms.InputTag("updatedPatJetsUpdatedJECIDPuppi"),
                                     #  ~jets_puppi = cms.InputTag("slimmedJetsPuppi"),
                                     muons = cms.InputTag("MuonsAddedRochesterCorr"),
@@ -324,7 +366,9 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                         "Flag_HBHENoiseIsoFilter",
                                         "Flag_EcalDeadCellTriggerPrimitiveFilter",
                                         "Flag_BadPFMuonFilter",
-                                        "Flag_eeBadScFilter",       #####Still need to add ecalBadCalibReducedMINIAODFilter, but needs to be rerun on MINIAOD#########
+                                        #  ~"Flag_BadPFMuonDzFilter",       #only available in miniAODv2 (for v1 hack applied)
+                                        "Flag_eeBadScFilter",
+                                        "Flag_ecalBadCalibFilter",
 
                                     ),
                                     # choose pileup data
@@ -410,6 +454,7 @@ for trig in process.TreeWriter.triggerPrescales:
 process.p = cms.Path(
     process.jecSequence
     *process.jetIDSequence
+    *process.updatedPatJetsUpdatedJECIDsmeared
     *process.egammaPostRecoSeq
     *process.MuonsAddedRochesterCorr
     *process.fullPatMetSequence
@@ -417,5 +462,6 @@ process.p = cms.Path(
     *process.jecSequencePuppi
     *process.jetIDSequencePuppi
     *process.TTbarGen
+    *process.BadPFMuonFilterUpdateDz
     *process.TreeWriter
 )

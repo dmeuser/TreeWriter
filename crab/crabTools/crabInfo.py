@@ -147,7 +147,7 @@ class CrabInfo:
             elif "UL2017" in self.datasetMiddle or "UL17" in self.datasetMiddle:
                 return "/net/data_cms1b/user/dmeuser/top_analysis/2017/v02/{}.root".format(modifiedDatasetName)
             elif "UL2018" in self.datasetMiddle or "UL18" in self.datasetMiddle:
-                return "/net/data_cms1b/user/dmeuser/top_analysis/2018/v02/{}.root".format(modifiedDatasetName)
+                return "/net/data_cms1b/user/dmeuser/top_analysis/2018/v03/{}.root".format(modifiedDatasetName)
         return "outputFile.root"
 
 
