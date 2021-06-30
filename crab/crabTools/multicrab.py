@@ -30,9 +30,12 @@ def crabUpdate( dir ):
             print "No credentials found! Initialize your VOMS proxy."
             exit(0)
 
-def crabResubmit(directory,silent=False):
+def crabResubmit(directory,maxjobruntime,silent=False):
     with open(os.devnull, "w") as FNULL:
-        out=subprocess.check_output(["crab","resubmit",directory],stdin=FNULL,stderr=subprocess.STDOUT)
+        if maxjobruntime<0:
+            out=subprocess.check_output(["crab","resubmit",directory],stdin=FNULL,stderr=subprocess.STDOUT)
+        else:
+            out=subprocess.check_output(["crab","resubmit",directory,"--maxjobruntime="+str(maxjobruntime)],stdin=FNULL,stderr=subprocess.STDOUT)
         if "No credentials found!" in out:
             print "No credentials found! Initialize your VOMS proxy."
             exit(0)
@@ -61,7 +64,7 @@ def multicrab(args):
         if args.resubmit and info.validStatusCache==True:
 			if "failed" in info.jobStates:
 				print "Resubmitting..."
-				crabResubmit(dir)
+				crabResubmit(dir,args.maxjobruntime)
         elif args.kill:
             print "Killing..."
             killed.append(dir.split("/")[-2])
@@ -106,6 +109,7 @@ def main():
     parser.add_argument('--autoDL', action='store_true' )
     parser.add_argument('--forceDL', action='store_true' )
     parser.add_argument('--resubmit', action='store_true' )
+    parser.add_argument("--maxjobruntime", type=int, default=-1)
     parser.add_argument('--moveCompleted', action='store_true' )
     parser.add_argument('--repeat', action='store_true' )
     parser.add_argument('--downloadFirst', action='store_true' )
