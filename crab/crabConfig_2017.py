@@ -56,9 +56,9 @@ datasets["DoubleEG"] = [
 datasets["DoubleMuon"] = [
     "/DoubleMuon/Run2017B-09Aug2019_UL2017-v1/MINIAOD",
     "/DoubleMuon/Run2017C-09Aug2019_UL2017-v1/MINIAOD",
-    #  ~"/DoubleMuon/Run2017D-09Aug2019_UL2017-v1/MINIAOD",
-    #  ~"/DoubleMuon/Run2017E-09Aug2019_UL2017-v1/MINIAOD",
-    #  ~"/DoubleMuon/Run2017F-09Aug2019_UL2017-v1/MINIAOD",
+    "/DoubleMuon/Run2017D-09Aug2019_UL2017-v1/MINIAOD",
+    "/DoubleMuon/Run2017E-09Aug2019_UL2017-v1/MINIAOD",
+    "/DoubleMuon/Run2017F-09Aug2019_UL2017-v1/MINIAOD",
 ]
 
 datasets["MuonEG"] = [
@@ -70,10 +70,10 @@ datasets["MuonEG"] = [
 ]
 
 datasets["SingleElectron"] = [
-    "/SingleElectron/Run2017B-09Aug2019_UL2017_rsb-v1/MINIAOD",
-    "/SingleElectron/Run2017C-09Aug2019_UL2017_rsb-v1/MINIAOD",
-    "/SingleElectron/Run2017D-09Aug2019_UL2017_rsb-v1/MINIAOD",
-    "/SingleElectron/Run2017E-09Aug2019_UL2017_rsb-v1/MINIAOD",
+    "/SingleElectron/Run2017B-09Aug2019_UL2017-v1/MINIAOD",
+    "/SingleElectron/Run2017C-09Aug2019_UL2017-v1/MINIAOD",
+    "/SingleElectron/Run2017D-09Aug2019_UL2017-v1/MINIAOD",
+    "/SingleElectron/Run2017E-09Aug2019_UL2017-v1/MINIAOD",
     "/SingleElectron/Run2017F-09Aug2019_UL2017_rsb-v2/MINIAOD",
 ]
 
@@ -94,51 +94,54 @@ datasets["MET"] = [
 ]
 
 datasets["Standard_ttbar"] = [
-    "/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
+    #  ~"/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
     "/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
     "/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
 ]
 
 datasets["SingleTop"] = [
+    "/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v1/MINIAODSIM",
+    "/ST_tW_top_5f_NoFullyHadronicDecays_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v1/MINIAODSIM",
+    "/ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
     #missing:
-    #"ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-amcatnlo-pythia8"
     #"ST_t-channel_top_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8"
     #"ST_t-channel_antitop_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8"
-    #"ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV-powheg-pythia8"
-    #"ST_tW_top_5f_NoFullyHadronicDecays_TuneCP5_13TeV-powheg-pythia8"
 ]
 
 datasets["V+Jets"] = [
-    "/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL17MiniAOD-Pilot_106X_mc2017_realistic_v6-v2/MINIAODSIM",
-    "/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v1/MINIAODSIM",
-    #missing:
-    #"DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8"
+    #  ~"/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL17MiniAOD-Pilot_106X_mc2017_realistic_v6-v2/MINIAODSIM", #correct with pilot?
+    #  ~"/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v1/MINIAODSIM",
+    "/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9_ext1-v1/MINIAODSIM",
+    #  ~"/DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
+    #  ~"/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v1/MINIAODSIM",
 ]
 
 datasets["Diboson"] = [
     "/WW_TuneCP5_13TeV-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
     "/WZ_TuneCP5_13TeV-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
-    #missing:
-    #"ZZ_TuneCP5_13TeV-pythia8"
+    "/ZZ_TuneCP5_13TeV-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
 ]
 
 datasets["tt+X"] = [
-    "/TTZToQQ_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
-    #missing:
-    #"TTWJetsToQQ_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8"
-    #"TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8"
-    #"TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8"
-    #"TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8"
+    #  ~"/TTZToQQ_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
+    #  ~"/TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
+    #  ~"//TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
+    #  ~"/TTWJetsToQQ_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v1/MINIAODSIM",
+    "/TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v1/MINIAODSIM",
 ]
 
 datasets["dmeuser"] = []
 #  ~datasets["dmeuser"] += datasets["DoubleEG"]
-datasets["dmeuser"] += datasets["DoubleMuon"]
+#  ~datasets["dmeuser"] += datasets["DoubleMuon"]
 #  ~datasets["dmeuser"] += datasets["MuonEG"]
 #  ~datasets["dmeuser"] += datasets["SingleMuon"]
 #  ~datasets["dmeuser"] += datasets["SingleElectron"]
 #  ~datasets["dmeuser"] += datasets["MET"]
 #  ~datasets["dmeuser"] += datasets["Standard_ttbar"]
+#  ~datasets["dmeuser"] += datasets["SingleTop"]
+datasets["dmeuser"] += datasets["V+Jets"]
+#  ~datasets["dmeuser"] += datasets["Diboson"]
+#  ~datasets["dmeuser"] += datasets["tt+X"]
 
 # call with 'python crabConfig.py'
 if __name__ == '__main__':
@@ -167,7 +170,7 @@ if __name__ == '__main__':
         config.JobType.inputFiles  = [cmssw_src + "TreeWriter/" + x for x in ["data"]]
         config.JobType.allowUndistributedCMSSW = True
         #  ~config.JobType.maxJobRuntimeMin = 2400
-        config.JobType.maxJobRuntimeMin = 1200
+        config.JobType.maxJobRuntimeMin = 1800
 
 
         config.section_("Data")
@@ -186,7 +189,7 @@ if __name__ == '__main__':
             config.Data.lumiMask = getLumiMask(cmssw_src)
 
         if user=="dmeuser":
-            config.Data.outputDatasetTag = 'v01'
+            config.Data.outputDatasetTag = 'v02'
             config.Data.outLFNDirBase = "/store/user/dmeuser/run2_topUL/2017/"
         else:
             print "you shall not pass!"

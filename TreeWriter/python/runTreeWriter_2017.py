@@ -30,6 +30,7 @@ options.register ('user',
 # defaults
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL17MiniAOD/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_mc2017_realistic_v6-v2/00000/054AE840-3924-BD47-880F-12FA2F909901.root',
 options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2017B/DoubleMuon/MINIAOD/09Aug2019_UL2017-v1/260000/032A7B27-0F31-D348-9B82-9E1B62ED9587.root',
+#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL17MiniAOD/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_mc2017_realistic_v6-v2/270000/05F2529D-1C66-3745-925D-C6B3C1E850ED.root',
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
 options.maxEvents = -1
@@ -51,8 +52,12 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 if isRealData:
         process.GlobalTag.globaltag = "106X_dataRun2_v32"
+        #  ~process.GlobalTag.globaltag = "106X_dataRun2_v33"       #miniAODv2 (correct? or only for production?)
+
 else:
         process.GlobalTag.globaltag = "106X_mc2017_realistic_v8"
+        #  ~process.GlobalTag.globaltag = "106X_mc2017_realistic_v9"     #miniAODv2 (correct? or only for production?)
+
         
 #timing information
 process.Timing = cms.Service("Timing",
@@ -98,9 +103,24 @@ runMetCorAndUncFromMiniAOD(   #update pfMET
     process,
     isData=isRealData,
     fixEE2017 = False,
+    #  ~jetCollUnskimmed="updatedPatJetsUpdatedJECID",
+    #  ~reapplyJEC=False,
 )
-
+# If using patSmearedJETS is removing too many jets due to lepton matching, use the following to keep all jets: https://indico.cern.ch/event/882528/contributions/3718330/attachments/1974802/3286397/Sync_summary.pdf
 # Puppi MET is correct when applying new Puppi Tune
+
+#########################################
+# MET Filter (not needed in MiniAODv2   #
+#########################################
+# https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2#Recipe_for_BadPFMuonDz_filter_in
+from RecoMET.METFilters.BadPFMuonDzFilter_cfi import BadPFMuonDzFilter
+process.BadPFMuonFilterUpdateDz=BadPFMuonDzFilter.clone(
+    muons = cms.InputTag("slimmedMuons"),
+    vtx   = cms.InputTag("offlineSlimmedPrimaryVertices"),
+    PFCandidates = cms.InputTag("packedPFCandidates"),
+    minDzBestTrack = cms.double(0.5),
+    taggingMode    = cms.bool(True)
+)
 
 
 ################################
@@ -122,7 +142,7 @@ LeptonFullSimScaleFactorMapPars = cms.PSet(
 # Jets                         #
 ################################
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-updateJetCollection(
+updateJetCollection(        #JEC
    process,
    jetSource = cms.InputTag('slimmedJets'),
    labelName = 'UpdatedJEC',
@@ -145,6 +165,29 @@ process.updatedPatJetsUpdatedJECID = cms.EDProducer('PATJetUserDataEmbedder',
     ),
 )
 process.jetIDSequence = cms.Sequence(process.PFJetIDTightLepVeto * process.updatedPatJetsUpdatedJECID)
+
+#from https://github.com/cms-sw/cmssw/blob/master/PhysicsTools/PatUtils/test/runJERsmearingOnMiniAOD.py
+process.updatedPatJetsUpdatedJECIDsmeared = cms.EDProducer('SmearedPATJetProducer',        #JER
+       src = cms.InputTag('updatedPatJetsUpdatedJECID'),
+       enabled = cms.bool(True),
+       rho = cms.InputTag("fixedGridRhoFastjetAll"),
+       algo = cms.string('AK4PFchs'),
+       algopt = cms.string('AK4PFchs_pt'),
+       #resolutionFile = cms.FileInPath('Autumn18_V7_MC_PtResolution_AK4PFchs.txt'),
+       #scaleFactorFile = cms.FileInPath('combined_SFs_uncertSources.txt'),
+
+       genJets = cms.InputTag('slimmedGenJets'),
+       dRMax = cms.double(0.2),
+       dPtMaxFactor = cms.double(3),
+
+       debug = cms.untracked.bool(False),
+   # Systematic variation
+   # 0: Nominal
+   # -1: -1 sigma (down variation)
+   # 1: +1 sigma (up variation)
+   variation = cms.int32(0),  # If not specified, default to 0
+   uncertaintySource = cms.string(""), # If not specified, default to Total
+       )
 
 ################################
 # Puppi Jets                   #
@@ -170,9 +213,12 @@ process.updatedPatJetsUpdatedJECIDPuppi.userInts.PFJetIDTightLepVeto = cms.Input
 process.jetIDSequencePuppi = cms.Sequence(process.PFJetIDTightLepVetoPuppi * process.updatedPatJetsUpdatedJECIDPuppi)
 
 
-################################
-# BTag Event Weights           #
-################################
+################################################
+# BTag Event Weights DeepJet loose WP          #
+################################################
+
+BTag_DeepJet_looseWP_cut=cms.double(0.0532)
+
 BTagCalibrationReaderPars = cms.PSet(
     measurementType_bJets = cms.string('mujets'),
     measurementType_cJets = cms.string('mujets'),
@@ -181,14 +227,44 @@ BTagCalibrationReaderPars = cms.PSet(
 
 BTagCalibrationPars = cms.PSet(
     FullSimTagger = cms.string('DeepJet'),
-    FullSimFileName = cms.string('data/2017/DeepJet_106XUL17SF_WPonly_V2.csv'),       
+    FullSimFileName = cms.string('data/2017/DeepJet_106XUL17SF_WPonly_V2p1.csv'),       
 )
 
-bTagEffMapPars = cms.PSet(      #########Has to be updated with own eff. measurement!!####################
-    fullSimFile = cms.string('${CMSSW_BASE}/src/TreeWriter/data/2016/btageff__ttbar_powheg_pythia8_25ns_Moriond17_deepCSV.root'),
-    bEffFullSimName = cms.string('h2_BTaggingEff_csv_loose_Eff_b'),
-    cEffFullSimName = cms.string('h2_BTaggingEff_csv_loose_Eff_c'),
-    lightEffFullSimName = cms.string('h2_BTaggingEff_csv_loose_Eff_udsg'),
+bTagEffMapPars = cms.PSet(
+    fullSimFile = cms.string('data/2017/bTagEff_2017.root'),
+    bEffFullSimName_ee = cms.string('ee/B_DeepJet_loose'),
+    cEffFullSimName_ee = cms.string('ee/C_DeepJet_loose'),
+    lightEffFullSimName_ee = cms.string('ee/Light_DeepJet_loose'),
+    bEffFullSimName_mumu = cms.string('mumu/B_DeepJet_loose'),
+    cEffFullSimName_mumu = cms.string('mumu/C_DeepJet_loose'),
+    lightEffFullSimName_mumu = cms.string('mumu/Light_DeepJet_loose'),
+    bEffFullSimName_emu = cms.string('emu/B_DeepJet_loose'),
+    cEffFullSimName_emu = cms.string('emu/C_DeepJet_loose'),
+    lightEffFullSimName_emu = cms.string('emu/Light_DeepJet_loose'),
+)
+
+################################################
+# BTag Event Weights DeepCSV loose WP          #
+################################################
+
+BTag_DeepCSV_looseWP_cut=cms.double(0.1355)
+
+BTagCalibrationPars_DeepCSV = cms.PSet(
+    FullSimTagger = cms.string('DeepCSV'),
+    FullSimFileName = cms.string('data/2017/DeepCSV_106XUL17SF_WPonly_V2p1.csv'),       
+)
+
+bTagEffMapPars_DeepCSV = cms.PSet(
+    fullSimFile = cms.string('data/2017/bTagEff_2017.root'),
+    bEffFullSimName_ee = cms.string('ee/B_DeepCSV_loose'),
+    cEffFullSimName_ee = cms.string('ee/C_DeepCSV_loose'),
+    lightEffFullSimName_ee = cms.string('ee/Light_DeepCSV_loose'),
+    bEffFullSimName_mumu = cms.string('mumu/B_DeepCSV_loose'),
+    cEffFullSimName_mumu = cms.string('mumu/C_DeepCSV_loose'),
+    lightEffFullSimName_mumu = cms.string('mumu/Light_DeepCSV_loose'),
+    bEffFullSimName_emu = cms.string('emu/B_DeepCSV_loose'),
+    cEffFullSimName_emu = cms.string('emu/C_DeepCSV_loose'),
+    lightEffFullSimName_emu = cms.string('emu/Light_DeepCSV_loose'),
 )
 
 
@@ -252,8 +328,8 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     NumberLeptons_cut=cms.untracked.uint32(2),
                                     # physics objects
                                     #  ~jets = cms.InputTag("slimmedJets"),
-                                    #  ~jets = cms.InputTag("updatedPatJetsUpdatedJEC"),
-                                    jets = cms.InputTag("updatedPatJetsUpdatedJECID"),
+                                    #  ~jets = cms.InputTag("patSmearedJets"),
+                                    jets = cms.InputTag("updatedPatJetsUpdatedJECIDsmeared"),
                                     jets_puppi = cms.InputTag("updatedPatJetsUpdatedJECIDPuppi"),
                                     #  ~jets_puppi = cms.InputTag("slimmedJetsPuppi"),
                                     muons = cms.InputTag("MuonsAddedRochesterCorr"),
@@ -289,7 +365,9 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                         "Flag_HBHENoiseIsoFilter",
                                         "Flag_EcalDeadCellTriggerPrimitiveFilter",
                                         "Flag_BadPFMuonFilter",
-                                        "Flag_eeBadScFilter",       #####Still need to add ecalBadCalibReducedMINIAODFilter, but needs to be rerun on MINIAOD#########
+                                        #  ~"Flag_BadPFMuonDzFilter",       #only available in miniAODv2 (for v1 hack applied)
+                                        "Flag_eeBadScFilter",
+                                        "Flag_ecalBadCalibFilter"
 
                                     ),
                                     # choose pileup data
@@ -302,9 +380,13 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     pfJetIDSelector=cms.PSet(version=cms.string('RUNIIULCHS'), quality=cms.string('TIGHT')),
                                     triggerPrescales=cms.vstring(), # also useful to check whether a trigger was run
                                     LeptonFullSimScaleFactors = LeptonFullSimScaleFactorMapPars,
+                                    BTag_DeepJet_looseWP_cut=BTag_DeepJet_looseWP_cut,
+                                    BTag_DeepCSV_looseWP_cut=BTag_DeepCSV_looseWP_cut,
                                     BTagCalibration = BTagCalibrationPars,
+                                    BTagCalibration_DeepCSV = BTagCalibrationPars_DeepCSV,
                                     BTagCalibrationReader = BTagCalibrationReaderPars,
                                     bTagEfficiencies = bTagEffMapPars,
+                                    bTagEfficiencies_DeepCSV = bTagEffMapPars_DeepCSV,
                                     ttbarGenInfo = cms.bool(False),
                                     ttbarPseudoInfo = cms.bool(False),
                                     DYptInfo = cms.bool(False),
@@ -343,7 +425,7 @@ if user=="dmeuser":
         # mumu Chanel
         "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v",
         "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v",
-        "HLT_IsoMu24_v",
+        "HLT_IsoMu27_v",
         # MET
         "HLT_PFMET200_HBHECleaned_v",
         "HLT_PFMET200_HBHE_BeamHaloCleaned_v",
@@ -372,6 +454,7 @@ for trig in process.TreeWriter.triggerPrescales:
 process.p = cms.Path(
     process.jecSequence
     *process.jetIDSequence
+    *process.updatedPatJetsUpdatedJECIDsmeared
     *process.egammaPostRecoSeq
     *process.MuonsAddedRochesterCorr
     *process.fullPatMetSequence
@@ -379,5 +462,6 @@ process.p = cms.Path(
     *process.jecSequencePuppi
     *process.jetIDSequencePuppi
     *process.TTbarGen
+    *process.BadPFMuonFilterUpdateDz
     *process.TreeWriter
 )
