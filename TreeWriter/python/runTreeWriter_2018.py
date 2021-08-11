@@ -30,8 +30,9 @@ options.register ('user',
 # defaults
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/00000/531C1968-9806-4346-834C-2A1EE1A86AEB.root',
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAODv2/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/00000/04A0B676-D63A-6D41-B47F-F4CF8CBE7DB8.root',      # miniAODv2
-options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018B/MuonEG/MINIAOD/12Nov2019_UL2018-v1/100000/00BE9C7C-F659-EB4C-A6C4-EAC5054243B2.root',
-#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018D/MuonEG/MINIAOD/12Nov2019_UL2018_rsb-v1/250000/6BD21B6E-7CC6-F247-88B8-D9D6BF336968.root',
+#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018B/MuonEG/MINIAOD/12Nov2019_UL2018-v1/100000/00BE9C7C-F659-EB4C-A6C4-EAC5054243B2.root',
+#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/270002/B4155943-3E29-6849-BF8D-227F49F72A15.root',
+options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018A/DoubleMuon/MINIAOD/12Nov2019_UL2018-v2/100000/A988574D-C798-6246-AFE0-435CD7A9C836.root',
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v1/00000/0095F60C-3B5B-C44F-A15B-E923A692B6F5.root',
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
@@ -54,10 +55,10 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 if isRealData:
         process.GlobalTag.globaltag = "106X_dataRun2_v32"
-        #  ~process.GlobalTag.globaltag = "106X_dataRun2_v33"       #miniAODv2
+        #  ~process.GlobalTag.globaltag = "106X_dataRun2_v33"       #miniAODv2 (correct? or only for production?)
 else:
         process.GlobalTag.globaltag = "106X_upgrade2018_realistic_v15_L1v1"
-        #  ~process.GlobalTag.globaltag = "106X_upgrade2018_realistic_v16_L1v1"     #miniAODv2
+        #  ~process.GlobalTag.globaltag = "106X_upgrade2018_realistic_v16_L1v1"     #miniAODv2 (correct? or only for production?)
         
 #timing information
 process.Timing = cms.Service("Timing",
@@ -180,7 +181,7 @@ process.updatedPatJetsUpdatedJECIDsmeared = cms.EDProducer('SmearedPATJetProduce
        dRMax = cms.double(0.2),
        dPtMaxFactor = cms.double(3),
 
-       debug = cms.untracked.bool(False),
+       debug = cms.untracked.bool(True),
    # Systematic variation
    # 0: Nominal
    # -1: -1 sigma (down variation)
@@ -315,7 +316,9 @@ else: process.TTbarGen = cms.Sequence()
 ################################
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(options.maxEvents))
 #  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), lumisToProcess = cms.untracked.VLuminosityBlockRange("321393:46"))#eventsToProcess = cms.untracked.VEventRange("276315:134:185994346"))
-#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("279694:2133:3845835844"))
+#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("315257:72:49554411"))
+#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("315259:66:43335866"))
+#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("315259:66:43335866"))
 process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles))
 process.TFileService = cms.Service("TFileService", fileName=cms.string(options.outputFile))
 
@@ -324,13 +327,13 @@ process.TFileService = cms.Service("TFileService", fileName=cms.string(options.o
 ################################
 process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     # selection configuration
-                                    jet_pT_cut=cms.untracked.double(30), # for all jets
+                                    jet_pT_cut=cms.untracked.double(15), # for all jets
                                     NumberLeptons_cut=cms.untracked.uint32(2),
                                     # physics objects
                                     #  ~jets = cms.InputTag("slimmedJets"),
                                     #  ~jets = cms.InputTag("patSmearedJets"),
-                                    jets = cms.InputTag("updatedPatJetsUpdatedJECIDsmeared"),
-                                    #  ~jets = cms.InputTag("updatedPatJetsUpdatedJECID"),
+                                    #  ~jets = cms.InputTag("updatedPatJetsUpdatedJECIDsmeared"),
+                                    jets = cms.InputTag("updatedPatJetsUpdatedJECID"),    #Use unsmeared jets and apply JER locally
                                     jets_puppi = cms.InputTag("updatedPatJetsUpdatedJECIDPuppi"),
                                     #  ~jets_puppi = cms.InputTag("slimmedJetsPuppi"),
                                     muons = cms.InputTag("MuonsAddedRochesterCorr"),
@@ -402,7 +405,6 @@ process.TreeWriter.ttbarPseudoInfo=(dataset.startswith("/TT") or dataset.startsw
 process.TreeWriter.DYptInfo=(dataset.startswith("/DY"))
 
 if not isRealData:
-    process.TreeWriter.metFilterNames.remove("Flag_eeBadScFilter")
     if "Fast" in dataset:
         process.TreeWriter.metFilterNames.remove("Flag_globalSuperTightHalo2016Filter")
         process.TreeWriter.lheEventProduct = "source"
@@ -454,7 +456,7 @@ for trig in process.TreeWriter.triggerPrescales:
 process.p = cms.Path(
     process.jecSequence
     *process.jetIDSequence
-    *process.updatedPatJetsUpdatedJECIDsmeared
+    #  ~*process.updatedPatJetsUpdatedJECIDsmeared
     *process.egammaPostRecoSeq
     *process.MuonsAddedRochesterCorr
     *process.fullPatMetSequence

@@ -45,8 +45,11 @@ namespace tree
    {
       bool isTight;
       bool TightIDlepVeto;
+      bool PileupIDloose;
       bool hasElectronMatch;
       bool hasMuonMatch;
+      bool hasElectronMatch_loose;
+      bool hasMuonMatch_loose;
       float bTagCSVv2;
       float bTagMVAv2;
       float bTagDeepCSV;
@@ -62,15 +65,18 @@ namespace tree
       float electronf;
       int nch;
       int nconstituents;
-      float ptRes;
-      float phiRes;
-      float sfRes;
-      float sfResUp;
-      float sfResDn;
+      // ~float ptRes;
+      // ~float phiRes;
+      // ~float sfRes;
+      // ~float sfResUp;
+      // ~float sfResDn;
       float uncorJecFactor; // uncorrected jet momentum over corrected jet momentum
+      float uncorJecFactor_L1; // L1-corrected jet momentum over corrected jet momentum
       float bJetRegressionCorr;
       float bJetRegressionRes;
       int hadronFlavour; //so far used to derive BTag weight
+      TLorentzVector matchedGenJet;
+      uint32_t seed;
    };
 
    struct Muon: public Particle
@@ -123,6 +129,8 @@ namespace tree
       float cIso;
       float nIso;
       float pIso;
+      
+      float corr;
 
       // IDs
       bool  isLoose;
