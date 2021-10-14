@@ -63,6 +63,7 @@ class CrabInfo:
             for m in myMatch( "config.Data.inputDataset = '(.*)'", line ):
                 self.inputDataset = m.group(1)
                 self.datasetName, self.datasetMiddle, self.datasetType = self.inputDataset.split("/")[1:]
+                self.isMC = "SIM" in self.datasetType
             for m in myMatch( ".*Got information from status cache file: (.*)", line ):
                 try:
                     self.details = eval( m.group(1) )
@@ -143,11 +144,11 @@ class CrabInfo:
                 else:
                     modifiedDatasetName="UNKOWNPATTERN"
             if "RunIISummer16" in self.datasetMiddle or "Run2016" in self.datasetMiddle:
-                return "/net/data_cms1b/user/dmeuser/top_analysis/2016/v23/{}.root".format(modifiedDatasetName)
+                return "/net/data_cms1b/user/dmeuser/top_analysis/2016/v23/nTuple/{}.root".format(modifiedDatasetName)
             elif "UL2017" in self.datasetMiddle or "UL17" in self.datasetMiddle:
-                return "/net/data_cms1b/user/dmeuser/top_analysis/2017/v02/{}.root".format(modifiedDatasetName)
+                return "/net/data_cms1b/user/dmeuser/top_analysis/2017/v02/nTuple/{}.root".format(modifiedDatasetName)
             elif "UL2018" in self.datasetMiddle or "UL18" in self.datasetMiddle:
-                return "/net/data_cms1b/user/dmeuser/top_analysis/2018/v03/{}.root".format(modifiedDatasetName)
+                return "/net/data_cms1b/user/dmeuser/top_analysis/2018/v04/nTuple/{}.root".format(modifiedDatasetName)
         return "outputFile.root"
 
 
@@ -242,7 +243,7 @@ class CrabInfo:
         print "Moving crab directory to",killedDir
         os.rename(self.logFileDir, killedDir)
 
-    def download(self, downloadFirst=False):
+    def download(self, downloadFirst=False, maxMergeSize=-1):
         """
         automatically download files belonging to the crab directory
         and rename the crab directory
@@ -255,7 +256,10 @@ class CrabInfo:
         cmsswLibPath=sp.check_output("cd "+cmssw+";"+cmsenv+"; echo $LD_LIBRARY_PATH",shell=True)
 
         os.environ['LD_LIBRARY_PATH']=cmsswLibPath
-        sucess = mergeTier2Files.mergeTier2Files( self.getOutFileName(), self.getSrmPathFull(), downloadFirst=downloadFirst )
+        if self.isMC==False:
+            print "Current datatset is real data, so all files will be merged into one output"
+            maxMergeSize = -1
+        sucess = mergeTier2Files.mergeTier2Files( self.getOutFileName(), self.getSrmPathFull(), downloadFirst=downloadFirst, maxMergeSize=maxMergeSize)
         # restore crabs library path
         os.environ['LD_LIBRARY_PATH']=crabLibPath
         if sucess: self.moveCompleted()

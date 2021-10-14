@@ -75,11 +75,11 @@ def multicrab(args):
             killed.append(dir.split("/")[-2])
             info.moveKilled()
         else:
-            if args.forceDL: info.download(args.downloadFirst)
+            if args.forceDL: info.download(args.downloadFirst,args.maxMergeSize)
             elif info.completed():
                 iComplete+=1
                 if args.autoDL:
-                    info.download(args.downloadFirst)
+                    info.download(args.downloadFirst,args.maxMergeSize)
                 else:
                     try:
                         info.suggestMergeCommand()
@@ -113,9 +113,22 @@ def main():
     parser.add_argument('--moveCompleted', action='store_true' )
     parser.add_argument('--repeat', action='store_true' )
     parser.add_argument('--downloadFirst', action='store_true' )
+    parser.add_argument('--maxMergeSize', type=float, default=-1, help="in GB" )
     parser.add_argument('--kill', action='store_true' )
     parser.add_argument('--killSubmitFailed', action='store_true' )
     args = parser.parse_args()
+    
+    if (args.maxMergeSize==-1 and (args.forceDL or args.autoDL)):
+        value = input("The dataset will be downloaded without maxMergeSize.\nTo continue insert -1 otherwise insert the maxMergeSize in GB:\n")
+        if value!=-1:
+            args.maxMergeSize=value
+            print "maxMergeSize is set to %.2f GB"%(float(value))
+        else:
+            print "continue without maxMergeSize"
+    
+    if(args.downloadFirst==False and args.maxMergeSize!=-1):
+        print "maxMergeSize can only be used if downloadFirst is selected!"
+        exit(0)
 
     multicrab(args)
 

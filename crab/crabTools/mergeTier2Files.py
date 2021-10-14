@@ -30,6 +30,22 @@ def isCorrupt(fname):
         return True
     return False
 
+def getMergingScheme(localfiles, maxMergeSize):
+    scheme = {}
+    currentSize = 0
+    currentList = []
+    for filePath in localfiles:
+        fileSize = os.path.getsize(filePath)
+        currentSize += fileSize
+        if((currentSize*1e-9)<maxMergeSize):
+           currentList.append(filePath)
+        else:
+            scheme[len(scheme)+1]=currentList
+            currentList = [filePath]
+            currentSize = fileSize
+    scheme[len(scheme)+1]=currentList
+    return scheme
+
 def mergeFiles(inputFiles,outputFile):
     """
     - uses "hadd" to add all inputFiles
@@ -87,7 +103,7 @@ def getFilePaths(srmDirectoryPath):
     files= ["/store/"+f.partition("/cms/store/")[-1] for f in files if f.endswith(".root")]
     return files
 
-def downloadAndMergeFiles(inputFiles, outputFile):
+def downloadAndMergeFiles(inputFiles, outputFile, maxMergeSize=-1):
     tmpDownloadDir = outputFile.replace(".root", "")
     if not os.path.isdir(tmpDownloadDir): os.mkdir(tmpDownloadDir)
     for ifile, f in enumerate(inputFiles):
@@ -98,8 +114,16 @@ def downloadAndMergeFiles(inputFiles, outputFile):
             print "File {} already in folder".format(f)
     localFiles = [f for f in glob.glob("{}/*root".format(tmpDownloadDir))]
     if len(localFiles) == len(inputFiles):
-        if sp.call(["hadd","-f",outputFile]+localFiles):
-            sys.exit(1)
+        if maxMergeSize==-1:    # merge all files
+            if sp.call(["hadd","-f",outputFile]+localFiles):
+                sys.exit(1)
+        else:
+            mergingScheme = getMergingScheme(localFiles,maxMergeSize)
+            for outputNr in mergingScheme:
+                outputFile=outputFile.split(".root")[0]
+                if sp.call(["hadd","-f",outputFile+"_"+str(outputNr)+".root"]+mergingScheme[outputNr]):
+                    sys.exit(1)
+        """
         print "Remove temporary files"
         for f in localFiles:
             os.remove(f)
@@ -108,8 +132,9 @@ def downloadAndMergeFiles(inputFiles, outputFile):
     else:
         print "Do not merge, since not all files downloaded"
         return False
+    """
 
-def mergeTier2Files( outputFilePath, inputFilePath, checkDuplicates=False, downloadFirst=False ):
+def mergeTier2Files( outputFilePath, inputFilePath, checkDuplicates=False, downloadFirst=False, maxMergeSize=-1 ):
     # get all the subdirectories "/XXXX/" that contain the root files
     dataDirectories=getDirectoryContent(inputFilePath)
     # find all files in these subdirectories
@@ -120,7 +145,7 @@ def mergeTier2Files( outputFilePath, inputFilePath, checkDuplicates=False, downl
 
     # merge all of them
     if downloadFirst:
-        out = downloadAndMergeFiles(inputFiles, outputFilePath)
+        out = downloadAndMergeFiles(inputFiles, outputFilePath, maxMergeSize)
     else:
         out = mergeFiles(inputFiles,outputFilePath)
 
