@@ -10,11 +10,14 @@ cmsenv
 git cms-init
 git cms-merge-topic dmeuser:ttbar_treeUL
 scram b -j7
-git cms-addpkg RecoEgamma/EgammaTools
+git cms-addpkg RecoEgamma/EgammaTools  ### essentially just checkout the package from CMSSW
 git clone https://github.com/cms-egamma/EgammaPostRecoTools.git
 mv EgammaPostRecoTools/python/EgammaPostRecoTools.py RecoEgamma/EgammaTools/python/.
-git clone https://github.com/jainshilpi/EgammaAnalysis-ElectronTools.git -b UL2018 EgammaAnalysis/ElectronTools/data/
+git clone -b ULSSfiles_correctScaleSysMC https://github.com/jainshilpi/EgammaAnalysis-ElectronTools.git EgammaAnalysis/ElectronTools/data/
 git cms-addpkg EgammaAnalysis/ElectronTools
+scram b -j7
+cd TopQuarkAnalysis
+git clone https://gitlab.cern.ch/CMS-TOPPAG/BFragmentationAnalyzer.git
 scram b -j7
 git clone git@github.com:dmeuser/TreeWriter.git -b UltraLegacy
 scram b -j7
