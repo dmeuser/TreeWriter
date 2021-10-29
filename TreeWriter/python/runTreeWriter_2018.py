@@ -28,16 +28,16 @@ options.register ('user',
                   "Name the user. If not set by crab, this script will determine it.")
 
 # defaults
-#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/00000/531C1968-9806-4346-834C-2A1EE1A86AEB.root',
+options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/00000/531C1968-9806-4346-834C-2A1EE1A86AEB.root',
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAODv2/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/00000/04A0B676-D63A-6D41-B47F-F4CF8CBE7DB8.root',      # miniAODv2
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018B/MuonEG/MINIAOD/12Nov2019_UL2018-v1/100000/00BE9C7C-F659-EB4C-A6C4-EAC5054243B2.root',
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/270002/B4155943-3E29-6849-BF8D-227F49F72A15.root',
-options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018A/DoubleMuon/MINIAOD/12Nov2019_UL2018-v2/100000/A988574D-C798-6246-AFE0-435CD7A9C836.root',
+#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018A/DoubleMuon/MINIAOD/12Nov2019_UL2018-v2/100000/A988574D-C798-6246-AFE0-435CD7A9C836.root',
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v1/00000/0095F60C-3B5B-C44F-A15B-E923A692B6F5.root',
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
-options.maxEvents = -1
-#  ~options.maxEvents = 1000
+#  ~options.maxEvents = -1
+options.maxEvents = 100
 # get and parse the command line arguments
 options.parseArguments()
 
@@ -123,22 +123,6 @@ process.BadPFMuonFilterUpdateDz=BadPFMuonDzFilter.clone(
     taggingMode    = cms.bool(True)
 )
 
-
-################################
-# Lepton Scale Factors         #
-################################
-LeptonFullSimScaleFactorMapPars = cms.PSet(
-    dataMCScaleFactorFile_mu_ID = cms.string('${CMSSW_BASE}/src/TreeWriter/data/2018/EfficienciesStudies_UL2018_DEN_TrackerMuons_rootfiles_Efficiencies_muon_generalTracks_Z_Run2018_UL_ID.root'),
-    dataMCScaleFactorFile_mu_Iso = cms.string('${CMSSW_BASE}/src/TreeWriter/data/2018/EfficienciesStudies_UL2018_DEN_TrackerMuons_rootfiles_Efficiencies_muon_generalTracks_Z_Run2018_UL_ISO.root'),
-    
-    dataMCScaleFactorFile_ele = cms.string('${CMSSW_BASE}/src/TreeWriter/data/2018/egammaEffi.txt_Ele_Tight_EGM2D.root'),
-    
-    dataMCScaleFactorHisto_mu_ID = cms.string('NUM_TightID_DEN_TrackerMuons_abseta_pt'),
-    dataMCScaleFactorHisto_mu_Iso = cms.string('NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt'),
-    
-    dataMCScaleFactorHisto_ele_ID = cms.string('EGamma_SF2D'),
-)
-
 ################################
 # Jets                         #
 ################################
@@ -181,7 +165,7 @@ process.updatedPatJetsUpdatedJECIDsmeared = cms.EDProducer('SmearedPATJetProduce
        dRMax = cms.double(0.2),
        dPtMaxFactor = cms.double(3),
 
-       debug = cms.untracked.bool(True),
+       debug = cms.untracked.bool(False),
    # Systematic variation
    # 0: Nominal
    # -1: -1 sigma (down variation)
@@ -212,62 +196,6 @@ process.updatedPatJetsUpdatedJECIDPuppi.src = cms.InputTag("updatedPatJetsUpdate
 process.updatedPatJetsUpdatedJECIDPuppi.userInts.PFJetIDTightLepVeto = cms.InputTag("PFJetIDTightLepVetoPuppi")
 
 process.jetIDSequencePuppi = cms.Sequence(process.PFJetIDTightLepVetoPuppi * process.updatedPatJetsUpdatedJECIDPuppi)
-
-
-################################################
-# BTag Event Weights DeepJet loose WP          #
-################################################
-
-BTag_DeepJet_looseWP_cut=cms.double(0.0490)
-
-BTagCalibrationReaderPars = cms.PSet(
-    measurementType_bJets = cms.string('mujets'),
-    measurementType_cJets = cms.string('mujets'),
-    measurementType_lightJets = cms.string('incl'),
-)
-
-BTagCalibrationPars = cms.PSet(
-    FullSimTagger = cms.string('DeepJet'),
-    FullSimFileName = cms.string('data/2018/DeepJet_106XUL18SF_WPonly.csv'),       
-)
-
-bTagEffMapPars = cms.PSet(
-    fullSimFile = cms.string('data/2018/bTagEff_2018.root'),
-    bEffFullSimName_ee = cms.string('ee/B_DeepJet_loose'),
-    cEffFullSimName_ee = cms.string('ee/C_DeepJet_loose'),
-    lightEffFullSimName_ee = cms.string('ee/Light_DeepJet_loose'),
-    bEffFullSimName_mumu = cms.string('mumu/B_DeepJet_loose'),
-    cEffFullSimName_mumu = cms.string('mumu/C_DeepJet_loose'),
-    lightEffFullSimName_mumu = cms.string('mumu/Light_DeepJet_loose'),
-    bEffFullSimName_emu = cms.string('emu/B_DeepJet_loose'),
-    cEffFullSimName_emu = cms.string('emu/C_DeepJet_loose'),
-    lightEffFullSimName_emu = cms.string('emu/Light_DeepJet_loose'),
-)
-
-################################################
-# BTag Event Weights DeepCSV loose WP          #
-################################################
-
-BTag_DeepCSV_looseWP_cut=cms.double(0.1208)
-
-BTagCalibrationPars_DeepCSV = cms.PSet(
-    FullSimTagger = cms.string('DeepCSV'),
-    FullSimFileName = cms.string('data/2018/DeepCSV_106XUL18SF_WPonly.csv'),       
-)
-
-bTagEffMapPars_DeepCSV = cms.PSet(
-    fullSimFile = cms.string('data/2018/bTagEff_2018.root'),
-    bEffFullSimName_ee = cms.string('ee/B_DeepCSV_loose'),
-    cEffFullSimName_ee = cms.string('ee/C_DeepCSV_loose'),
-    lightEffFullSimName_ee = cms.string('ee/Light_DeepCSV_loose'),
-    bEffFullSimName_mumu = cms.string('mumu/B_DeepCSV_loose'),
-    cEffFullSimName_mumu = cms.string('mumu/C_DeepCSV_loose'),
-    lightEffFullSimName_mumu = cms.string('mumu/Light_DeepCSV_loose'),
-    bEffFullSimName_emu = cms.string('emu/B_DeepCSV_loose'),
-    cEffFullSimName_emu = cms.string('emu/C_DeepCSV_loose'),
-    lightEffFullSimName_emu = cms.string('emu/Light_DeepCSV_loose'),
-)
-
 
 ################################
 # Ttbar Gen Info               #
@@ -310,6 +238,21 @@ process.pseudoTop = cms.EDProducer("PseudoTopProducer",
 )
 if not isRealData: process.TTbarGen = cms.Sequence(process.makeGenEvt * process.pseudoTop)
 else: process.TTbarGen = cms.Sequence()
+
+################################
+# BFragmenation Weights        #
+################################
+process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
+process.mergedGenParticles = cms.EDProducer("MergedGenParticleProducer",
+                    inputPruned = cms.InputTag("prunedGenParticles"),
+                    inputPacked = cms.InputTag("packedGenParticles"),
+)
+from GeneratorInterface.RivetInterface.genParticles2HepMC_cfi import genParticles2HepMC
+process.genParticles2HepMC = genParticles2HepMC.clone(genParticles = cms.InputTag("mergedGenParticles"))
+process.load("GeneratorInterface.RivetInterface.particleLevel_cfi")
+process.particleLevel.excludeNeutrinosFromJetClustering = False
+process.load('TopQuarkAnalysis.BFragmentationAnalyzer.bfragWgtProducer_cfi')
+
 
 ################################
 # Define input and output      #
@@ -376,6 +319,8 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     ),
                                     # choose pileup data
                                     pileupHistogramName=cms.untracked.string("pileupWeight_mix_2018_25ns_UltraLegacy_PoissonOOTPU"),
+                                    pileupHistogramNameUp=cms.untracked.string("pileupWeightUp_mix_2018_25ns_UltraLegacy_PoissonOOTPU"),
+                                    pileupHistogramNameDown=cms.untracked.string("pileupWeightDown_mix_2018_25ns_UltraLegacy_PoissonOOTPU"),
                                     # triggers to be saved
                                     # Warning: To be independent of the version number, the trigger result is saved if the trigger name begins
                                     # with the strings given here. E.g. "HLT" would always be true if any of the triggers fired.
@@ -383,17 +328,10 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     triggerObjectNames=cms.vstring(),
                                     pfJetIDSelector=cms.PSet(version=cms.string('RUNIIULCHS'), quality=cms.string('TIGHT')),
                                     triggerPrescales=cms.vstring(), # also useful to check whether a trigger was run
-                                    LeptonFullSimScaleFactors = LeptonFullSimScaleFactorMapPars,
-                                    BTag_DeepJet_looseWP_cut=BTag_DeepJet_looseWP_cut,
-                                    BTag_DeepCSV_looseWP_cut=BTag_DeepCSV_looseWP_cut,
-                                    BTagCalibration = BTagCalibrationPars,
-                                    BTagCalibration_DeepCSV = BTagCalibrationPars_DeepCSV,
-                                    BTagCalibrationReader = BTagCalibrationReaderPars,
-                                    bTagEfficiencies = bTagEffMapPars,
-                                    bTagEfficiencies_DeepCSV = bTagEffMapPars_DeepCSV,
                                     ttbarGenInfo = cms.bool(False),
                                     ttbarPseudoInfo = cms.bool(False),
                                     DYptInfo = cms.bool(False),
+                                    bFragInfo = cms.bool(False),
 )
 
 ################################
@@ -402,6 +340,7 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
 
 process.TreeWriter.ttbarGenInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T"))
 process.TreeWriter.ttbarPseudoInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T"))
+process.TreeWriter.bFragInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/ST"))
 process.TreeWriter.DYptInfo=(dataset.startswith("/DY"))
 
 if not isRealData:
@@ -465,5 +404,9 @@ process.p = cms.Path(
     *process.jetIDSequencePuppi
     *process.TTbarGen
     *process.BadPFMuonFilterUpdateDz
+    *process.mergedGenParticles
+    *process.genParticles2HepMC
+    *process.particleLevel
+    *process.bfragWgtProducer
     *process.TreeWriter
 )

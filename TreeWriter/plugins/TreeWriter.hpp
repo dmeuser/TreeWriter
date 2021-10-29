@@ -63,8 +63,6 @@
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
 #include "JetMETCorrections/Modules/interface/JetResolution.h"
-#include "CondFormats/BTauObjects/interface/BTagCalibration.h"
-#include "CondTools/BTau/interface/BTagCalibrationReader.h"
 
 #include "TMVA/Factory.h"
 #include "TMVA/Tools.h"
@@ -77,8 +75,6 @@
 #include "TreeParticles.hpp"
 
 #include "MT2Functor.h"
-#include <TreeWriter/TreeWriter/plugins/LeptonFullSimScaleFactorMapFunctor.h>
-#include <TreeWriter/TreeWriter/plugins/BTagEffMapFunctor.h>
 #include <TreeWriter/TreeWriter/plugins/XYMETCorrection.h>
 
 
@@ -132,9 +128,8 @@ private:
    edm::EDGetTokenT<edm::View<reco::GenParticle>> prunedGenToken_;
    edm::EDGetTokenT<PileupSummaryInfoCollection>  pileUpSummaryToken_;
    edm::EDGetTokenT<LHEEventProduct>           LHEEventToken_;
-
    edm::EDGetTokenT<std::vector<pat::PackedCandidate>> packedCandidateToken_;
-
+   
    // electron id
    std::string electronVetoIdMapToken_;
    std::string electronLooseIdMapToken_;
@@ -150,6 +145,8 @@ private:
    const std::vector<std::string> metFilterNames_;
 
    const std::string pileupHistogramName_;
+   const std::string pileupHistogramNameUp_;
+   const std::string pileupHistogramNameDown_;
 
    PFJetIDSelectionFunctor jetIdSelector;
 
@@ -164,6 +161,8 @@ private:
    Float_t caloMetPt_;
 
    Float_t pu_weight_;
+   Float_t pu_weight_up_;
+   Float_t pu_weight_down_;
    Char_t  mc_weight_; // +1 or -1 event weights (take care when reading with python, this is a character!)
    std::vector<float> vPdf_weights_;
    std::vector<float> vPS_weights_;
@@ -206,61 +205,19 @@ private:
    std::vector<tree::Muon>     vMuons_add_;
    std::vector<tree::Photon>   vPhotons_;
    tree::MET                   met_;
+   tree::MET                   met_UnclEu_;
+   tree::MET                   met_UnclEd_;
    tree::MET                   metCalo_;
    tree::MET                   metPuppi_;
-   tree::MET                   metNoHF_;
+   tree::MET                   metPuppi_UnclEu_;
+   tree::MET                   metPuppi_UnclEd_;
    tree::MET                   met_raw_;
    tree::MET                   met_gen_;
-   tree::MET                   met_JESu_;
-   tree::MET                   met_JESd_;
-   tree::MET                   met_JERu_;
-   tree::MET                   met_JERd_;
    tree::MET                   metXYcorr_;
    std::map<std::string,std::vector<tree::Particle>> triggerObjectMap_;
 
    std::vector<tree::GenParticle> vGenParticles_;
    std::vector<tree::IntermediateGenParticle> vIntermediateGenParticles_;
-   
-   // BTag cut values
-   Double_t BTag_DeepJet_looseWP_cut_;
-   Double_t BTag_DeepCSV_looseWP_cut_;
-   
-   // Scale factors
-   LeptonFullSimScaleFactorMapFunctor fctLeptonFullSimScaleFactors_;
-   Float_t lepton1SF_;
-   Float_t lepton2SF_;
-   Float_t lepton1SF_unc_;
-   Float_t lepton2SF_unc_;
-   
-   BTagEffMapFunctor fctBTagEff_;
-   BTagCalibration fctBTagCalibFullSim_;
-   BTagCalibrationReader fctBTagCalibReaderFullSimBJets_;
-   BTagCalibrationReader fctBTagCalibReaderFullSimCJets_;
-   BTagCalibrationReader fctBTagCalibReaderFullSimLightJets_;
-   BTagCalibrationReader fctBTagCalibReaderFullSimBJetsUp_;
-   BTagCalibrationReader fctBTagCalibReaderFullSimCJetsUp_;
-   BTagCalibrationReader fctBTagCalibReaderFullSimLightJetsUp_;
-   BTagCalibrationReader fctBTagCalibReaderFullSimBJetsDown_;
-   BTagCalibrationReader fctBTagCalibReaderFullSimCJetsDown_;
-   BTagCalibrationReader fctBTagCalibReaderFullSimLightJetsDown_;
-   Float_t bTagWeight_;
-   Float_t bTagWeightErrHeavy_;
-   Float_t bTagWeightErrLight_;
-   
-   BTagEffMapFunctor fctBTagEff_DeepCSV_;
-   BTagCalibration fctBTagCalibFullSim_DeepCSV_;
-   BTagCalibrationReader fctBTagCalibReaderFullSimBJets_DeepCSV_;
-   BTagCalibrationReader fctBTagCalibReaderFullSimCJets_DeepCSV_;
-   BTagCalibrationReader fctBTagCalibReaderFullSimLightJets_DeepCSV_;
-   BTagCalibrationReader fctBTagCalibReaderFullSimBJetsUp_DeepCSV_;
-   BTagCalibrationReader fctBTagCalibReaderFullSimCJetsUp_DeepCSV_;
-   BTagCalibrationReader fctBTagCalibReaderFullSimLightJetsUp_DeepCSV_;
-   BTagCalibrationReader fctBTagCalibReaderFullSimBJetsDown_DeepCSV_;
-   BTagCalibrationReader fctBTagCalibReaderFullSimCJetsDown_DeepCSV_;
-   BTagCalibrationReader fctBTagCalibReaderFullSimLightJetsDown_DeepCSV_;
-   Float_t bTagWeight_DeepCSV_;
-   Float_t bTagWeightErrHeavy_DeepCSV_;
-   Float_t bTagWeightErrLight_DeepCSV_;
    
    Float_t topPTweight_;
 
@@ -273,6 +230,8 @@ private:
 
    // Pileup histogram(s)
    TH1F hPU_;
+   TH1F hPU_up_;
+   TH1F hPU_down_;
    
    // Dilepton Event Type (ee,mumu,emu)
    bool mumu_;
@@ -333,6 +292,25 @@ private:
    const bool dyPtInfo_;
    Float_t dyPt_;
    std::vector<tree::GenParticle> v_dyLep_;
+   
+   //BFragmenation
+   const bool bFragInfo_;
+   edm::EDGetTokenT<std::vector<reco::GenJet> > genJetsBfragToken_;
+   edm::EDGetTokenT<edm::ValueMap<float> > bfragWeight_BLCentralToken_;
+   edm::EDGetTokenT<edm::ValueMap<float> > bfragWeight_BLUpToken_;
+   edm::EDGetTokenT<edm::ValueMap<float> > bfragWeight_BLDownToken_;
+   edm::EDGetTokenT<edm::ValueMap<float> > bfragWeight_PetersonToken_;
+   edm::EDGetTokenT<edm::ValueMap<float> > bfragWeight_BSemiLepUpToken_;
+   edm::EDGetTokenT<edm::ValueMap<float> > bfragWeight_BSemiLepDownToken_;
+   
+
+   float fragUpWeight_;
+   float fragCentralWeight_;
+   float fragDownWeight_;
+   float fragPetersonWeight_;
+   float semilepbrUpWeight_;
+   float semilepbrDownWeight_;
+   
 };
 
 #endif /* TREEWRITER_HPP__ */

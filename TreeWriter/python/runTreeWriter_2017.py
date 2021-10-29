@@ -28,13 +28,13 @@ options.register ('user',
                   "Name the user. If not set by crab, this script will determine it.")
 
 # defaults
-#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL17MiniAOD/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_mc2017_realistic_v6-v2/00000/054AE840-3924-BD47-880F-12FA2F909901.root',
-options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2017B/DoubleMuon/MINIAOD/09Aug2019_UL2017-v1/260000/032A7B27-0F31-D348-9B82-9E1B62ED9587.root',
+options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL17MiniAOD/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_mc2017_realistic_v6-v2/00000/054AE840-3924-BD47-880F-12FA2F909901.root',
+#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2017B/DoubleMuon/MINIAOD/09Aug2019_UL2017-v1/260000/032A7B27-0F31-D348-9B82-9E1B62ED9587.root',
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL17MiniAOD/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_mc2017_realistic_v6-v2/270000/05F2529D-1C66-3745-925D-C6B3C1E850ED.root',
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
-options.maxEvents = -1
-#  ~options.maxEvents = 1000
+#  ~options.maxEvents = -1
+options.maxEvents = 100
 # get and parse the command line arguments
 options.parseArguments()
 
@@ -122,22 +122,6 @@ process.BadPFMuonFilterUpdateDz=BadPFMuonDzFilter.clone(
     taggingMode    = cms.bool(True)
 )
 
-
-################################
-# Lepton Scale Factors         #
-################################
-LeptonFullSimScaleFactorMapPars = cms.PSet(
-    dataMCScaleFactorFile_mu_ID = cms.string('${CMSSW_BASE}/src/TreeWriter/data/2017/Efficiencies_muon_generalTracks_Z_Run2017_UL_ID.root'),
-    dataMCScaleFactorFile_mu_Iso = cms.string('${CMSSW_BASE}/src/TreeWriter/data/2017/Efficiencies_muon_generalTracks_Z_Run2017_UL_ISO.root'),
-    
-    dataMCScaleFactorFile_ele = cms.string('${CMSSW_BASE}/src/TreeWriter/data/2017/egammaEffi.txt_EGM2D_Tight_UL17.root'),
-    
-    dataMCScaleFactorHisto_mu_ID = cms.string('NUM_TightID_DEN_TrackerMuons_abseta_pt'),
-    dataMCScaleFactorHisto_mu_Iso = cms.string('NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt'),
-    
-    dataMCScaleFactorHisto_ele_ID = cms.string('EGamma_SF2D'),
-)
-
 ################################
 # Jets                         #
 ################################
@@ -213,61 +197,6 @@ process.updatedPatJetsUpdatedJECIDPuppi.userInts.PFJetIDTightLepVeto = cms.Input
 process.jetIDSequencePuppi = cms.Sequence(process.PFJetIDTightLepVetoPuppi * process.updatedPatJetsUpdatedJECIDPuppi)
 
 
-################################################
-# BTag Event Weights DeepJet loose WP          #
-################################################
-
-BTag_DeepJet_looseWP_cut=cms.double(0.0532)
-
-BTagCalibrationReaderPars = cms.PSet(
-    measurementType_bJets = cms.string('mujets'),
-    measurementType_cJets = cms.string('mujets'),
-    measurementType_lightJets = cms.string('incl'),
-)
-
-BTagCalibrationPars = cms.PSet(
-    FullSimTagger = cms.string('DeepJet'),
-    FullSimFileName = cms.string('data/2017/DeepJet_106XUL17SF_WPonly_V2p1.csv'),       
-)
-
-bTagEffMapPars = cms.PSet(
-    fullSimFile = cms.string('data/2017/bTagEff_2017.root'),
-    bEffFullSimName_ee = cms.string('ee/B_DeepJet_loose'),
-    cEffFullSimName_ee = cms.string('ee/C_DeepJet_loose'),
-    lightEffFullSimName_ee = cms.string('ee/Light_DeepJet_loose'),
-    bEffFullSimName_mumu = cms.string('mumu/B_DeepJet_loose'),
-    cEffFullSimName_mumu = cms.string('mumu/C_DeepJet_loose'),
-    lightEffFullSimName_mumu = cms.string('mumu/Light_DeepJet_loose'),
-    bEffFullSimName_emu = cms.string('emu/B_DeepJet_loose'),
-    cEffFullSimName_emu = cms.string('emu/C_DeepJet_loose'),
-    lightEffFullSimName_emu = cms.string('emu/Light_DeepJet_loose'),
-)
-
-################################################
-# BTag Event Weights DeepCSV loose WP          #
-################################################
-
-BTag_DeepCSV_looseWP_cut=cms.double(0.1355)
-
-BTagCalibrationPars_DeepCSV = cms.PSet(
-    FullSimTagger = cms.string('DeepCSV'),
-    FullSimFileName = cms.string('data/2017/DeepCSV_106XUL17SF_WPonly_V2p1.csv'),       
-)
-
-bTagEffMapPars_DeepCSV = cms.PSet(
-    fullSimFile = cms.string('data/2017/bTagEff_2017.root'),
-    bEffFullSimName_ee = cms.string('ee/B_DeepCSV_loose'),
-    cEffFullSimName_ee = cms.string('ee/C_DeepCSV_loose'),
-    lightEffFullSimName_ee = cms.string('ee/Light_DeepCSV_loose'),
-    bEffFullSimName_mumu = cms.string('mumu/B_DeepCSV_loose'),
-    cEffFullSimName_mumu = cms.string('mumu/C_DeepCSV_loose'),
-    lightEffFullSimName_mumu = cms.string('mumu/Light_DeepCSV_loose'),
-    bEffFullSimName_emu = cms.string('emu/B_DeepCSV_loose'),
-    cEffFullSimName_emu = cms.string('emu/C_DeepCSV_loose'),
-    lightEffFullSimName_emu = cms.string('emu/Light_DeepCSV_loose'),
-)
-
-
 ################################
 # Ttbar Gen Info               #
 ################################
@@ -311,6 +240,20 @@ if not isRealData: process.TTbarGen = cms.Sequence(process.makeGenEvt * process.
 else: process.TTbarGen = cms.Sequence()
 
 ################################
+# BFragmenation Weights        #
+################################
+process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
+process.mergedGenParticles = cms.EDProducer("MergedGenParticleProducer",
+                    inputPruned = cms.InputTag("prunedGenParticles"),
+                    inputPacked = cms.InputTag("packedGenParticles"),
+)
+from GeneratorInterface.RivetInterface.genParticles2HepMC_cfi import genParticles2HepMC
+process.genParticles2HepMC = genParticles2HepMC.clone(genParticles = cms.InputTag("mergedGenParticles"))
+process.load("GeneratorInterface.RivetInterface.particleLevel_cfi")
+process.particleLevel.excludeNeutrinosFromJetClustering = False
+process.load('TopQuarkAnalysis.BFragmentationAnalyzer.bfragWgtProducer_cfi')
+
+################################
 # Define input and output      #
 ################################
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(options.maxEvents))
@@ -324,12 +267,12 @@ process.TFileService = cms.Service("TFileService", fileName=cms.string(options.o
 ################################
 process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     # selection configuration
-                                    jet_pT_cut=cms.untracked.double(30), # for all jets
+                                    jet_pT_cut=cms.untracked.double(15), # for all jets
                                     NumberLeptons_cut=cms.untracked.uint32(2),
                                     # physics objects
                                     #  ~jets = cms.InputTag("slimmedJets"),
                                     #  ~jets = cms.InputTag("patSmearedJets"),
-                                    jets = cms.InputTag("updatedPatJetsUpdatedJECIDsmeared"),
+                                    jets = cms.InputTag("updatedPatJetsUpdatedJECID"),    #Use unsmeared jets and apply JER locally
                                     jets_puppi = cms.InputTag("updatedPatJetsUpdatedJECIDPuppi"),
                                     #  ~jets_puppi = cms.InputTag("slimmedJetsPuppi"),
                                     muons = cms.InputTag("MuonsAddedRochesterCorr"),
@@ -372,6 +315,8 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     ),
                                     # choose pileup data
                                     pileupHistogramName=cms.untracked.string("pileupWeight_mix_2017_25ns_UltraLegacy_PoissonOOTPU"),
+                                    pileupHistogramNameUp=cms.untracked.string("pileupWeightUp_mix_2017_25ns_UltraLegacy_PoissonOOTPU"),
+                                    pileupHistogramNameDown=cms.untracked.string("pileupWeightDown_mix_2017_25ns_UltraLegacy_PoissonOOTPU"),
                                     # triggers to be saved
                                     # Warning: To be independent of the version number, the trigger result is saved if the trigger name begins
                                     # with the strings given here. E.g. "HLT" would always be true if any of the triggers fired.
@@ -379,17 +324,10 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     triggerObjectNames=cms.vstring(),
                                     pfJetIDSelector=cms.PSet(version=cms.string('RUNIIULCHS'), quality=cms.string('TIGHT')),
                                     triggerPrescales=cms.vstring(), # also useful to check whether a trigger was run
-                                    LeptonFullSimScaleFactors = LeptonFullSimScaleFactorMapPars,
-                                    BTag_DeepJet_looseWP_cut=BTag_DeepJet_looseWP_cut,
-                                    BTag_DeepCSV_looseWP_cut=BTag_DeepCSV_looseWP_cut,
-                                    BTagCalibration = BTagCalibrationPars,
-                                    BTagCalibration_DeepCSV = BTagCalibrationPars_DeepCSV,
-                                    BTagCalibrationReader = BTagCalibrationReaderPars,
-                                    bTagEfficiencies = bTagEffMapPars,
-                                    bTagEfficiencies_DeepCSV = bTagEffMapPars_DeepCSV,
                                     ttbarGenInfo = cms.bool(False),
                                     ttbarPseudoInfo = cms.bool(False),
                                     DYptInfo = cms.bool(False),
+                                    bFragInfo = cms.bool(False),
 )
 
 ################################
@@ -398,6 +336,7 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
 
 process.TreeWriter.ttbarGenInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T"))
 process.TreeWriter.ttbarPseudoInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T"))
+process.TreeWriter.bFragInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/ST"))
 process.TreeWriter.DYptInfo=(dataset.startswith("/DY"))
 
 if not isRealData:
@@ -454,7 +393,7 @@ for trig in process.TreeWriter.triggerPrescales:
 process.p = cms.Path(
     process.jecSequence
     *process.jetIDSequence
-    *process.updatedPatJetsUpdatedJECIDsmeared
+    #  ~*process.updatedPatJetsUpdatedJECIDsmeared
     *process.egammaPostRecoSeq
     *process.MuonsAddedRochesterCorr
     *process.fullPatMetSequence
@@ -463,5 +402,9 @@ process.p = cms.Path(
     *process.jetIDSequencePuppi
     *process.TTbarGen
     *process.BadPFMuonFilterUpdateDz
+    *process.mergedGenParticles
+    *process.genParticles2HepMC
+    *process.particleLevel
+    *process.bfragWgtProducer
     *process.TreeWriter
 )

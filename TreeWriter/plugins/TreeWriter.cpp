@@ -225,41 +225,26 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    // met filters to apply
    , metFilterNames_(iConfig.getUntrackedParameter<std::vector<std::string>>("metFilterNames"))
    , pileupHistogramName_(iConfig.getUntrackedParameter<std::string>("pileupHistogramName"))
+   , pileupHistogramNameUp_(iConfig.getUntrackedParameter<std::string>("pileupHistogramNameUp"))
+   , pileupHistogramNameDown_(iConfig.getUntrackedParameter<std::string>("pileupHistogramNameDown"))
    , jetIdSelector(iConfig.getParameter<edm::ParameterSet>("pfJetIDSelector"))
    , triggerNames_(iConfig.getParameter<std::vector<std::string>>("triggerNames"))
    , triggerPrescales_(iConfig.getParameter<std::vector<std::string>>("triggerPrescales"))
    , triggerObjectNames_(iConfig.getParameter<std::vector<std::string>>("triggerObjectNames"))
-   // BTag cuts
-   , BTag_DeepJet_looseWP_cut_(iConfig.getParameter<double>("BTag_DeepJet_looseWP_cut"))
-   , BTag_DeepCSV_looseWP_cut_(iConfig.getParameter<double>("BTag_DeepJet_looseWP_cut"))
-   // scale factor map
-   , fctLeptonFullSimScaleFactors_(iConfig.getParameter<edm::ParameterSet>("LeptonFullSimScaleFactors"))
-   , fctBTagEff_    (iConfig.getParameter<edm::ParameterSet>("bTagEfficiencies") )
-   , fctBTagCalibFullSim_    (iConfig.getParameter<edm::ParameterSet>("BTagCalibration").getParameter<std::string>("FullSimTagger"),iConfig.getParameter<edm::ParameterSet>("BTagCalibration").getParameter<std::string>("FullSimFileName") )
-   , fctBTagCalibReaderFullSimBJets_    (BTagEntry::OP_LOOSE,"central" )
-   , fctBTagCalibReaderFullSimCJets_    (BTagEntry::OP_LOOSE,"central" )
-   , fctBTagCalibReaderFullSimLightJets_    (BTagEntry::OP_LOOSE,"central" )
-   , fctBTagCalibReaderFullSimBJetsUp_    (BTagEntry::OP_LOOSE,"up" )
-   , fctBTagCalibReaderFullSimCJetsUp_    (BTagEntry::OP_LOOSE,"up" )
-   , fctBTagCalibReaderFullSimLightJetsUp_    (BTagEntry::OP_LOOSE,"up" )
-   , fctBTagCalibReaderFullSimBJetsDown_    (BTagEntry::OP_LOOSE,"down" )
-   , fctBTagCalibReaderFullSimCJetsDown_    (BTagEntry::OP_LOOSE,"down" )
-   , fctBTagCalibReaderFullSimLightJetsDown_    (BTagEntry::OP_LOOSE,"down" )
-   , fctBTagEff_DeepCSV_    (iConfig.getParameter<edm::ParameterSet>("bTagEfficiencies_DeepCSV") )
-   , fctBTagCalibFullSim_DeepCSV_    (iConfig.getParameter<edm::ParameterSet>("BTagCalibration_DeepCSV").getParameter<std::string>("FullSimTagger"),iConfig.getParameter<edm::ParameterSet>("BTagCalibration_DeepCSV").getParameter<std::string>("FullSimFileName") )
-   , fctBTagCalibReaderFullSimBJets_DeepCSV_    (BTagEntry::OP_LOOSE,"central" )
-   , fctBTagCalibReaderFullSimCJets_DeepCSV_    (BTagEntry::OP_LOOSE,"central" )
-   , fctBTagCalibReaderFullSimLightJets_DeepCSV_    (BTagEntry::OP_LOOSE,"central" )
-   , fctBTagCalibReaderFullSimBJetsUp_DeepCSV_    (BTagEntry::OP_LOOSE,"up" )
-   , fctBTagCalibReaderFullSimCJetsUp_DeepCSV_    (BTagEntry::OP_LOOSE,"up" )
-   , fctBTagCalibReaderFullSimLightJetsUp_DeepCSV_    (BTagEntry::OP_LOOSE,"up" )
-   , fctBTagCalibReaderFullSimBJetsDown_DeepCSV_    (BTagEntry::OP_LOOSE,"down" )
-   , fctBTagCalibReaderFullSimCJetsDown_DeepCSV_    (BTagEntry::OP_LOOSE,"down" )
-   , fctBTagCalibReaderFullSimLightJetsDown_DeepCSV_    (BTagEntry::OP_LOOSE,"down" )
    // Ttbar gen Event Info
    , ttbarGenInfo_(iConfig.getParameter<bool>("ttbarGenInfo"))
    , pseudoTopInfo_(iConfig.getParameter<bool>("ttbarPseudoInfo"))
    , dyPtInfo_(iConfig.getParameter<bool>("DYptInfo"))
+   // Bfrag weights
+   , bFragInfo_(iConfig.getParameter<bool>("bFragInfo"))
+   , genJetsBfragToken_(consumes<std::vector<reco::GenJet> >(edm::InputTag("particleLevel:jets")))
+   , bfragWeight_BLCentralToken_(consumes<edm::ValueMap<float> >(edm::InputTag("bfragWgtProducer:fragCP5BLVsPt")))
+   , bfragWeight_BLUpToken_(consumes<edm::ValueMap<float> >(edm::InputTag("bfragWgtProducer:fragCP5BLupVsPt")))
+   , bfragWeight_BLDownToken_(consumes<edm::ValueMap<float> >(edm::InputTag("bfragWgtProducer:fragCP5BLdownVsPt")))
+   , bfragWeight_PetersonToken_(consumes<edm::ValueMap<float> >(edm::InputTag("bfragWgtProducer:fragCP5PetersonVsPt")))
+   , bfragWeight_BSemiLepUpToken_(consumes<edm::ValueMap<float> >(edm::InputTag("bfragWgtProducer:semilepbrup")))
+   , bfragWeight_BSemiLepDownToken_(consumes<edm::ValueMap<float> >(edm::InputTag("bfragWgtProducer:semilepbrdown")))
+
 {
    // declare consumptions that are used "byLabel" in analyze()
    mayConsume<GenLumiInfoHeader,edm::InLumi> (edm::InputTag("generator"));
@@ -274,27 +259,6 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    //~consumes<reco::GenJetCollection>(edm::InputTag("pseudoTop","leptons"));
    //~consumes<reco::GenJetCollection>(edm::InputTag("pseudoTop","jets"));
    consumes<LHERunInfoProduct,edm::InRun>(edm::InputTag("externalLHEProducer"));
-   
-   // load BTagCalibrations DeepJet
-   fctBTagCalibReaderFullSimBJets_.load(fctBTagCalibFullSim_,BTagEntry::FLAV_B,iConfig.getParameter<edm::ParameterSet>("BTagCalibrationReader").getParameter<std::string>("measurementType_bJets"));
-   fctBTagCalibReaderFullSimCJets_.load(fctBTagCalibFullSim_,BTagEntry::FLAV_C,iConfig.getParameter<edm::ParameterSet>("BTagCalibrationReader").getParameter<std::string>("measurementType_cJets"));
-   fctBTagCalibReaderFullSimLightJets_.load(fctBTagCalibFullSim_,BTagEntry::FLAV_UDSG,iConfig.getParameter<edm::ParameterSet>("BTagCalibrationReader").getParameter<std::string>("measurementType_lightJets"));
-   fctBTagCalibReaderFullSimBJetsUp_.load(fctBTagCalibFullSim_,BTagEntry::FLAV_B,iConfig.getParameter<edm::ParameterSet>("BTagCalibrationReader").getParameter<std::string>("measurementType_bJets"));
-   fctBTagCalibReaderFullSimCJetsUp_.load(fctBTagCalibFullSim_,BTagEntry::FLAV_C,iConfig.getParameter<edm::ParameterSet>("BTagCalibrationReader").getParameter<std::string>("measurementType_cJets"));
-   fctBTagCalibReaderFullSimLightJetsUp_.load(fctBTagCalibFullSim_,BTagEntry::FLAV_UDSG,iConfig.getParameter<edm::ParameterSet>("BTagCalibrationReader").getParameter<std::string>("measurementType_lightJets"));
-   fctBTagCalibReaderFullSimBJetsDown_.load(fctBTagCalibFullSim_,BTagEntry::FLAV_B,iConfig.getParameter<edm::ParameterSet>("BTagCalibrationReader").getParameter<std::string>("measurementType_bJets"));
-   fctBTagCalibReaderFullSimCJetsDown_.load(fctBTagCalibFullSim_,BTagEntry::FLAV_C,iConfig.getParameter<edm::ParameterSet>("BTagCalibrationReader").getParameter<std::string>("measurementType_cJets"));
-   fctBTagCalibReaderFullSimLightJetsDown_.load(fctBTagCalibFullSim_,BTagEntry::FLAV_UDSG,iConfig.getParameter<edm::ParameterSet>("BTagCalibrationReader").getParameter<std::string>("measurementType_lightJets"));
-   // load BTagCalibrations DeepJet
-   fctBTagCalibReaderFullSimBJets_DeepCSV_.load(fctBTagCalibFullSim_DeepCSV_,BTagEntry::FLAV_B,iConfig.getParameter<edm::ParameterSet>("BTagCalibrationReader").getParameter<std::string>("measurementType_bJets"));
-   fctBTagCalibReaderFullSimCJets_DeepCSV_.load(fctBTagCalibFullSim_DeepCSV_,BTagEntry::FLAV_C,iConfig.getParameter<edm::ParameterSet>("BTagCalibrationReader").getParameter<std::string>("measurementType_cJets"));
-   fctBTagCalibReaderFullSimLightJets_DeepCSV_.load(fctBTagCalibFullSim_DeepCSV_,BTagEntry::FLAV_UDSG,iConfig.getParameter<edm::ParameterSet>("BTagCalibrationReader").getParameter<std::string>("measurementType_lightJets"));
-   fctBTagCalibReaderFullSimBJetsUp_DeepCSV_.load(fctBTagCalibFullSim_DeepCSV_,BTagEntry::FLAV_B,iConfig.getParameter<edm::ParameterSet>("BTagCalibrationReader").getParameter<std::string>("measurementType_bJets"));
-   fctBTagCalibReaderFullSimCJetsUp_DeepCSV_.load(fctBTagCalibFullSim_DeepCSV_,BTagEntry::FLAV_C,iConfig.getParameter<edm::ParameterSet>("BTagCalibrationReader").getParameter<std::string>("measurementType_cJets"));
-   fctBTagCalibReaderFullSimLightJetsUp_DeepCSV_.load(fctBTagCalibFullSim_DeepCSV_,BTagEntry::FLAV_UDSG,iConfig.getParameter<edm::ParameterSet>("BTagCalibrationReader").getParameter<std::string>("measurementType_lightJets"));
-   fctBTagCalibReaderFullSimBJetsDown_DeepCSV_.load(fctBTagCalibFullSim_DeepCSV_,BTagEntry::FLAV_B,iConfig.getParameter<edm::ParameterSet>("BTagCalibrationReader").getParameter<std::string>("measurementType_bJets"));
-   fctBTagCalibReaderFullSimCJetsDown_DeepCSV_.load(fctBTagCalibFullSim_DeepCSV_,BTagEntry::FLAV_C,iConfig.getParameter<edm::ParameterSet>("BTagCalibrationReader").getParameter<std::string>("measurementType_cJets"));
-   fctBTagCalibReaderFullSimLightJetsDown_DeepCSV_.load(fctBTagCalibFullSim_DeepCSV_,BTagEntry::FLAV_UDSG,iConfig.getParameter<edm::ParameterSet>("BTagCalibrationReader").getParameter<std::string>("measurementType_lightJets"));
 
    // setup tree and define branches
    eventTree_ = fs_->make<TTree> ("eventTree", "event data");
@@ -307,16 +271,15 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    // ~eventTree_->Branch("muons_add", &vMuons_add_);
    // ~eventTree_->Branch("photons", &vPhotons_);
    eventTree_->Branch("met", &met_);
+   eventTree_->Branch("met_UnclE_up", &met_UnclEu_);
+   eventTree_->Branch("met_UnclE_down", &met_UnclEd_);
    eventTree_->Branch("metCalo", &metCalo_);
    eventTree_->Branch("metPuppi", &metPuppi_);
-   eventTree_->Branch("metNoHF", &metNoHF_);
+   eventTree_->Branch("metPuppi_UnclE_up", &metPuppi_UnclEu_);
+   eventTree_->Branch("metPuppi_UnclE_down", &metPuppi_UnclEd_);
    eventTree_->Branch("metXYcorr", &metXYcorr_);
    eventTree_->Branch("met_raw", &met_raw_);
    eventTree_->Branch("met_gen", &met_gen_);
-   eventTree_->Branch("met_JESu", &met_JESu_);
-   eventTree_->Branch("met_JESd", &met_JESd_);
-   // ~eventTree_->Branch("met_JERu", &met_JERu_);
-   // ~eventTree_->Branch("met_JERd", &met_JERd_);
    eventTree_->Branch("genParticles", &vGenParticles_);
    for (const auto& n : triggerObjectNames_) {  //Trigger branches
      triggerObjectMap_[n] = std::vector<tree::Particle>();
@@ -335,6 +298,8 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("caloMetPt", &caloMetPt_, "caloMetPt/F");
 
    eventTree_->Branch("pu_weight", &pu_weight_, "pu_weight/F");
+   eventTree_->Branch("pu_weight_up", &pu_weight_up_, "pu_weight_up/F");
+   eventTree_->Branch("pu_weight_down", &pu_weight_down_, "pu_weight_down/F");
    eventTree_->Branch("mc_weight", &mc_weight_, "mc_weight/B");
    eventTree_->Branch("pdf_weights", &vPdf_weights_);
    eventTree_->Branch("ps_weights", &vPS_weights_);
@@ -346,18 +311,6 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("MT2", &MT2_, "MT2/F");
    eventTree_->Branch("genMT2", &genMT2_, "genMT2/F");
    eventTree_->Branch("genMT2neutrino", &genMT2neutrino_, "genMT2neutrino/F");
-   
-   eventTree_->Branch("lepton1SF", &lepton1SF_, "lepton1SF/F");
-   eventTree_->Branch("lepton2SF", &lepton2SF_, "lepton2SF/F");
-   eventTree_->Branch("lepton1SF_unc", &lepton1SF_unc_, "lepton1SF_unc/F");
-   eventTree_->Branch("lepton2SF_unc", &lepton2SF_unc_, "lepton2SF_unc/F");
-   
-   eventTree_->Branch("bTagWeight", &bTagWeight_, "bTagWeight/F");
-   eventTree_->Branch("bTagWeightErrHeavy", &bTagWeightErrHeavy_, "bTagWeightErrHeavy/F");
-   eventTree_->Branch("bTagWeightErrLight", &bTagWeightErrLight_, "bTagWeightErrLight/F");
-   eventTree_->Branch("bTagWeight_DeepCSV", &bTagWeight_DeepCSV_, "bTagWeight_DeepCSV/F");
-   eventTree_->Branch("bTagWeightErrHeavy_DeepCSV", &bTagWeightErrHeavy_DeepCSV_, "bTagWeightErrHeavy_DeepCSV/F");
-   eventTree_->Branch("bTagWeightErrLight_DeepCSV", &bTagWeightErrLight_DeepCSV_, "bTagWeightErrLight_DeepCSV/F");
    
    eventTree_->Branch("topPTweight", &topPTweight_, "topPTweight/F");
 
@@ -407,6 +360,14 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    
    eventTree_->Branch("DYgenPt", &dyPt_, "DYgenPt/F");
    eventTree_->Branch("DYgenLep", &v_dyLep_);
+   
+   eventTree_->Branch("weightFragUp", &fragUpWeight_);
+   eventTree_->Branch("weightFragCentral", &fragCentralWeight_);
+   eventTree_->Branch("weightFragDown", &fragDownWeight_);
+   eventTree_->Branch("weightFragPeterson", &fragPetersonWeight_);
+   eventTree_->Branch("weightSemilepbrUp", &semilepbrUpWeight_);
+   eventTree_->Branch("weightSemilepbrDown", &semilepbrDownWeight_);
+
 
    // Fill trigger maps
    for (const auto& n : triggerNames_) {
@@ -429,8 +390,12 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
       std::exit(84);
    } else {
       TH1F* hPU_ptr = (TH1F*)puFile.Get(pileupHistogramName_.c_str());
+      TH1F* hPU_up_ptr = (TH1F*)puFile.Get(pileupHistogramNameUp_.c_str());
+      TH1F* hPU_down_ptr = (TH1F*)puFile.Get(pileupHistogramNameDown_.c_str());
       if (hPU_ptr) {
          hPU_ = *hPU_ptr;
+         hPU_up_ = *hPU_up_ptr;
+         hPU_down_ = *hPU_down_ptr;
       } else {
          edm::LogError("Pileup histogram not found") << "recreate puWeights.root! (see README)";
          std::exit(84);
@@ -503,9 +468,13 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       }
       true_nPV_ = Tnpv;
       pu_weight_ = hPU_.GetBinContent(hPU_.FindBin(Tnpv));
+      pu_weight_up_ = hPU_up_.GetBinContent(hPU_up_.FindBin(Tnpv));
+      pu_weight_down_ = hPU_down_.GetBinContent(hPU_down_.FindBin(Tnpv));
    } else { // real data
       true_nPV_ = -1;
       pu_weight_ = 1.;
+      pu_weight_up_ = 1.;
+      pu_weight_down_ = 1.;
    }
    
    //////////////////////
@@ -516,12 +485,13 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       edm::Handle<GenEventInfoProduct> GenEventInfoHandle;
       iEvent.getByLabel("generator", GenEventInfoHandle);
       // PS weight
+      // https://twiki.cern.ch/twiki/bin/view/CMS/HowToPDF
       if (GenEventInfoHandle.isValid()) {
          mc_weight_ = sign(GenEventInfoHandle->weight());
          auto weightsize = GenEventInfoHandle->weights().size();
          vPS_weights_ = std::vector<float>(weightsize, 1.0);
          for (unsigned i=0; i<weightsize; i++) {
-            vPS_weights_[i] = GenEventInfoHandle->weights()[i]/GenEventInfoHandle->weights()[0];
+            vPS_weights_[i] = GenEventInfoHandle->weights()[i]/GenEventInfoHandle->weights()[1];
          }
       }
       // PDF and scale variations
@@ -822,13 +792,10 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    if (ttbarPseudoDecayMode_==0 || pseudoTopInfo_==0) pseudoDileptonSelection=false;
    bool recoDileptonSelection=true;
 
-   int channel=0;
    ee_=false;
    mumu_=false;
    emu_=false;
    mll_=0;
-   lepton1SF_=1.;
-   lepton2SF_=1.;
    if ((vElectrons_.size()+vMuons_.size())==NumberLeptons_cut_){
    
       if (vElectrons_.size()==2){
@@ -836,11 +803,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
          else{
             mll_=(vElectrons_[0].p+vElectrons_[1].p).M();
             ee_=true;
-            channel=1;
-            lepton1SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[0];
-            lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[1];
-            lepton2SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[1],vElectrons_[1].p.Pt(),vElectrons_[1].etaSC))[0];
-            lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[1],vElectrons_[1].p.Pt(),vElectrons_[1].etaSC))[1];
          }
       }
       else if (vMuons_.size()==2){
@@ -848,11 +810,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
          else{
             mll_=(vMuons_[0].p+vMuons_[1].p).M();
             mumu_=true;
-            channel=2;
-            lepton1SF_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[0];
-            lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[1];
-            lepton2SF_=(fctLeptonFullSimScaleFactors_(vMuons_[1],vMuons_[1].p.Pt(),vMuons_[1].p.Eta()))[0];
-            lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vMuons_[1],vMuons_[1].p.Pt(),vMuons_[1].p.Eta()))[1];
          }
       }
       else {
@@ -860,11 +817,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
          else{
             mll_=(vMuons_[0].p+vElectrons_[0].p).M();
             emu_=true;
-            channel=3;
-            lepton1SF_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[0];
-            lepton1SF_unc_=(fctLeptonFullSimScaleFactors_(vElectrons_[0],vElectrons_[0].p.Pt(),vElectrons_[0].etaSC))[1];
-            lepton2SF_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[0];
-            lepton2SF_unc_=(fctLeptonFullSimScaleFactors_(vMuons_[0],vMuons_[0].p.Pt(),vMuons_[0].p.Eta()))[1];
          }
       }
    }
@@ -1093,156 +1045,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    } // jet puppi loop
    sort(vJetsPuppi_.begin(), vJetsPuppi_.end(), tree::PtGreater);
    
-   
-   ///////////////////////////////
-   //BTagWeight DeepJet loose WP//
-   ///////////////////////////////
-   if (!isRealData) {
-      float P_MC = 1.;
-      float P_Data = 1.;
-      float err1 = 0.;
-      float err2 = 0.;
-      float err3 = 0.;
-      float err4 = 0.;
-      
-      for(std::vector<tree::Jet>::const_iterator it = vJets_.begin(); it != vJets_.end() ; ++it){
-         if (it->p.Pt() >=30.0 && fabs(it->p.Eta())<2.4 && !it->hasMuonMatch && !it->hasElectronMatch && it->TightIDlepVeto){
-           
-            int jetFlavor;
-            float eff;
-            float SF, SF_up, SF_down;
-            float SF_err;
-            float temp_pt = std::min(599.,it->p.Pt());
-            float temp_eta = it->p.Eta();
-            jetFlavor = it->hadronFlavour;
-            if (jetFlavor == 5)
-            {
-               SF = fctBTagCalibReaderFullSimBJets_.eval(BTagEntry::FLAV_B, temp_eta, temp_pt);
-               SF_up = fctBTagCalibReaderFullSimBJetsUp_.eval(BTagEntry::FLAV_B, temp_eta, temp_pt);
-               SF_down = fctBTagCalibReaderFullSimBJetsDown_.eval(BTagEntry::FLAV_B, temp_eta, temp_pt);   
-            }
-            else if (jetFlavor == 4)
-            {
-               SF = fctBTagCalibReaderFullSimCJets_.eval(BTagEntry::FLAV_C, temp_eta, temp_pt);
-               SF_up = fctBTagCalibReaderFullSimCJetsUp_.eval(BTagEntry::FLAV_C, temp_eta, temp_pt);
-               SF_down = fctBTagCalibReaderFullSimCJetsDown_.eval(BTagEntry::FLAV_C, temp_eta, temp_pt);
-            }
-            else
-            {
-               SF = fctBTagCalibReaderFullSimLightJets_.eval(BTagEntry::FLAV_UDSG, temp_eta, temp_pt);
-               SF_up = fctBTagCalibReaderFullSimLightJetsUp_.eval(BTagEntry::FLAV_UDSG, temp_eta, temp_pt);
-               SF_down = fctBTagCalibReaderFullSimLightJetsDown_.eval(BTagEntry::FLAV_UDSG, temp_eta, temp_pt);
-            }
-
-            eff = fctBTagEff_(jetFlavor, temp_pt, fabs(temp_eta),channel);
-            
-            SF_err = std::max(fabs(SF_up-SF),fabs(SF_down-SF));
-             
-            // check if jet is btagged
-            // ~bool tagged = it->bTagDeepJet>0.0490;
-            bool tagged = it->bTagDeepJet>BTag_DeepJet_looseWP_cut_;
-           
-            if (tagged){
-               P_MC = P_MC * eff;
-               P_Data = P_Data * SF * eff;
-               if (jetFlavor == 5 || jetFlavor == 4) err1 += SF_err/SF;
-               else err3 += SF_err/SF;
-            }
-            else{
-               P_MC = P_MC * (1 - eff);
-               P_Data = P_Data  * (1 - SF * eff);
-               if (jetFlavor == 5 || jetFlavor == 4) err2 += (-eff*SF_err) / (1-eff*SF);
-               else err4 += (-eff*SF_err) / (1-eff*SF);
-            }
-         }
-      }
-      if (P_MC > 0. && P_Data > 0.){
-         bTagWeight_ = P_Data/P_MC;
-         bTagWeightErrHeavy_ = (err1+err2)*P_Data/P_MC;
-         bTagWeightErrLight_ = (err3+err4)*P_Data/P_MC;
-      }
-      else{
-         bTagWeight_ = 0.;
-         bTagWeightErrHeavy_ = 0.;
-         bTagWeightErrLight_ = 0.;
-      }
-      
-   }
-   
-   ///////////////////////////////
-   //BTagWeight DeepCSV loose WP//
-   ///////////////////////////////
-   if (!isRealData) {
-      float P_MC = 1.;
-      float P_Data = 1.;
-      float err1 = 0.;
-      float err2 = 0.;
-      float err3 = 0.;
-      float err4 = 0.;
-      
-      for(std::vector<tree::Jet>::const_iterator it = vJets_.begin(); it != vJets_.end() ; ++it){
-         if (it->p.Pt() >=30.0 && fabs(it->p.Eta())<2.4 && !it->hasMuonMatch && !it->hasElectronMatch && it->TightIDlepVeto){
-           
-            int jetFlavor;
-            float eff;
-            float SF, SF_up, SF_down;
-            float SF_err;
-            float temp_pt = std::min(599.,it->p.Pt());
-            float temp_eta = it->p.Eta();
-            jetFlavor = it->hadronFlavour;
-            if (jetFlavor == 5)
-            {
-               SF = fctBTagCalibReaderFullSimBJets_DeepCSV_.eval(BTagEntry::FLAV_B, temp_eta, temp_pt);
-               SF_up = fctBTagCalibReaderFullSimBJetsUp_DeepCSV_.eval(BTagEntry::FLAV_B, temp_eta, temp_pt);
-               SF_down = fctBTagCalibReaderFullSimBJetsDown_DeepCSV_.eval(BTagEntry::FLAV_B, temp_eta, temp_pt);   
-            }
-            else if (jetFlavor == 4)
-            {
-               SF = fctBTagCalibReaderFullSimCJets_DeepCSV_.eval(BTagEntry::FLAV_C, temp_eta, temp_pt);
-               SF_up = fctBTagCalibReaderFullSimCJetsUp_DeepCSV_.eval(BTagEntry::FLAV_C, temp_eta, temp_pt);
-               SF_down = fctBTagCalibReaderFullSimCJetsDown_DeepCSV_.eval(BTagEntry::FLAV_C, temp_eta, temp_pt);
-            }
-            else
-            {
-               SF = fctBTagCalibReaderFullSimLightJets_DeepCSV_.eval(BTagEntry::FLAV_UDSG, temp_eta, temp_pt);
-               SF_up = fctBTagCalibReaderFullSimLightJetsUp_DeepCSV_.eval(BTagEntry::FLAV_UDSG, temp_eta, temp_pt);
-               SF_down = fctBTagCalibReaderFullSimLightJetsDown_DeepCSV_.eval(BTagEntry::FLAV_UDSG, temp_eta, temp_pt);
-            }
-
-            eff = fctBTagEff_DeepCSV_(jetFlavor, temp_pt, fabs(temp_eta),channel);
-            
-            SF_err = std::max(fabs(SF_up-SF),fabs(SF_down-SF));
-             
-            // check if jet is btagged
-            bool tagged = it->bTagDeepCSV>BTag_DeepJet_looseWP_cut_;
-           
-            if (tagged){
-               P_MC = P_MC * eff;
-               P_Data = P_Data * SF * eff;
-               if (jetFlavor == 5 || jetFlavor == 4) err1 += SF_err/SF;
-               else err3 += SF_err/SF;
-            }
-            else{
-               P_MC = P_MC * (1 - eff);
-               P_Data = P_Data  * (1 - SF * eff);
-               if (jetFlavor == 5 || jetFlavor == 4) err2 += (-eff*SF_err) / (1-eff*SF);
-               else err4 += (-eff*SF_err) / (1-eff*SF);
-            }
-         }
-      }
-      if (P_MC > 0. && P_Data > 0.){
-         bTagWeight_DeepCSV_ = P_Data/P_MC;
-         bTagWeightErrHeavy_DeepCSV_ = (err1+err2)*P_Data/P_MC;
-         bTagWeightErrLight_DeepCSV_ = (err3+err4)*P_Data/P_MC;
-      }
-      else{
-         bTagWeight_DeepCSV_ = 0.;
-         bTagWeightErrHeavy_DeepCSV_ = 0.;
-         bTagWeightErrLight_DeepCSV_ = 0.;
-      }
-      
-   }
-   
    ///////////
    // GenJet//
    ///////////
@@ -1259,7 +1061,41 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
      }
      sort(vGenJets_.begin(), vGenJets_.end(), tree::PtGreater);
    } // gen-jet loop
-
+   
+   ///////////////////
+   // BFragmentation//
+   ///////////////////
+   fragUpWeight_        = 1.0;
+   fragCentralWeight_   = 1.0;
+   fragDownWeight_      = 1.0;
+   fragPetersonWeight_  = 1.0;
+   semilepbrUpWeight_   = 1.0;
+   semilepbrDownWeight_ = 1.0;
+   if (bFragInfo_){
+      edm::Handle<std::vector<reco::GenJet> > genJetsBfrag;
+      iEvent.getByToken(genJetsBfragToken_, genJetsBfrag);
+      edm::Handle<edm::ValueMap<float> > frag_BLCentral;
+      edm::Handle<edm::ValueMap<float> > frag_BLUp;
+      edm::Handle<edm::ValueMap<float> > frag_BLDown;
+      edm::Handle<edm::ValueMap<float> > frag_Peterson;
+      edm::Handle<edm::ValueMap<float> > frag_BSemiLepUp;
+      edm::Handle<edm::ValueMap<float> > frag_BSemiLepDown;
+      iEvent.getByToken(bfragWeight_BLCentralToken_, frag_BLCentral);
+      iEvent.getByToken(bfragWeight_BLUpToken_, frag_BLUp);
+      iEvent.getByToken(bfragWeight_BLDownToken_, frag_BLDown);
+      iEvent.getByToken(bfragWeight_PetersonToken_, frag_Peterson);
+      iEvent.getByToken(bfragWeight_BSemiLepUpToken_, frag_BSemiLepUp);
+      iEvent.getByToken(bfragWeight_BSemiLepDownToken_, frag_BSemiLepDown);
+      for (auto genJet=genJetsBfrag->begin(); genJet!=genJetsBfrag->end(); ++genJet) {
+         edm::Ref<std::vector<reco::GenJet> > genJetRef(genJetsBfrag, genJet-genJetsBfrag->begin());
+         fragUpWeight_ *= (*frag_BLCentral)[genJetRef];
+         fragCentralWeight_ *= (*frag_BLUp)[genJetRef];
+         fragDownWeight_ *= (*frag_BLDown)[genJetRef];
+         fragPetersonWeight_ *= (*frag_Peterson)[genJetRef];
+         semilepbrUpWeight_ *= (*frag_BSemiLepUp)[genJetRef];
+         semilepbrDownWeight_ *= (*frag_BSemiLepDown)[genJetRef];
+      }
+   }
 
    ////////
    // MET//
@@ -1301,25 +1137,16 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    metShifted = met.shiftedP4(pat::MET::NoShift, pat::MET::Raw);
    met_raw_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
       
-   metShifted = met.shiftedP4(pat::MET::JetEnUp);
-   met_JESu_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
-   metShifted = met.shiftedP4(pat::MET::JetEnDown);
-   met_JESd_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
-
-   // ~metShifted = met.shiftedP4(pat::MET::JetResUp);
-   // ~met_JERu_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
-   // ~metShifted = met.shiftedP4(pat::MET::JetResDown);
-   // ~met_JERd_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
+   metShifted = met.shiftedP4(pat::MET::UnclusteredEnUp);
+   met_UnclEu_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
+   metShifted = met.shiftedP4(pat::MET::UnclusteredEnDown);
+   met_UnclEd_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
    
    metShifted = met.shiftedP4(pat::MET::NoShift, pat::MET::RawCalo);
    metCalo_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
    
    met_.sig = met.metSignificance();
    met_raw_.sig = met_.sig;
-   // ~met_JESu_.sig = met_.sig;
-   // ~met_JESd_.sig = met_.sig;
-   // ~met_JERu_.sig = met_.sig;
-   // ~met_JERd_.sig = met_.sig;
    metCalo_.sig = met_.sig;
    
    //PuppiMET
@@ -1344,15 +1171,11 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       metPuppi_.uncertainty += a*a;
    }
    metPuppi_.uncertainty=TMath::Sqrt(metPuppi_.uncertainty);
-         
-   //MET no HF
-   edm::Handle<pat::METCollection> metCollNoHF;
-   iEvent.getByToken(metNoHFCollectionToken_, metCollNoHF);
-
-   const pat::MET &metNoHF = metCollNoHF->front();
-   double metPt_NoHF = metNoHF.pt();
-   metNoHF_.p.SetPtEtaPhiE(metPt_NoHF, metNoHF.eta(), metNoHF.phi(), metNoHF.energy());
-   metNoHF_.sig = metNoHF.metSignificance();
+   
+   metShifted = metPuppi.shiftedP4(pat::MET::UnclusteredEnUp);
+   metPuppi_UnclEu_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
+   metShifted = metPuppi.shiftedP4(pat::MET::UnclusteredEnDown);
+   metPuppi_UnclEd_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
    
    //XY Corrected MET
    std::pair<double,double> MET_XYpair = METXYCorr_Met_MetPhi(metPt, met.phi(), iEvent.run(), 2016, !isRealData, nPV_);
