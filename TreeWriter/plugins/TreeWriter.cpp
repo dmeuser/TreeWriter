@@ -656,7 +656,13 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       math::XYZPoint vtx_point = firstGoodVertex.position();
       trMuon.d0 = mu.bestTrack()->dxy( vtx_point );
       trMuon.dZ = mu.bestTrack()->dz( vtx_point );
+      
       trMuon.rochesterCorrection = mu.hasUserFloat("MuonEnergyCorr") ? mu.userFloat("MuonEnergyCorr") : 1.;
+      trMuon.corrScaleStat = mu.hasUserFloat("MuonEnergyCorr_stat_RMS") ? mu.userFloat("MuonEnergyCorr_stat_RMS") + mu.userFloat("MuonEnergyCorr") : 1.;
+      trMuon.corrScaleZpt = mu.hasUserFloat("MuonEnergyCorr_Zpt") ? mu.userFloat("MuonEnergyCorr_Zpt") : 1.;
+      trMuon.corrScaleEWK = mu.hasUserFloat("MuonEnergyCorr_Ewk") ? mu.userFloat("MuonEnergyCorr_Ewk") : 1.;
+      trMuon.corrScaleDeltaM = mu.hasUserFloat("MuonEnergyCorr_deltaM") ? mu.userFloat("MuonEnergyCorr_deltaM") : 1.;
+      trMuon.corrScaleEWK2 = mu.hasUserFloat("MuonEnergyCorr_Ewk2") ? mu.userFloat("MuonEnergyCorr_Ewk2") : 1.;
       
       if (mu.pt()*trMuon.rochesterCorrection>20 && mu.isTightMuon(firstGoodVertex) && trMuon.rIso<0.15) vMuons_.push_back(trMuon); // take only 'tight' muons
       if (mu.pt()*trMuon.rochesterCorrection>15 && trMuon.isLoose && trMuon.rIso<0.25) vMuons_add_.push_back(trMuon); //Save all muons, which are at least loose
@@ -700,19 +706,23 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trEl.phiSC = el->superCluster()->phi();
       trEl.etaSC = el->superCluster()->eta();
       trEl.corr = el->userFloat("ecalTrkEnergyPostCorr")/el->energy();
+      trEl.corrScaleSystUp = el->userFloat("energyScaleSystUp")/el->energy();
+      trEl.corrScaleSystDown = el->userFloat("energyScaleSystDown")/el->energy();
+      trEl.corrScaleGainUp = el->userFloat("energyScaleGainUp")/el->energy();
+      trEl.corrScaleGainDown = el->userFloat("energyScaleGainDown")/el->energy();
+      trEl.corrScaleStatUp = el->userFloat("energyScaleStatUp")/el->energy();
+      trEl.corrScaleStatDown = el->userFloat("energyScaleStatDown")/el->energy();
+      trEl.corrScaleEtUp = el->userFloat("energyScaleEtUp")/el->energy();
+      trEl.corrScaleEtDown = el->userFloat("energyScaleEtDown")/el->energy();
+      trEl.corrSmearRhoUp = el->userFloat("energySigmaRhoUp")/el->energy();
+      trEl.corrSmearRhoDown = el->userFloat("energySigmaRhoDown")/el->energy();
+      trEl.corrSmearPhiUp = el->userFloat("energySigmaPhiUp")/el->energy();
+      trEl.corrSmearPhiDown = el->userFloat("energySigmaPhiDown")/el->energy();
             
       // VID calculation of (1/E - 1/p)
       if (el->ecalEnergy() == 0)   trEl.EoverPInv = 1e30;
       else if (!std::isfinite(el->ecalEnergy()))  trEl.EoverPInv = 1e30;
       else trEl.EoverPInv = (1.0 - el->eSuperClusterOverP())/el->ecalEnergy();
-      
-      //uncorrected electrons
-      trEl.pUncorrected.SetXYZ(0,0,0);
-      //~ auto itPos = std::distance(electronColl->begin(), el); 80x
-      //~ if (itPos<electronCollUncorrected->size()) {
-        //~ auto ele = (*electronCollUncorrected).at(itPos);
-        //~ trEl.pUncorrected.SetPtEtaPhi(ele.pt(), ele.superCluster()->eta(), ele.superCluster()->phi());
-      //~ }
             
       //Apply recommended IP cuts
       if((abs(trEl.etaSC) < 1.4442) && ((abs(trEl.d0) > 0.05) || abs(trEl.dZ) > 0.10)) continue;

@@ -91,7 +91,13 @@ namespace tree
       float d0;
       float dZ;
       float PFminiIso;
+      
       float rochesterCorrection;
+      float corrScaleStat;
+      float corrScaleZpt;
+      float corrScaleEWK;
+      float corrScaleDeltaM;
+      float corrScaleEWK2;
    };
 
    struct Electron: public Particle
@@ -116,7 +122,21 @@ namespace tree
       TVector3 pUncorrected;
       float phiSC;     //Supercluster Phi
       float etaSC;     //Supercluster Eta
+      
       float corr;
+      float corrScaleSystUp;
+      float corrScaleSystDown;
+      float corrScaleGainUp;
+      float corrScaleGainDown;
+      float corrScaleStatUp;
+      float corrScaleStatDown;
+      float corrScaleEtUp;
+      float corrScaleEtDown;
+      
+      float corrSmearRhoUp;
+      float corrSmearRhoDown;
+      float corrSmearPhiUp;
+      float corrSmearPhiDown;
    };
    
    struct Photon : public Particle

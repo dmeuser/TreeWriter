@@ -34,6 +34,7 @@ options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/270002/B4155943-3E29-6849-BF8D-227F49F72A15.root',
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018A/DoubleMuon/MINIAOD/12Nov2019_UL2018-v2/100000/A988574D-C798-6246-AFE0-435CD7A9C836.root',
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v1/00000/0095F60C-3B5B-C44F-A15B-E923A692B6F5.root',
+#  ~options.outputFile = 'ttbarTree_MC.root'
 options.outputFile = 'ttbarTree.root'
 #~ options.outputFile = 'overlap_lepton_2.root'
 #  ~options.maxEvents = -1
@@ -252,6 +253,8 @@ process.genParticles2HepMC = genParticles2HepMC.clone(genParticles = cms.InputTa
 process.load("GeneratorInterface.RivetInterface.particleLevel_cfi")
 process.particleLevel.excludeNeutrinosFromJetClustering = False
 process.load('TopQuarkAnalysis.BFragmentationAnalyzer.bfragWgtProducer_cfi')
+if not isRealData: process.bFragWgtSequence = cms.Sequence(process.mergedGenParticles*process.genParticles2HepMC*process.particleLevel*process.bfragWgtProducer)
+else: process.bFragWgtSequence = cms.Sequence()
 
 
 ################################
@@ -404,9 +407,6 @@ process.p = cms.Path(
     *process.jetIDSequencePuppi
     *process.TTbarGen
     *process.BadPFMuonFilterUpdateDz
-    *process.mergedGenParticles
-    *process.genParticles2HepMC
-    *process.particleLevel
-    *process.bfragWgtProducer
+    *process.bFragWgtSequence
     *process.TreeWriter
 )
