@@ -1,7 +1,7 @@
 **TreeWriter** to build a ROOT tree from MiniAOD. Designed for ttbar, starting from https://github.com/cms-susy-photon-rwth-1b/TreeWriter
 
 ## Building and Running ##
-Get CMSSW environment 10_2X
+Get CMSSW environment 10_6_X
 
 ```
 cmsrel CMSSW_10_6_20
@@ -19,6 +19,7 @@ scram b -j7
 cd TopQuarkAnalysis
 git clone https://gitlab.cern.ch/CMS-TOPPAG/BFragmentationAnalyzer.git
 scram b -j7
+cd ..
 git clone git@github.com:dmeuser/TreeWriter.git -b UltraLegacy
 scram b -j7
 cd TreeWriter
