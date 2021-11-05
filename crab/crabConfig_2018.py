@@ -330,7 +330,7 @@ if __name__ == '__main__':
             config.Data.lumiMask = getLumiMask(cmssw_src)
 
         if user=="dmeuser":
-            config.Data.outputDatasetTag = 'v04'
+            config.Data.outputDatasetTag = 'v05'
             config.Data.outLFNDirBase = "/store/user/dmeuser/run2_topUL/2018/"
         else:
             print "you shall not pass!"
