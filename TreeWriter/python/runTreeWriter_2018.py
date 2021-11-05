@@ -55,8 +55,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 # determine global tag
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 if isRealData:
-        process.GlobalTag.globaltag = "106X_dataRun2_v32"
-        #  ~process.GlobalTag.globaltag = "106X_dataRun2_v33"       #miniAODv2 (correct? or only for production?)
+        process.GlobalTag.globaltag = "106X_dataRun2_v35"
 else:
         process.GlobalTag.globaltag = "106X_upgrade2018_realistic_v15_L1v1"
         #  ~process.GlobalTag.globaltag = "106X_upgrade2018_realistic_v16_L1v1"     #miniAODv2 (correct? or only for production?)
@@ -264,7 +263,7 @@ process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(options.maxEven
 #  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), lumisToProcess = cms.untracked.VLuminosityBlockRange("321393:46"))#eventsToProcess = cms.untracked.VEventRange("276315:134:185994346"))
 #  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("315257:72:49554411"))
 #  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("315259:66:43335866"))
-#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("315259:66:43335866"))
+#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("1:107364:107363955"))
 process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles))
 process.TFileService = cms.Service("TFileService", fileName=cms.string(options.outputFile))
 

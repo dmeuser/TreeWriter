@@ -167,12 +167,10 @@ private:
    std::vector<float> vPdf_weights_;
    std::vector<float> vPS_weights_;
    
-   Float_t mll_;
    Float_t Ht_;
    Float_t genHt_;
    Float_t puPtHat_;
    Float_t EWKinoPairPt_;
-   Float_t MT2_;
    Float_t genMT2_;
    Float_t genMT2neutrino_;
 
@@ -232,11 +230,6 @@ private:
    TH1F hPU_;
    TH1F hPU_up_;
    TH1F hPU_down_;
-   
-   // Dilepton Event Type (ee,mumu,emu)
-   bool mumu_;
-   bool ee_;
-   bool emu_;
    
    // Add lepton veto
    bool addLepton_;

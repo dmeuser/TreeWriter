@@ -3,6 +3,7 @@
 
 #include <TLorentzVector.h>
 #include <TVector3.h>
+#include <array>
 
 enum PhotonMatchType {UNMATCHED = 0,
                       MATCHED_FROM_GUDSCB,
@@ -46,8 +47,8 @@ namespace tree
       bool isTight;
       bool TightIDlepVeto;
       bool PileupIDloose;
-      bool hasElectronMatch;
-      bool hasMuonMatch;
+      // ~bool hasElectronMatch;
+      // ~bool hasMuonMatch;
       bool hasElectronMatch_loose;
       bool hasMuonMatch_loose;
       float bTagCSVv2;
@@ -65,11 +66,6 @@ namespace tree
       float electronf;
       int nch;
       int nconstituents;
-      // ~float ptRes;
-      // ~float phiRes;
-      // ~float sfRes;
-      // ~float sfResUp;
-      // ~float sfResDn;
       float uncorJecFactor; // uncorrected jet momentum over corrected jet momentum
       float uncorJecFactor_L1; // L1-corrected jet momentum over corrected jet momentum
       float bJetRegressionCorr;
@@ -93,11 +89,7 @@ namespace tree
       float PFminiIso;
       
       float rochesterCorrection;
-      float corrScaleStat;
-      float corrScaleZpt;
-      float corrScaleEWK;
-      float corrScaleDeltaM;
-      float corrScaleEWK2;
+      std::array<float, 6> corrections;
    };
 
    struct Electron: public Particle
@@ -124,19 +116,7 @@ namespace tree
       float etaSC;     //Supercluster Eta
       
       float corr;
-      float corrScaleSystUp;
-      float corrScaleSystDown;
-      float corrScaleGainUp;
-      float corrScaleGainDown;
-      float corrScaleStatUp;
-      float corrScaleStatDown;
-      float corrScaleEtUp;
-      float corrScaleEtDown;
-      
-      float corrSmearRhoUp;
-      float corrSmearRhoDown;
-      float corrSmearPhiUp;
-      float corrSmearPhiDown;
+      std::array<float, 7> corrections;
    };
    
    struct Photon : public Particle

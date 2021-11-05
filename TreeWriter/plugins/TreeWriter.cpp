@@ -286,9 +286,6 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
      eventTree_->Branch(n.c_str(), &triggerObjectMap_[n]);
    }
    eventTree_->Branch("intermediateGenParticles", &vIntermediateGenParticles_);
-   eventTree_->Branch("ee", &ee_);
-   eventTree_->Branch("mumu", &mumu_);
-   eventTree_->Branch("emu", &emu_);
    eventTree_->Branch("addLepton", &addLepton_);
    eventTree_->Branch("true_nPV", &true_nPV_, "true_nPV/I");
    eventTree_->Branch("nPV", &nPV_, "nPV/I");
@@ -304,11 +301,9 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("pdf_weights", &vPdf_weights_);
    eventTree_->Branch("ps_weights", &vPS_weights_);
 
-   eventTree_->Branch("mll", &mll_, "mll/F");
    eventTree_->Branch("Ht", &Ht_, "Ht/F");
    eventTree_->Branch("genHt", &genHt_, "genHt/F");
    eventTree_->Branch("EWKinoPairPt", &EWKinoPairPt_, "EWKinoPairPt/F");
-   eventTree_->Branch("MT2", &MT2_, "MT2/F");
    eventTree_->Branch("genMT2", &genMT2_, "genMT2/F");
    eventTree_->Branch("genMT2neutrino", &genMT2neutrino_, "genMT2neutrino/F");
    
@@ -642,9 +637,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    tree::Muon trMuon;
    for (const pat::Muon &mu : *muonColl) {
       if (! (mu.isPFMuon() || mu.isGlobalMuon() || mu.isTrackerMuon())) continue; //(can probably be removed, not sure about the veto with looser lepton)
-      // ~if (mu.pt()<20 || abs(mu.eta())>2.4) continue;
       if (abs(mu.eta())>2.4) continue;
-      //~ trMuon.p.SetPtEtaPhi(mu.pt(), mu.eta(), mu.phi());
       trMuon.p.SetPtEtaPhiE(mu.pt(), mu.eta(), mu.phi(), mu.energy());
       trMuon.isTight = mu.isTightMuon(firstGoodVertex);
       trMuon.isMedium = mu.isMediumMuon();
@@ -658,13 +651,14 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trMuon.dZ = mu.bestTrack()->dz( vtx_point );
       
       trMuon.rochesterCorrection = mu.hasUserFloat("MuonEnergyCorr") ? mu.userFloat("MuonEnergyCorr") : 1.;
-      trMuon.corrScaleStat = mu.hasUserFloat("MuonEnergyCorr_stat_RMS") ? mu.userFloat("MuonEnergyCorr_stat_RMS") + mu.userFloat("MuonEnergyCorr") : 1.;
-      trMuon.corrScaleZpt = mu.hasUserFloat("MuonEnergyCorr_Zpt") ? mu.userFloat("MuonEnergyCorr_Zpt") : 1.;
-      trMuon.corrScaleEWK = mu.hasUserFloat("MuonEnergyCorr_Ewk") ? mu.userFloat("MuonEnergyCorr_Ewk") : 1.;
-      trMuon.corrScaleDeltaM = mu.hasUserFloat("MuonEnergyCorr_deltaM") ? mu.userFloat("MuonEnergyCorr_deltaM") : 1.;
-      trMuon.corrScaleEWK2 = mu.hasUserFloat("MuonEnergyCorr_Ewk2") ? mu.userFloat("MuonEnergyCorr_Ewk2") : 1.;
-      
-      if (mu.pt()*trMuon.rochesterCorrection>20 && mu.isTightMuon(firstGoodVertex) && trMuon.rIso<0.15) vMuons_.push_back(trMuon); // take only 'tight' muons
+      trMuon.corrections[0] = trMuon.rochesterCorrection;
+      trMuon.corrections[1] = mu.hasUserFloat("MuonEnergyCorr_stat_RMS") ? mu.userFloat("MuonEnergyCorr_stat_RMS") + mu.userFloat("MuonEnergyCorr") : 1.;
+      trMuon.corrections[2] = mu.hasUserFloat("MuonEnergyCorr_Zpt") ? mu.userFloat("MuonEnergyCorr_Zpt") : 1.;
+      trMuon.corrections[3] = mu.hasUserFloat("MuonEnergyCorr_Ewk") ? mu.userFloat("MuonEnergyCorr_Ewk") : 1.;
+      trMuon.corrections[4] = mu.hasUserFloat("MuonEnergyCorr_deltaM") ? mu.userFloat("MuonEnergyCorr_deltaM") : 1.;
+      trMuon.corrections[5] = mu.hasUserFloat("MuonEnergyCorr_Ewk2") ? mu.userFloat("MuonEnergyCorr_Ewk2") : 1.;
+            
+      if (mu.pt()*trMuon.rochesterCorrection>15 && mu.isTightMuon(firstGoodVertex) && trMuon.rIso<0.15) vMuons_.push_back(trMuon); // take only 'tight' muons
       if (mu.pt()*trMuon.rochesterCorrection>15 && trMuon.isLoose && trMuon.rIso<0.25) vMuons_add_.push_back(trMuon); //Save all muons, which are at least loose
    } // muon loop
    sort(vMuons_.begin(), vMuons_.end(), tree::PtGreater);
@@ -685,8 +679,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trEl.isLoose = el->electronID(electronLooseIdMapToken_);
       trEl.isMedium = el->electronID(electronMediumIdMapToken_);
       trEl.isTight = el->electronID(electronTightIdMapToken_);
-      //~ trEl.p.SetPtEtaPhi(el->pt(), el->superCluster()->eta(), el->superCluster()->phi());
-      //~ trEl.p.SetPtEtaPhiE(el->pt(), el->superCluster()->eta(), el->superCluster()->phi(), el->energy());
       trEl.p.SetPtEtaPhiE(el->pt(), el->eta(), el->phi(), el->energy());
       trEl.seedCrystalE = seedCrystalEnergyEB(*el->superCluster(), ebRecHits);
       trEl.charge = el->charge();
@@ -706,18 +698,13 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trEl.phiSC = el->superCluster()->phi();
       trEl.etaSC = el->superCluster()->eta();
       trEl.corr = el->userFloat("ecalTrkEnergyPostCorr")/el->energy();
-      trEl.corrScaleSystUp = el->userFloat("energyScaleSystUp")/el->energy();
-      trEl.corrScaleSystDown = el->userFloat("energyScaleSystDown")/el->energy();
-      trEl.corrScaleGainUp = el->userFloat("energyScaleGainUp")/el->energy();
-      trEl.corrScaleGainDown = el->userFloat("energyScaleGainDown")/el->energy();
-      trEl.corrScaleStatUp = el->userFloat("energyScaleStatUp")/el->energy();
-      trEl.corrScaleStatDown = el->userFloat("energyScaleStatDown")/el->energy();
-      trEl.corrScaleEtUp = el->userFloat("energyScaleEtUp")/el->energy();
-      trEl.corrScaleEtDown = el->userFloat("energyScaleEtDown")/el->energy();
-      trEl.corrSmearRhoUp = el->userFloat("energySigmaRhoUp")/el->energy();
-      trEl.corrSmearRhoDown = el->userFloat("energySigmaRhoDown")/el->energy();
-      trEl.corrSmearPhiUp = el->userFloat("energySigmaPhiUp")/el->energy();
-      trEl.corrSmearPhiDown = el->userFloat("energySigmaPhiDown")/el->energy();
+      trEl.corrections[0] = el->userFloat("ecalTrkEnergyPostCorr")/el->energy();
+      trEl.corrections[1] = el->userFloat("energyScaleEtUp")/el->energy();
+      trEl.corrections[2] = el->userFloat("energyScaleEtDown")/el->energy();
+      trEl.corrections[3] = el->userFloat("energySigmaRhoUp")/el->energy();
+      trEl.corrections[4] = el->userFloat("energySigmaRhoDown")/el->energy();
+      trEl.corrections[5] = el->userFloat("energySigmaPhiUp")/el->energy();
+      trEl.corrections[6] = el->userFloat("energySigmaPhiDown")/el->energy();
             
       // VID calculation of (1/E - 1/p)
       if (el->ecalEnergy() == 0)   trEl.EoverPInv = 1e30;
@@ -729,7 +716,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       else if((abs(trEl.etaSC) > 1.5660) && ((abs(trEl.d0) > 0.10) || abs(trEl.dZ) > 0.20)) continue;
       
 		
-      if (el->pt()*trEl.corr>20 && el->electronID(electronTightIdMapToken_)) vElectrons_.push_back(trEl); // take only 'tight' electrons
+      if (el->pt()*trEl.corr>15 && el->electronID(electronTightIdMapToken_)) vElectrons_.push_back(trEl); // take only 'tight' electrons
       if (el->pt()*trEl.corr>10 && el->electronID(electronVetoIdMapToken_)) vElectrons_add_.push_back(trEl); //Save all electrons, which are at least 'loose' electrons
    }
    sort(vElectrons_.begin(), vElectrons_.end(), tree::PtGreater);
@@ -800,44 +787,18 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    // Keep only events which satisfy the pseudoTop selection (recommended by the LHCTopWG plus additonal dileptoMass cut) or satisfy a loose reco dilepton selection
    bool pseudoDileptonSelection=true;
    if (ttbarPseudoDecayMode_==0 || pseudoTopInfo_==0) pseudoDileptonSelection=false;
-   bool recoDileptonSelection=true;
+   bool recoDileptonSelection=false;
 
-   ee_=false;
-   mumu_=false;
-   emu_=false;
-   mll_=0;
-   if ((vElectrons_.size()+vMuons_.size())==NumberLeptons_cut_){
-   
-      if (vElectrons_.size()==2){
-         if (vElectrons_[0].charge*vElectrons_[1].charge!=-1) recoDileptonSelection=false;
-         else{
-            mll_=(vElectrons_[0].p+vElectrons_[1].p).M();
-            ee_=true;
-         }
-      }
-      else if (vMuons_.size()==2){
-         if (vMuons_[0].charge*vMuons_[1].charge!=-1) recoDileptonSelection=false;
-         else{
-            mll_=(vMuons_[0].p+vMuons_[1].p).M();
-            mumu_=true;
-         }
-      }
-      else {
-         if (vMuons_[0].charge*vElectrons_[0].charge!=-1) recoDileptonSelection=false;
-         else{
-            mll_=(vMuons_[0].p+vElectrons_[0].p).M();
-            emu_=true;
-         }
-      }
+   if ((vElectrons_.size()+vMuons_.size())>=NumberLeptons_cut_){
+      recoDileptonSelection=true;
    }
-   else recoDileptonSelection=false;
    
    if (!recoDileptonSelection && !pseudoDileptonSelection) return;
    
    hCutFlow_->Fill("Dilepton", mc_weight_*pu_weight_);
    
    addLepton_=false;
-   if((vElectrons_add_.size()+vMuons_add_.size())>0) addLepton_=true;
+   if((vElectrons_add_.size()+vMuons_add_.size())>(vElectrons_.size()+vMuons_.size())) addLepton_=true;
    
    /*
    ///////////
@@ -927,15 +888,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trJet.isTight = jetIdSelector(jet);
       trJet.TightIDlepVeto = jet.hasUserInt("PFJetIDTightLepVeto") ? jet.userInt("PFJetIDTightLepVeto") : 0;
       trJet.PileupIDloose = (bool(jet.userInt("pileupJetId:fullId") & (1 << 2)) || (jet.pt()>50));
-      // ~jecUnc.setJetEta(jet.eta());
-      // ~jecUnc.setJetPt(jet.pt());
-      // ~trJet.uncert = jecUnc.getUncertainty(true);
-      // ~JME::JetParameters parameters = {{JME::Binning::JetPt, jet.pt()}, {JME::Binning::JetEta, jet.eta()}, {JME::Binning::Rho, rho_}};
-      // ~trJet.ptRes = resolution_pt.getResolution(parameters);
-      // ~trJet.phiRes = resolution_phi.getResolution(parameters);
-      // ~trJet.sfRes = resolution_sf.getScaleFactor(parameters);
-      // ~trJet.sfResUp = resolution_sf.getScaleFactor(parameters, Variation::UP);
-      // ~trJet.sfResDn = resolution_sf.getScaleFactor(parameters, Variation::DOWN);
       trJet.uncorJecFactor = jet.jecFactor("Uncorrected");     //Factor to be applied to current level to end up with raw jet
       trJet.uncorJecFactor_L1 = jet.jecFactor("L1FastJet");    //Factor to be applied to current level to end up with L1 jet
       trJet.chf = jet.chargedHadronEnergyFraction();
@@ -951,27 +903,19 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       else trJet.matchedGenJet.SetPtEtaPhiM(0.,0.,0.,0.);
       trJet.seed = createJetSeed(iEvent,jet);
       
-      // object matching
-      trJet.hasElectronMatch = false;
+      // loose object matching (nominal is performed in local framework)
       trJet.hasElectronMatch_loose = false;
       for (tree::Electron const &el: vElectrons_add_) {
          if (trJet.p.DeltaR(el.p)<0.4) {
             trJet.hasElectronMatch_loose = true;
-            if (el.isTight && el.p.Pt()>=20){
-               trJet.hasElectronMatch = true;
-               break;
-            }
+            break;
          }
       }
-      trJet.hasMuonMatch = false;
       trJet.hasMuonMatch_loose = false;
       for (tree::Muon const &mu: vMuons_add_) {
          if (trJet.p.DeltaR(mu.p)<0.4) {
             trJet.hasMuonMatch_loose = true;
-            if (mu.isTight && mu.p.Pt()>=20){
-               trJet.hasMuonMatch = true;
-               break;
-            }
+            break;
          }
       }
       Ht_+=trJet.p.Pt();
@@ -1007,15 +951,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trJet_Puppi.bTagSoftElectron = (jet.bDiscriminator("softPFElectronBJetTags")<0) ? -1. : jet.bDiscriminator("softPFElectronBJetTags");
       trJet_Puppi.isTight = jetIdSelector(jet);
       trJet_Puppi.TightIDlepVeto = jet.hasUserInt("PFJetIDTightLepVeto") ? jet.userInt("PFJetIDTightLepVeto") : 0;
-      // ~jecUnc.setJetEta(jet.eta());
-      // ~jecUnc.setJetPt(jet.pt());
-      // ~trJet_Puppi.uncert = jecUnc.getUncertainty(true);
-      // ~JME::JetParameters parameters = {{JME::Binning::JetPt, jet.pt()}, {JME::Binning::JetEta, jet.eta()}, {JME::Binning::Rho, rho_}};
-      // ~trJet_Puppi.ptRes = resolution_pt_Puppi.getResolution(parameters);
-      // ~trJet_Puppi.phiRes = resolution_phi_Puppi.getResolution(parameters);
-      // ~trJet_Puppi.sfRes = resolution_sf_Puppi.getScaleFactor(parameters);
-      // ~trJet_Puppi.sfResUp = resolution_sf_Puppi.getScaleFactor(parameters, Variation::UP);
-      // ~trJet_Puppi.sfResDn = resolution_sf_Puppi.getScaleFactor(parameters, Variation::DOWN);
       trJet_Puppi.uncorJecFactor = jet.jecFactor("Uncorrected");     //Factor to be applied to current level to end up with raw jet
       trJet_Puppi.uncorJecFactor_L1 = jet.jecFactor("L1FastJet");    //Factor to be applied to current level to end up with L1 jet
       trJet_Puppi.chf = jet.chargedHadronEnergyFraction();
@@ -1029,26 +964,16 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trJet_Puppi.hadronFlavour = jet.hadronFlavour();
       
       // object matching
-      trJet_Puppi.hasElectronMatch = false;
       trJet_Puppi.hasElectronMatch_loose = false;
       for (tree::Electron const &el: vElectrons_add_) {
          if (trJet_Puppi.p.DeltaR(el.p)<0.4) {
             trJet_Puppi.hasElectronMatch_loose = true;
-            if (el.isTight && el.p.Pt()>=20){
-               trJet_Puppi.hasElectronMatch = true;
-               break;
-            }
          }
       }
-      trJet_Puppi.hasMuonMatch = false;
       trJet_Puppi.hasMuonMatch_loose = false;
       for (tree::Muon const &mu: vMuons_add_) {
          if (trJet_Puppi.p.DeltaR(mu.p)<0.4) {
             trJet_Puppi.hasMuonMatch_loose = true;
-            if (mu.isTight && mu.p.Pt()>=20){
-               trJet_Puppi.hasMuonMatch = true;
-               break;
-            }
          }
       }
       vJetsPuppi_.push_back(trJet_Puppi);
@@ -1192,32 +1117,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    metXYcorr_.p.SetPtEtaPhiE(MET_XYpair.first, met.eta(), MET_XYpair.second, met.energy());
    metXYcorr_.sig = met.metSignificance();
    metXYcorr_.uncertainty = met_.uncertainty;   //should probably be changed
-      
-   ///////////
-   //MT2//////
-   ///////////
-   
-   if (recoDileptonSelection){
-      if (emu_){
-         pa[0]=vMuons_[0].p.M(); pa[1]=vMuons_[0].p.Px(); pa[2]=vMuons_[0].p.Py();
-         pb[0]=vElectrons_[0].p.M(); pb[1]=vElectrons_[0].p.Px(); pb[2]=vElectrons_[0].p.Py();
-      }
-      else if (mumu_){
-         pa[0]=vMuons_[0].p.M(); pa[1]=vMuons_[0].p.Px(); pa[2]=vMuons_[0].p.Py();
-         pb[0]=vMuons_[1].p.M(); pb[1]=vMuons_[1].p.Px(); pb[2]=vMuons_[1].p.Py();
-      }
-      else {
-         pa[0]=vElectrons_[0].p.M(); pa[1]=vElectrons_[0].p.Px(); pa[2]=vElectrons_[0].p.Py();
-         pb[0]=vElectrons_[1].p.M(); pb[1]=vElectrons_[1].p.Px(); pb[2]=vElectrons_[1].p.Py();
-      }
-      pmiss[0]=0; pmiss[1]=met_.p.Px(); pmiss[2]=met_.p.Py();
-      
-      fctMT2_.set_mn(0.);
-      fctMT2_.set_momenta(pa,pb,pmiss);
-      
-      MT2_=static_cast<float>(fctMT2_.get_mt2());
-   }
-   else MT2_=0;
    
    
    ///////////////////////////

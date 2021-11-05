@@ -58,9 +58,9 @@ datasets["DoubleMuon"] = [
 ]
 
 datasets["EGamma"] = [
-    #  ~"/EGamma/Run2018A-12Nov2019_UL2018-v2/MINIAOD",
-    #  ~"/EGamma/Run2018B-12Nov2019_UL2018-v2/MINIAOD",
-    #  ~"/EGamma/Run2018C-12Nov2019_UL2018-v2/MINIAOD",
+    "/EGamma/Run2018A-12Nov2019_UL2018-v2/MINIAOD",
+    "/EGamma/Run2018B-12Nov2019_UL2018-v2/MINIAOD",
+    "/EGamma/Run2018C-12Nov2019_UL2018-v2/MINIAOD",
     "/EGamma/Run2018D-12Nov2019_UL2018-v8/MINIAOD",
     
     #  ~"/EGamma/Run2018A-UL2018_MiniAODv2-v1/MINIAOD",
