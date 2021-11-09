@@ -123,16 +123,14 @@ def downloadAndMergeFiles(inputFiles, outputFile, maxMergeSize=-1):
                 outputFile=outputFile.split(".root")[0]
                 if sp.call(["hadd","-f",outputFile+"_"+str(outputNr)+".root"]+mergingScheme[outputNr]):
                     sys.exit(1)
-        """
-        print "Remove temporary files"
-        for f in localFiles:
-            os.remove(f)
-        os.rmdir(tmpDownloadDir)
+        #  ~print "Remove temporary files"
+        #  ~for f in localFiles:
+            #  ~os.remove(f)
+        #  ~os.rmdir(tmpDownloadDir)
         return True
     else:
         print "Do not merge, since not all files downloaded"
         return False
-    """
 
 def mergeTier2Files( outputFilePath, inputFilePath, checkDuplicates=False, downloadFirst=False, maxMergeSize=-1 ):
     # get all the subdirectories "/XXXX/" that contain the root files
