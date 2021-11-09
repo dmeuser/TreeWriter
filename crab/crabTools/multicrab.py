@@ -30,12 +30,18 @@ def crabUpdate( dir ):
             print "No credentials found! Initialize your VOMS proxy."
             exit(0)
 
-def crabResubmit(directory,maxjobruntime,silent=False):
+def crabResubmit(directory,maxjobruntime,siteblacklist,silent=False):
     with open(os.devnull, "w") as FNULL:
         if maxjobruntime<0:
-            out=subprocess.check_output(["crab","resubmit",directory],stdin=FNULL,stderr=subprocess.STDOUT)
+            if not siteblacklist:
+                out=subprocess.check_output(["crab","resubmit",directory],stdin=FNULL,stderr=subprocess.STDOUT)
+            else:
+                out=subprocess.check_output(["crab","resubmit",directory,"--siteblacklist="+",".join(siteblacklist)],stdin=FNULL,stderr=subprocess.STDOUT)
         else:
-            out=subprocess.check_output(["crab","resubmit",directory,"--maxjobruntime="+str(maxjobruntime)],stdin=FNULL,stderr=subprocess.STDOUT)
+            if not siteblacklist:
+                out=subprocess.check_output(["crab","resubmit",directory,"--maxjobruntime="+str(maxjobruntime)],stdin=FNULL,stderr=subprocess.STDOUT)
+            else:
+                out=subprocess.check_output(["crab","resubmit",directory,"--maxjobruntime="+str(maxjobruntime),"--siteblacklist="+",".join(siteblacklist)],stdin=FNULL,stderr=subprocess.STDOUT)
         if "No credentials found!" in out:
             print "No credentials found! Initialize your VOMS proxy."
             exit(0)
@@ -64,7 +70,7 @@ def multicrab(args):
         if args.resubmit and info.validStatusCache==True:
 			if "failed" in info.jobStates:
 				print "Resubmitting..."
-				crabResubmit(dir,args.maxjobruntime)
+				crabResubmit(dir,args.maxjobruntime,args.siteblacklist)
         elif args.kill:
             print "Killing..."
             killed.append(dir.split("/")[-2])
@@ -110,6 +116,7 @@ def main():
     parser.add_argument('--forceDL', action='store_true' )
     parser.add_argument('--resubmit', action='store_true' )
     parser.add_argument("--maxjobruntime", type=int, default=-1)
+    parser.add_argument("--siteblacklist", nargs='+', default=[])
     parser.add_argument('--moveCompleted', action='store_true' )
     parser.add_argument('--repeat', action='store_true' )
     parser.add_argument('--downloadFirst', action='store_true' )
