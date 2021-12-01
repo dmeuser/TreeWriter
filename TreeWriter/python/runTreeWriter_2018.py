@@ -327,46 +327,43 @@ process.TreeWriter.ttbarPseudoInfo=(dataset.startswith("/TT") or dataset.startsw
 process.TreeWriter.bFragInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/ST"))
 process.TreeWriter.DYptInfo=(dataset.startswith("/DY"))
 
-# determine user if not set by crab
-user=options.user or getpass.getuser()
-# user settings
-if user=="dmeuser":
-    process.TreeWriter.triggerObjectNames = ["hltEG90CaloIdLHEFilter", "hltEG165HE10Filter"]
-    process.TreeWriter.triggerNames=[
-        # ee Channel
-        "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v",
-        "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v",
-        "HLT_DoubleEle25_CaloIdL_MW_v",
-        "HLT_Ele32_WPTight_Gsf_v",
-        # emu Channel
-        "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v",
-        "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v",
-        "HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v",
-        "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v",
-        # mumu Chanel
-        "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v",
-        "HLT_IsoMu24_v",
-        # MET
-        "HLT_PFMET200_HBHECleaned_v",
-        "HLT_PFMET200_HBHE_BeamHaloCleaned_v",
-        "HLT_PFMETTypeOne200_HBHE_BeamHaloCleaned_v",
-        "HLT_PFMET120_PFMHT120_IDTight_v",
-        "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v",
-        "HLT_PFMET120_PFMHT120_IDTight_PFHT60_v",
-        "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60_v",
-        "HLT_PFHT500_PFMET100_PFMHT100_IDTight_v",
-        "HLT_PFHT700_PFMET85_PFMHT85_IDTight_v",
-        "HLT_PFHT800_PFMET75_PFMHT75_IDTight_v",
-    ]
-    process.TreeWriter.triggerPrescales=[
-    ]
-else:
-    print "you shall not pass!"
-    print "(unkown user '%s')"%user
-    exit()
+# set triggers
+process.TreeWriter.triggerObjectNames = ["hltEG90CaloIdLHEFilter", "hltEG165HE10Filter"]
+process.TreeWriter.triggerNames=[
+    # ee Channel
+    "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v",
+    "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v",
+    "HLT_DoubleEle25_CaloIdL_MW_v",
+    "HLT_Ele32_WPTight_Gsf_v",
+    # emu Channel
+    "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v",
+    "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v",
+    "HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v",
+    "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v",
+    # mumu Chanel
+    "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v",
+    "HLT_IsoMu24_v",
+    # MET
+    "HLT_PFMET200_HBHECleaned_v",
+    "HLT_PFMET200_HBHE_BeamHaloCleaned_v",
+    "HLT_PFMETTypeOne200_HBHE_BeamHaloCleaned_v",
+    "HLT_PFMET120_PFMHT120_IDTight_v",
+    "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v",
+    "HLT_PFMET120_PFMHT120_IDTight_PFHT60_v",
+    "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60_v",
+    "HLT_PFHT500_PFMET100_PFMHT100_IDTight_v",
+    "HLT_PFHT700_PFMET85_PFMHT85_IDTight_v",
+    "HLT_PFHT800_PFMET75_PFMHT75_IDTight_v",
+]
+process.TreeWriter.triggerPrescales=[
+]
 
 for trig in process.TreeWriter.triggerPrescales:
     assert(trig in process.TreeWriter.triggerNames),"Trigger '"+trig+"' is not used, so prescale cannot be stored!"
+
+# determine user if not set by crab
+user=options.user or getpass.getuser()
+
 ####################
 #     RUN          #
 ####################
