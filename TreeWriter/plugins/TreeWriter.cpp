@@ -145,6 +145,7 @@ void GenLorentzVector_Jet(const reco::GenJet* gen, TLorentzVector& TLV)
    TLV.SetPtEtaPhiE(gen->pt(), gen->eta(), gen->phi(), gen->energy());
 }
 
+// Get lepton from tau decay
 const reco::GenParticle* tauDaughter(const reco::GenParticle* tau)
 {
    for(size_t iDaughter = 0; iDaughter < tau->numberOfDaughters(); ++iDaughter){
@@ -155,6 +156,7 @@ const reco::GenParticle* tauDaughter(const reco::GenParticle* tau)
    return tau;
 }
 
+// Assigns leptons from tau decay
 void assignLeptonAndTau(const reco::GenParticle* lepton, TLorentzVector& genLepton, int& pdgId, TLorentzVector& genTau)
 {
    const reco::GenParticle* finalLepton;
@@ -177,11 +179,13 @@ void assignLeptonAndTau(const reco::GenParticle* lepton, TLorentzVector& genLept
    }
 }
 
+// Check if particle is from W decay
 bool isWDaughter(const reco::GenParticle& particle)
 {
   return (std::abs(particle.mother()->pdgId()) == 24);
 }
 
+// Check if particle is from top decay
 bool isTopDaughter(const reco::GenParticle& particle)
 {
   return (std::abs(particle.mother()->pdgId()) == 6);
@@ -202,7 +206,6 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    , genJetCollectionToken_  (consumes<reco::GenJetCollection>(iConfig.getParameter<edm::InputTag>("genJets")))
    , muonCollectionToken_    (consumes<pat::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons")))
    , electronCollectionToken_(consumes<edm::View<pat::Electron> >(iConfig.getParameter<edm::InputTag>("electrons")))
-   , photonCollectionToken_  (consumes<edm::View<pat::Photon> >(iConfig.getParameter<edm::InputTag>("photons")))
    , metCollectionToken_     (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("mets")))
    , metPuppiCollectionToken_     (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metsPuppi")))
    , metNoHFCollectionToken_     (consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metsNoHF")))
@@ -218,10 +221,6 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    , electronLooseIdMapToken_ (iConfig.getUntrackedParameter<std::string>("electronLooseIdMap"))
    , electronMediumIdMapToken_(iConfig.getUntrackedParameter<std::string>("electronMediumIdMap"))
    , electronTightIdMapToken_ (iConfig.getUntrackedParameter<std::string>("electronTightIdMap"))
-   // photon id
-   // ~, photonLooseIdMapToken_  (iConfig.getUntrackedParameter<std::string>("photonLooseIdMap"  ))
-   // ~, photonMediumIdMapToken_ (iConfig.getUntrackedParameter<std::string>("photonMediumIdMap" ))
-   // ~, photonTightIdMapToken_  (iConfig.getUntrackedParameter<std::string>("photonTightIdMap"  ))
    // met filters to apply
    , metFilterNames_(iConfig.getUntrackedParameter<std::vector<std::string>>("metFilterNames"))
    , pileupHistogramName_(iConfig.getUntrackedParameter<std::string>("pileupHistogramName"))
@@ -269,7 +268,6 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("muons", &vMuons_);
    // ~eventTree_->Branch("electrons_add", &vElectrons_add_);
    // ~eventTree_->Branch("muons_add", &vMuons_add_);
-   // ~eventTree_->Branch("photons", &vPhotons_);
    eventTree_->Branch("met", &met_);
    eventTree_->Branch("met_UnclE_up", &met_UnclEu_);
    eventTree_->Branch("met_UnclE_down", &met_UnclEd_);
@@ -345,8 +343,6 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("pseudoAntiNeutrino", &pseudoAntiNeutrino_);
    eventTree_->Branch("pseudoWMinus", &pseudoWMinus_);
    eventTree_->Branch("pseudoWPlus", &pseudoWPlus_);
-   //~eventTree_->Branch("allPseudoJets", &v_allPseudoJet_);
-   //~eventTree_->Branch("allPseudoLeptons", &v_allPseudoLepton_);
    
    eventTree_->Branch("DYgenPt", &dyPt_, "DYgenPt/F");
    eventTree_->Branch("DYgenLep", &v_dyLep_);
@@ -421,21 +417,7 @@ TH1D* TreeWriter::createSystMCWeightHist(const std::string &histName, const int 
 void TreeWriter::beginRun(edm::Run const& iRun, edm::EventSetup const& iSetup){ }
 
 
-void TreeWriter::endRun(edm::Run const& iRun, edm::EventSetup const& iSetup){
-   // ~edm::Handle<LHERunInfoProduct> run; 
-   // ~typedef std::vector<LHERunInfoProduct::Header>::const_iterator headers_const_iterator;
-   
-   // ~iRun.getByLabel( "externalLHEProducer", run );
-   // ~LHERunInfoProduct myLHERunInfoProduct = *(run.product());
-    
-   // ~for (headers_const_iterator iter=myLHERunInfoProduct.headers_begin(); iter!=myLHERunInfoProduct.headers_end(); iter++){
-     // ~std::cout << iter->tag() << std::endl;
-     // ~std::vector<std::string> lines = iter->lines();
-     // ~for (unsigned int iLine = 0; iLine<lines.size(); iLine++) {
-      // ~std::cout << lines.at(iLine);
-     // ~}
-   // ~} 
-}
+void TreeWriter::endRun(edm::Run const& iRun, edm::EventSetup const& iSetup){ }
 
 // ------------ method called for each event  ------------
 void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
@@ -880,76 +862,11 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    
    addLepton_=false;
    if((vElectrons_add_.size()+vMuons_add_.size())>(vElectrons_.size()+vMuons_.size())) addLepton_=true;
-   
-   /*
-   ///////////
-   //Photons//
-   ///////////
-   edm::Handle<edm::View<pat::Photon>> photonColl;
-   iEvent.getByToken(photonCollectionToken_, photonColl);
 
-   vPhotons_.clear();
-   tree::Photon trPho;
-   for (edm::View<pat::Photon>::const_iterator pho = photonColl->begin(); pho != photonColl->end(); pho++) {
-      // Kinematics
-      if (pho->pt() < 30) continue;
-      if (abs(pho->eta()) > 1.4442) continue;
-      // ~trPho.p.SetPtEtaPhiE(pho->pt(), pho->superCluster()->eta(), pho->superCluster()->phi(), pho->energy());
-      trPho.p.SetPtEtaPhiE(pho->pt(), pho->eta(), pho->phi(), pho->energy());
-      const edm::Ptr<pat::Photon> phoPtr( photonColl, pho - photonColl->begin() );
-      trPho.sigmaIetaIeta = pho->full5x5_sigmaIetaIeta();
-      trPho.hOverE = pho->hadTowOverEm();
-      trPho.hasPixelSeed = pho->hasPixelSeed();
-      trPho.passElectronVeto = pho->passElectronVeto();
-      trPho.corr = pho->userFloat("ecalEnergyPostCorr")/pho->energy();
 
-      trPho.cIso = pho->chargedHadronIso();
-      trPho.nIso = pho->neutralHadronIso();
-      trPho.pIso = pho->photonIso();
-
-      // check photon working points
-      trPho.isLoose = pho->photonID(photonLooseIdMapToken_);
-      trPho.isMedium = pho->photonID(photonMediumIdMapToken_);
-      trPho.isTight = pho->photonID(photonTightIdMapToken_);
-      
-      // object matching
-      bool ElectronMatch=false;
-      for (tree::Electron const &el: vElectrons_add_) {
-         if (trPho.p.DeltaR(el.p)<0.5) {
-            ElectronMatch = true;
-            break;
-         }
-      }
-      bool MuonMatch=false;
-      for (tree::Muon const &mu: vMuons_add_){
-         if (trPho.p.DeltaR(mu.p)<0.5){
-            ElectronMatch = true;
-            break;
-         }
-      }
-      
-      if(ElectronMatch || MuonMatch) continue;
-      
-      // write the photon to collection
-      vPhotons_.push_back(trPho);
-   } // photon loop
-
-   sort(vPhotons_.begin(), vPhotons_.end(), tree::PtGreater);
-   */
-
-   
    /////////
    // Jets//
    /////////
-   // ~edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
-   // ~iSetup.get<JetCorrectionsRecord>().get("AK4PFchs", JetCorParColl);
-   // ~JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
-   // ~JetCorrectionUncertainty jecUnc(JetCorPar);
-
-   // ~JME::JetResolution resolution_pt = JME::JetResolution::get(iSetup, "AK4PFchs_pt");
-   // ~JME::JetResolution resolution_phi = JME::JetResolution::get(iSetup, "AK4PFchs_phi");
-   // ~JME::JetResolutionScaleFactor resolution_sf = JME::JetResolutionScaleFactor::get(iSetup, "AK4PFchs");
-
    edm::Handle<pat::JetCollection> jetColl;
    iEvent.getByToken(jetCollectionToken_, jetColl);
 
@@ -957,7 +874,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    tree::Jet trJet;
    Ht_=0;
    for (const pat::Jet& jet : *jetColl) {
-      // ~if (fabs(jet.eta())>2.4) continue;
       if (jet.pt()<dJet_pT_cut_) continue;
       trJet.p.SetPtEtaPhiM(jet.pt(), jet.eta(), jet.phi(), jet.energy());
       trJet.bTagCSVv2 = jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
@@ -1007,22 +923,12 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    ///////////////
    // Puppi Jets//
    ///////////////
-   // ~edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl_Puppi;
-   // ~iSetup.get<JetCorrectionsRecord>().get("AK4PFPuppi", JetCorParColl_Puppi);
-   // ~JetCorrectorParameters const & JetCorPar_Puppi = (*JetCorParColl_Puppi)["Uncertainty"];
-   // ~JetCorrectionUncertainty jecUnc_Puppi(JetCorPar_Puppi);
-
-   // ~JME::JetResolution resolution_pt_Puppi = JME::JetResolution::get(iSetup, "AK4PFPuppi_pt");
-   // ~JME::JetResolution resolution_phi_Puppi = JME::JetResolution::get(iSetup, "AK4PFPuppi_phi");
-   // ~JME::JetResolutionScaleFactor resolution_sf_Puppi = JME::JetResolutionScaleFactor::get(iSetup, "AK4PFPuppi");
-
    edm::Handle<pat::JetCollection> jetColl_Puppi;
    iEvent.getByToken(jetPuppiCollectionToken_, jetColl_Puppi);
 
    vJetsPuppi_.clear();
    tree::Jet trJet_Puppi;
    for (const pat::Jet& jet : *jetColl_Puppi) {
-      // ~if (fabs(jet.eta())>2.4) continue;
       if (jet.pt()<dJet_pT_cut_) continue;
       trJet_Puppi.p.SetPtEtaPhiM(jet.pt(), jet.eta(), jet.phi(), jet.energy());
       trJet_Puppi.bTagCSVv2 = jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
@@ -1071,7 +977,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
      tree::Particle trGJet;
      for (const reco::GenJet& jet: *genJetColl) {
         if (jet.pt()<dJet_pT_cut_-5) continue;
-        //~ trGJet.p.SetPtEtaPhi(jet.pt(), jet.eta(), jet.phi());
         trGJet.p.SetPtEtaPhiM(jet.pt(), jet.eta(), jet.phi(), jet.energy());
         vGenJets_.push_back(trGJet);
      }
@@ -1090,16 +995,15 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
    const pat::MET &met = metColl->front();
    double metPt = met.pt();
-   //~ met_.p.SetPtEtaPhi(metPt, met.eta(), met.phi());
    met_.p.SetPtEtaPhiE(metPt, met.eta(), met.phi(), met.energy());
-
+   
+   // Store GenMET
    if( !isRealData ) {
       const reco::GenMET *genMet = met.genMET();
-      //~ met_gen_.p.SetPtEtaPhi(genMet->pt(), genMet->eta(), genMet->phi());
       met_gen_.p.SetPtEtaPhiE(genMet->pt(), genMet->eta(), genMet->phi(), genMet->energy());
    }
-
-   // jet resolution shift is set to 0 for 74X
+   
+   // Derive MET uncertainty
    met_.uncertainty = 0;
    // loop over all up-shifts save for last one (=NoShift)
    for (uint iShift=0; iShift<(pat::MET::METUncertaintySize-1); iShift+=2) {
@@ -1117,7 +1021,8 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    pat::MET::LorentzVector metShifted;
    metShifted = met.shiftedP4(pat::MET::NoShift, pat::MET::Raw);
    met_raw_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
-      
+   
+   // MET shifted by uncl. energy
    metShifted = met.shiftedP4(pat::MET::UnclusteredEnUp);
    met_UnclEu_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
    metShifted = met.shiftedP4(pat::MET::UnclusteredEnDown);
@@ -1153,6 +1058,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    }
    metPuppi_.uncertainty=TMath::Sqrt(metPuppi_.uncertainty);
    
+   // PuppiMET shifted by uncl. energy
    metShifted = metPuppi.shiftedP4(pat::MET::UnclusteredEnUp);
    metPuppi_UnclEu_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
    metShifted = metPuppi.shiftedP4(pat::MET::UnclusteredEnDown);

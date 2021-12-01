@@ -119,7 +119,6 @@ private:
    edm::EDGetTokenT<reco::GenJetCollection>    genJetCollectionToken_;
    edm::EDGetTokenT<pat::MuonCollection>       muonCollectionToken_;
    edm::EDGetTokenT<edm::View<pat::Electron>>  electronCollectionToken_;
-   edm::EDGetTokenT<edm::View<pat::Photon>>    photonCollectionToken_;
    edm::EDGetTokenT<pat::METCollection>        metCollectionToken_;
    edm::EDGetTokenT<pat::METCollection>        metPuppiCollectionToken_;
    edm::EDGetTokenT<pat::METCollection>        metNoHFCollectionToken_;
@@ -136,11 +135,6 @@ private:
    std::string electronLooseIdMapToken_;
    std::string electronMediumIdMapToken_;
    std::string electronTightIdMapToken_;
-   
-   // photon id
-   std::string photonLooseIdMapToken_;
-   std::string photonMediumIdMapToken_;
-   std::string photonTightIdMapToken_;
 
    // met filters to apply
    const std::vector<std::string> metFilterNames_;
@@ -161,21 +155,16 @@ private:
    Float_t rho_;
    Float_t caloMetPt_;
 
+   // gen weights
    Float_t pu_weight_;
    Float_t pu_weight_up_;
    Float_t pu_weight_down_;
-   Float_t  mc_weight_;
+   Float_t mc_weight_;
+   Float_t topPTweight_;
    std::vector<float> vPdf_weights_;
    std::vector<float> vPS_weights_;
    
-   Float_t Ht_;
-   Float_t genHt_;
-   Float_t puPtHat_;
-   Float_t EWKinoPairPt_;
-   Float_t genMT2_;
-   Float_t genMT2neutrino_;
-
-
+   // event information
    ULong64_t evtNo_;
    UInt_t    runNo_;
    UInt_t    lumNo_;
@@ -196,7 +185,6 @@ private:
    std::vector<tree::Muon>     vMuons_;
    std::vector<tree::Electron> vElectrons_add_;
    std::vector<tree::Muon>     vMuons_add_;
-   std::vector<tree::Photon>   vPhotons_;
    tree::MET                   met_;
    tree::MET                   met_UnclEu_;
    tree::MET                   met_UnclEd_;
@@ -208,11 +196,18 @@ private:
    tree::MET                   met_gen_;
    tree::MET                   metXYcorr_;
    std::map<std::string,std::vector<tree::Particle>> triggerObjectMap_;
-
+   
+   // other variables
+   Float_t Ht_;
+   Float_t genHt_;
+   Float_t puPtHat_;
+   Float_t EWKinoPairPt_;
+   Float_t genMT2_;
+   Float_t genMT2neutrino_;
+   
+   // gen particles
    std::vector<tree::GenParticle> vGenParticles_;
    std::vector<tree::IntermediateGenParticle> vIntermediateGenParticles_;
-   
-   Float_t topPTweight_;
 
    // File Service to store things to a root file
    edm::Service<TFileService> fs_;
@@ -284,8 +279,6 @@ private:
    TLorentzVector pseudoWMinus_;
    TLorentzVector pseudoWPlus_;
    TLorentzVector pseudoNeutrinoSum_;
-   //~std::vector<tree::Particle> v_allPseudoJet_;
-   //~std::vector<tree::Particle> v_allPseudoLepton_;
    
    //DY gen Info
    const bool dyPtInfo_;
@@ -302,7 +295,6 @@ private:
    edm::EDGetTokenT<edm::ValueMap<float> > bfragWeight_BSemiLepUpToken_;
    edm::EDGetTokenT<edm::ValueMap<float> > bfragWeight_BSemiLepDownToken_;
    
-
    float fragUpWeight_;
    float fragCentralWeight_;
    float fragDownWeight_;

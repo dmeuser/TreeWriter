@@ -27,18 +27,13 @@ options.register ('user',
                   VarParsing.varType.string,
                   "Name the user. If not set by crab, this script will determine it.")
 
-# defaults
+# input files for local testing
 options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/00000/531C1968-9806-4346-834C-2A1EE1A86AEB.root',
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAODv2/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/00000/04A0B676-D63A-6D41-B47F-F4CF8CBE7DB8.root',      # miniAODv2
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018B/MuonEG/MINIAOD/12Nov2019_UL2018-v1/100000/00BE9C7C-F659-EB4C-A6C4-EAC5054243B2.root',
-#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/270002/B4155943-3E29-6849-BF8D-227F49F72A15.root',
-#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018A/DoubleMuon/MINIAOD/12Nov2019_UL2018-v2/100000/A988574D-C798-6246-AFE0-435CD7A9C836.root',
-#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v1/00000/0095F60C-3B5B-C44F-A15B-E923A692B6F5.root',
-#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v1/260000/0071F930-6376-7A48-89F1-74E189BD3BFC.root',
-#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/TTTo2L2Nu_hdampDOWN_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/00000/07E5F6AE-4A77-2348-A016-DB2B930D9AAD.root',
-#  ~options.outputFile = 'ttbarTree_MC.root'
+
+# defaults
 options.outputFile = 'ttbarTree.root'
-#~ options.outputFile = 'overlap_lepton_2.root'
 #  ~options.maxEvents = -1
 options.maxEvents = 100
 # get and parse the command line arguments
@@ -51,6 +46,7 @@ isRealData=not dataset.endswith("SIM")
 # the actual TreeWriter module
 process = cms.Process("TreeWriter")
 
+# message logger
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
@@ -74,15 +70,10 @@ process.Timing = cms.Service("Timing",
 # https://twiki.cern.ch/twiki/bin/view/CMS/EgammaMiniAODV2
 # https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPostRecoRecipes
 # https://twiki.cern.ch/twiki/bin/view/CMS/EgammaUL2016To2018
-# Geometry neccessary to runVID
-#  ~process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi");
-#  ~process.load("Geometry.CaloEventSetup.CaloGeometry_cfi");
-#  ~process.load("Geometry.CaloEventSetup.CaloTopology_cfi");
-#  ~process.load("Configuration.Geometry.GeometryECALHCAL_cff")
 
 from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
 setupEgammaPostRecoSeq(process,
-                       runVID=True, #saves CPU time by not needlessly re-running VID, if you want the Fall17V2 IDs, set this to True or remove (default is True) needed for Puppi correction
+                       runVID=True, #needed for Puppi correction
                        era='2018-UL') 
                        
 
@@ -106,14 +97,12 @@ runMetCorAndUncFromMiniAOD(   #update pfMET
     process,
     isData=isRealData,
     fixEE2017 = False,
-    #  ~jetCollUnskimmed="updatedPatJetsUpdatedJECID",
-    #  ~reapplyJEC=False,
 )
 # If using patSmearedJETS is removing too many jets due to lepton matching, use the following to keep all jets: https://indico.cern.ch/event/882528/contributions/3718330/attachments/1974802/3286397/Sync_summary.pdf
 # Puppi MET is correct when applying new Puppi Tune
 
 #########################################
-# MET Filter (not needed in MiniAODv2   #
+# MET Filter (not needed in MiniAODv2)  #
 #########################################
 # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2#Recipe_for_BadPFMuonDz_filter_in
 from RecoMET.METFilters.BadPFMuonDzFilter_cfi import BadPFMuonDzFilter
@@ -129,7 +118,8 @@ process.BadPFMuonFilterUpdateDz=BadPFMuonDzFilter.clone(
 # Jets                         #
 ################################
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-updateJetCollection(        #JEC
+#JEC
+updateJetCollection(
    process,
    jetSource = cms.InputTag('slimmedJets'),
    labelName = 'UpdatedJEC',
@@ -137,6 +127,7 @@ updateJetCollection(        #JEC
 )
 process.jecSequence = cms.Sequence(process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC)
 
+#TightLeptonVeto ID
 from PhysicsTools.SelectorUtils.pfJetIDSelector_cfi import pfJetIDSelector
 process.PFJetIDTightLepVeto = cms.EDProducer('PatJetIDValueMapProducer',
     src = cms.InputTag("updatedPatJetsUpdatedJEC"),
@@ -153,15 +144,14 @@ process.updatedPatJetsUpdatedJECID = cms.EDProducer('PATJetUserDataEmbedder',
 )
 process.jetIDSequence = cms.Sequence(process.PFJetIDTightLepVeto * process.updatedPatJetsUpdatedJECID)
 
+#JER (currently not used, but applied in local framework)
 #from https://github.com/cms-sw/cmssw/blob/master/PhysicsTools/PatUtils/test/runJERsmearingOnMiniAOD.py
-process.updatedPatJetsUpdatedJECIDsmeared = cms.EDProducer('SmearedPATJetProducer',        #JER
+process.updatedPatJetsUpdatedJECIDsmeared = cms.EDProducer('SmearedPATJetProducer',
        src = cms.InputTag('updatedPatJetsUpdatedJECID'),
        enabled = cms.bool(True),
        rho = cms.InputTag("fixedGridRhoFastjetAll"),
        algo = cms.string('AK4PFchs'),
        algopt = cms.string('AK4PFchs_pt'),
-       #resolutionFile = cms.FileInPath('Autumn18_V7_MC_PtResolution_AK4PFchs.txt'),
-       #scaleFactorFile = cms.FileInPath('combined_SFs_uncertSources.txt'),
 
        genJets = cms.InputTag('slimmedGenJets'),
        dRMax = cms.double(0.2),
@@ -180,8 +170,10 @@ process.updatedPatJetsUpdatedJECIDsmeared = cms.EDProducer('SmearedPATJetProduce
 # Puppi Jets                   #
 ################################
 from CommonTools.PileupAlgos.customizePuppiTune_cff import UpdatePuppiTuneV15
+# Update to new Puppi tune
 UpdatePuppiTuneV15(process, runOnMC=(isRealData==False))
 
+#JEC
 updateJetCollection(
    process,
    jetSource = cms.InputTag('slimmedJetsPuppi'),
@@ -190,6 +182,7 @@ updateJetCollection(
 )
 process.jecSequencePuppi = cms.Sequence(process.patJetCorrFactorsUpdatedJECPuppi * process.updatedPatJetsUpdatedJECPuppi)
 
+#TightLeptonVeto ID
 process.PFJetIDTightLepVetoPuppi = process.PFJetIDTightLepVeto.clone()
 process.PFJetIDTightLepVetoPuppi.src = cms.InputTag("updatedPatJetsUpdatedJECPuppi")
 
@@ -207,13 +200,12 @@ process.load("TopQuarkAnalysis.TopEventProducers.sequences.ttGenEvent_cff")
 process.initSubset.src = genParticleCollection
 process.decaySubset.src = genParticleCollection
 process.decaySubset.fillMode = "kME" # Status3, use kStable for Status2
-#  ~process.decaySubset.fillMode = "kStable" # Status3, use kStable for Status2
 runMode = "Run2"
 process.decaySubset.runMode = runMode
 
-################################
-# Ttbar Pseudo Info            #
-################################
+####################################
+# Ttbar Pseudo Info(particle level)#
+####################################
 process.load("TopQuarkAnalysis.TopEventProducers.producers.pseudoTop_cfi")
 process.pseudoTop = cms.EDProducer("PseudoTopProducer",
    genParticles = cms.InputTag("prunedGenParticles"),
@@ -262,9 +254,6 @@ else: process.bFragWgtSequence = cms.Sequence()
 # Define input and output      #
 ################################
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(options.maxEvents))
-#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), lumisToProcess = cms.untracked.VLuminosityBlockRange("321393:46"))#eventsToProcess = cms.untracked.VEventRange("276315:134:185994346"))
-#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("315257:72:49554411"))
-#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("315259:66:43335866"))
 #  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("1:107364:107363955"))
 process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles))
 process.TFileService = cms.Service("TFileService", fileName=cms.string(options.outputFile))
@@ -277,17 +266,11 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     jet_pT_cut=cms.untracked.double(15), # for all jets
                                     NumberLeptons_cut=cms.untracked.uint32(2),
                                     # physics objects
-                                    #  ~jets = cms.InputTag("slimmedJets"),
-                                    #  ~jets = cms.InputTag("patSmearedJets"),
-                                    #  ~jets = cms.InputTag("updatedPatJetsUpdatedJECIDsmeared"),
                                     jets = cms.InputTag("updatedPatJetsUpdatedJECID"),    #Use unsmeared jets and apply JER locally
                                     jets_puppi = cms.InputTag("updatedPatJetsUpdatedJECIDPuppi"),
-                                    #  ~jets_puppi = cms.InputTag("slimmedJetsPuppi"),
                                     muons = cms.InputTag("MuonsAddedRochesterCorr"),
-                                    #  ~muons = cms.InputTag("slimmedMuons"),
                                     genJets=cms.InputTag("slimmedGenJets"),
                                     electrons = cms.InputTag("slimmedElectrons"),
-                                    photons = cms.InputTag("slimmedPhotons"),
                                     mets = cms.InputTag("slimmedMETs"),
                                     metsPuppi = cms.InputTag("slimmedMETsPuppi"),
                                     metsNoHF = cms.InputTag("slimmedMETsNoHF"),
@@ -304,10 +287,6 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     electronLooseIdMap  = cms.untracked.string("cutBasedElectronID-Fall17-94X-V2-loose"),
                                     electronMediumIdMap = cms.untracked.string("cutBasedElectronID-Fall17-94X-V2-medium"),
                                     electronTightIdMap  = cms.untracked.string("cutBasedElectronID-Fall17-94X-V2-tight"),
-                                    # photon IDs
-                                    #  ~photonLooseIdMap   = cms.untracked.string("cutBasedPhotonID-Fall17-94X-V2-loose"),
-                                    #  ~photonMediumIdMap  = cms.untracked.string("cutBasedPhotonID-Fall17-94X-V2-medium"),
-                                    #  ~photonTightIdMap   = cms.untracked.string("cutBasedPhotonID-Fall17-94X-V2-tight"),
                                     # met filters to apply
                                     metFilterNames=cms.untracked.vstring(
                                         "Flag_goodVertices",
@@ -342,15 +321,11 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
 # Modify the TreeWriter module #
 ################################
 
+# set booleans depending on sample name
 process.TreeWriter.ttbarGenInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T"))
 process.TreeWriter.ttbarPseudoInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T"))
 process.TreeWriter.bFragInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/ST"))
 process.TreeWriter.DYptInfo=(dataset.startswith("/DY"))
-
-if not isRealData:
-    if "Fast" in dataset:
-        process.TreeWriter.metFilterNames.remove("Flag_globalSuperTightHalo2016Filter")
-        process.TreeWriter.lheEventProduct = "source"
 
 # determine user if not set by crab
 user=options.user or getpass.getuser()
@@ -399,7 +374,6 @@ for trig in process.TreeWriter.triggerPrescales:
 process.p = cms.Path(
     process.jecSequence
     *process.jetIDSequence
-    #  ~*process.updatedPatJetsUpdatedJECIDsmeared
     *process.egammaPostRecoSeq
     *process.MuonsAddedRochesterCorr
     *process.fullPatMetSequence
