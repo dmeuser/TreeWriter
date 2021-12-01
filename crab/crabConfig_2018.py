@@ -82,9 +82,9 @@ datasets["MuonEG"] = [
 ]
 
 datasets["SingleMuon"] = [
-    "/SingleMuon/Run2018A-12Nov2019_UL2018_rsb-v1/MINIAOD",
-    "/SingleMuon/Run2018B-12Nov2019_UL2018-v2/MINIAOD",
-    "/SingleMuon/Run2018C-12Nov2019_UL2018-v2/MINIAOD",
+    "/SingleMuon/Run2018A-12Nov2019_UL2018-v5/MINIAOD",
+    "/SingleMuon/Run2018B-12Nov2019_UL2018-v3/MINIAOD",
+    "/SingleMuon/Run2018C-12Nov2019_UL2018-v3/MINIAOD",
     "/SingleMuon/Run2018D-12Nov2019_UL2018-v8/MINIAOD",
     
     #  ~"/SingleMuon/Run2018A-UL2018_MiniAODv2-v1/MINIAOD",
@@ -95,7 +95,7 @@ datasets["SingleMuon"] = [
 
 datasets["MET"] = [
     "/MET/Run2018A-12Nov2019_UL2018-v3/MINIAOD",
-    "/MET/Run2018B-12Nov2019_UL2018_rsb-v1/MINIAOD",
+    "/MET/Run2018B-12Nov2019_UL2018-v3/MINIAOD",
     "/MET/Run2018C-12Nov2019_UL2018_rsb-v1/MINIAOD",
     "/MET/Run2018D-12Nov2019_UL2018_rsb-v2/MINIAOD",
     
@@ -174,7 +174,7 @@ datasets["hdamp_ttbar"] = [
     "/TTTo2L2Nu_hdampDOWN_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
     "/TTTo2L2Nu_hdampUP_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
     "/TTToHadronic_hdampDOWN_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
-    "/TTToHadronic_hdampUP_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM",
+    "/TTToHadronic_hdampUP_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
     "/TTToSemiLeptonic_hdampDOWN_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
     "/TTToSemiLeptonic_hdampUP_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
     
@@ -192,7 +192,7 @@ datasets["UE_top"] = [
     "/TTToHadronic_TuneCP5up_13TeV-powheg-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
     "/TTToHadronic_TuneCP5down_13TeV-powheg-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
     "/TTToSemiLeptonic_TuneCP5down_13TeV-powheg-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
-    "//TTToSemiLeptonic_TuneCP5up_13TeV-powheg-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
+    "/TTToSemiLeptonic_TuneCP5up_13TeV-powheg-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
     # missing:
     #  ~"/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5up_13TeV-powheg-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v1/MINIAODSIM",
     #  ~"/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5down_13TeV-powheg-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v1/MINIAODSIM",
@@ -273,16 +273,20 @@ datasets["TopMass_top"] = [
 ]
 
 datasets["dmeuser"] = []
-#  ~datasets["dmeuser"] += datasets["DoubleMuon"]
+datasets["dmeuser"] += datasets["DoubleMuon"]
 datasets["dmeuser"] += datasets["EGamma"]
-#  ~datasets["dmeuser"] += datasets["MuonEG"]
-#  ~datasets["dmeuser"] += datasets["SingleMuon"]
-#  ~datasets["dmeuser"] += datasets["MET"]
-#  ~datasets["dmeuser"] += datasets["Standard_ttbar"]
-#  ~datasets["dmeuser"] += datasets["SingleTop"]
-#  ~datasets["dmeuser"] += datasets["V+Jets"]
-#  ~datasets["dmeuser"] += datasets["Diboson"]
-#  ~datasets["dmeuser"] += datasets["tt+X"]
+datasets["dmeuser"] += datasets["MuonEG"]
+datasets["dmeuser"] += datasets["SingleMuon"]
+datasets["dmeuser"] += datasets["MET"]
+datasets["dmeuser"] += datasets["Standard_ttbar"]
+datasets["dmeuser"] += datasets["SingleTop"]
+datasets["dmeuser"] += datasets["V+Jets"]
+datasets["dmeuser"] += datasets["Diboson"]
+datasets["dmeuser"] += datasets["tt+X"]
+datasets["dmeuser"] += datasets["hdamp_ttbar"]
+datasets["dmeuser"] += datasets["UE_top"]
+datasets["dmeuser"] += datasets["ColorRec_top"]
+datasets["dmeuser"] += datasets["TopMass_top"]
 
 # call with 'python crabConfig.py'
 if __name__ == '__main__':
@@ -316,9 +320,8 @@ if __name__ == '__main__':
 
         config.section_("Data")
         config.Data.inputDataset = dataset
-        config.Data.splitting = 'FileBased' if isSim else 'LumiBased'
-        #  ~config.Data.unitsPerJob = 1 if isSim else 50
-        config.Data.unitsPerJob = 5 if isSim else 50
+        config.Data.splitting = 'EventAwareLumiBased' if isSim else 'LumiBased'
+        config.Data.unitsPerJob = 100000 if isSim else 50
         config.Data.publication = False
         config.Data.outputDatasetTag = 'outputDatasetTag'
         config.Data.outLFNDirBase = "outLFNDirBase"
