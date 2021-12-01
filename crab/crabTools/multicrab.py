@@ -120,7 +120,7 @@ def main():
     parser.add_argument('--moveCompleted', action='store_true' )
     parser.add_argument('--repeat', action='store_true' )
     parser.add_argument('--downloadFirst', action='store_true' )
-    parser.add_argument('--maxMergeSize', type=float, default=-1, help="in GB" )
+    parser.add_argument('--maxMergeSize', type=float, default=10, help="in GB" )
     parser.add_argument('--kill', action='store_true' )
     parser.add_argument('--killSubmitFailed', action='store_true' )
     args = parser.parse_args()
