@@ -297,7 +297,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("pu_weight", &pu_weight_, "pu_weight/F");
    eventTree_->Branch("pu_weight_up", &pu_weight_up_, "pu_weight_up/F");
    eventTree_->Branch("pu_weight_down", &pu_weight_down_, "pu_weight_down/F");
-   eventTree_->Branch("mc_weight", &mc_weight_, "mc_weight/B");
+   eventTree_->Branch("mc_weight", &mc_weight_, "mc_weight/F");
    eventTree_->Branch("pdf_weights", &vPdf_weights_);
    eventTree_->Branch("ps_weights", &vPS_weights_);
 
@@ -312,11 +312,6 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("evtNo", &evtNo_, "evtNo/l");
    eventTree_->Branch("runNo", &runNo_, "runNo/i");
    eventTree_->Branch("lumNo", &lumNo_, "lumNo/i");
-
-   eventTree_->Branch("signal_m1", &signal_m1_, "signal_m1/s");
-   eventTree_->Branch("signal_m2", &signal_m2_, "signal_m2/s");
-   eventTree_->Branch("signal_nBinos", &signal_nBinos_, "signal_nBinos/s");
-   eventTree_->Branch("signal_nNeutralinoDecays", &signal_nNeutralinoDecays_, "signal_nNeutralinoDecays/s");
    
    eventTree_->Branch("ttbarProductionMode", &ttbarProductionMode_);
    eventTree_->Branch("ttbarDecayMode", &ttbarDecayMode_);
@@ -400,7 +395,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    
 }
 
-TH1F* TreeWriter::createCutFlowHist(std::string modelName)
+TH1D* TreeWriter::createCutFlowHist(std::string modelName)
 {
    std::string const name("hCutFlow" + modelName);
    std::vector<TString> vCutBinNames{{
@@ -412,8 +407,14 @@ TH1F* TreeWriter::createCutFlowHist(std::string modelName)
       "nGoodVertices",
       "Dilepton",
       "final"}};
-   TH1F* h = fs_->make<TH1F>(name.c_str(), name.c_str(), vCutBinNames.size(), 0, vCutBinNames.size());
+   TH1D* h = fs_->make<TH1D>(name.c_str(), name.c_str(), vCutBinNames.size(), 0, vCutBinNames.size());
    for (uint i=0; i<vCutBinNames.size(); i++) { h->GetXaxis()->SetBinLabel(i+1, vCutBinNames.at(i)); }
+   return h;
+}
+
+TH1D* TreeWriter::createSystMCWeightHist(const std::string &histName, const int &nBins)
+{
+   TH1D* h = fs_->make<TH1D>(histName.c_str(), histName.c_str(), nBins, 0, nBins);
    return h;
 }
 
@@ -444,6 +445,108 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
    hCutFlow_->Fill("initial_unweighted", 1);
    
+   //////////////////////
+   // generator weights//
+   //////////////////////
+   mc_weight_ = 1; // 1 for data
+   topPTweight_ = 1.;
+   fragUpWeight_        = 1.0;
+   fragCentralWeight_   = 1.0;
+   fragDownWeight_      = 1.0;
+   fragPetersonWeight_  = 1.0;
+   semilepbrUpWeight_   = 1.0;
+   semilepbrDownWeight_ = 1.0;
+   if (!isRealData) {   //https://twiki.cern.ch/twiki/bin/view/CMS/TopModGen#Event_Generation
+      edm::Handle<GenEventInfoProduct> GenEventInfoHandle;
+      iEvent.getByLabel("generator", GenEventInfoHandle);
+      // PS weight
+      // https://twiki.cern.ch/twiki/bin/view/CMS/HowToPDF
+      if (GenEventInfoHandle.isValid()) {
+         mc_weight_ = GenEventInfoHandle->weight();
+         auto weightsize = GenEventInfoHandle->weights().size();
+         vPS_weights_ = std::vector<float>(weightsize, 1.0);
+         for (unsigned i=0; i<weightsize; i++) {
+            vPS_weights_[i] = GenEventInfoHandle->weights()[i]/GenEventInfoHandle->weights()[1];
+            hSystMCweight_PS_norm_->Fill(i,vPS_weights_[i]);
+            hSystMCweight_PS_->Fill(i,vPS_weights_[i]*mc_weight_);
+         }
+      }
+      // PDF and scale variations
+      edm::Handle<LHEEventProduct> LHEEventProductHandle;
+      iEvent.getByToken(LHEEventToken_, LHEEventProductHandle);
+      if (LHEEventProductHandle.isValid()) {
+         unsigned iMax = 112; // these are 9 scale variations and 103 variation of the first pdf set (NNPDF31_nnlo_hessian_pdfas)
+         if (iMax>LHEEventProductHandle->weights().size()) iMax = LHEEventProductHandle->weights().size();
+         vPdf_weights_ = std::vector<float>(iMax, 1.0);
+         for (unsigned i=0; i<iMax; i++) {   // https://twiki.cern.ch/twiki/bin/view/CMS/HowToPDF
+            vPdf_weights_[i] = LHEEventProductHandle->weights()[i].wgt/LHEEventProductHandle->originalXWGTUP();
+            hSystMCweight_PDF_norm_->Fill(i,vPdf_weights_[i]);
+            hSystMCweight_PDF_->Fill(i,vPdf_weights_[i]*mc_weight_);
+         }
+      }
+      
+      // top PT reweighting
+      if(ttbarGenInfo_){
+         // Gen-level particles of ttbar system
+         edm::Handle<TtGenEvent> ttbarGenEvent;
+         iEvent.getByLabel("genEvt", ttbarGenEvent);
+         if(!ttbarGenEvent.failedToGet()){
+            
+            if(ttbarGenEvent->top()) GenLorentzVector(ttbarGenEvent->top(),genTop_);
+            else genTop_ = nullP4_;
+            if(ttbarGenEvent->topBar()) GenLorentzVector(ttbarGenEvent->topBar(),genAntiTop_);
+            else genAntiTop_ = nullP4_;
+            
+            topPTweight_ = sqrt(exp(0.0615-0.0005*genTop_.Pt())*exp(0.0615-0.0005*genAntiTop_.Pt()));
+            hSystMCweight_topPt_norm_->Fill(0.,topPTweight_);
+            hSystMCweight_topPt_->Fill(0.,topPTweight_*mc_weight_);
+         }
+      }
+
+      // BFragmentation
+      if (bFragInfo_){
+         edm::Handle<std::vector<reco::GenJet> > genJetsBfrag;
+         iEvent.getByToken(genJetsBfragToken_, genJetsBfrag);
+         edm::Handle<edm::ValueMap<float> > frag_BLCentral;
+         edm::Handle<edm::ValueMap<float> > frag_BLUp;
+         edm::Handle<edm::ValueMap<float> > frag_BLDown;
+         edm::Handle<edm::ValueMap<float> > frag_Peterson;
+         edm::Handle<edm::ValueMap<float> > frag_BSemiLepUp;
+         edm::Handle<edm::ValueMap<float> > frag_BSemiLepDown;
+         iEvent.getByToken(bfragWeight_BLCentralToken_, frag_BLCentral);
+         iEvent.getByToken(bfragWeight_BLUpToken_, frag_BLUp);
+         iEvent.getByToken(bfragWeight_BLDownToken_, frag_BLDown);
+         iEvent.getByToken(bfragWeight_PetersonToken_, frag_Peterson);
+         iEvent.getByToken(bfragWeight_BSemiLepUpToken_, frag_BSemiLepUp);
+         iEvent.getByToken(bfragWeight_BSemiLepDownToken_, frag_BSemiLepDown);
+         for (auto genJet=genJetsBfrag->begin(); genJet!=genJetsBfrag->end(); ++genJet) {
+            edm::Ref<std::vector<reco::GenJet> > genJetRef(genJetsBfrag, genJet-genJetsBfrag->begin());
+            fragUpWeight_ *= (*frag_BLCentral)[genJetRef];
+            fragCentralWeight_ *= (*frag_BLUp)[genJetRef];
+            fragDownWeight_ *= (*frag_BLDown)[genJetRef];
+            fragPetersonWeight_ *= (*frag_Peterson)[genJetRef];
+            semilepbrUpWeight_ *= (*frag_BSemiLepUp)[genJetRef];
+            semilepbrDownWeight_ *= (*frag_BSemiLepDown)[genJetRef];
+         }
+         hSystMCweight_bFrag_norm_->Fill(0.,fragUpWeight_);
+         hSystMCweight_bFrag_norm_->Fill(1,fragCentralWeight_);
+         hSystMCweight_bFrag_norm_->Fill(2,fragDownWeight_);
+         hSystMCweight_bFrag_norm_->Fill(3,fragPetersonWeight_);
+         hSystMCweight_bFrag_norm_->Fill(4,semilepbrUpWeight_);
+         hSystMCweight_bFrag_norm_->Fill(5,semilepbrDownWeight_);
+         
+         hSystMCweight_bFrag_->Fill(0.,fragUpWeight_*mc_weight_);
+         hSystMCweight_bFrag_->Fill(1,fragCentralWeight_*mc_weight_);
+         hSystMCweight_bFrag_->Fill(2,fragDownWeight_*mc_weight_);
+         hSystMCweight_bFrag_->Fill(3,fragPetersonWeight_*mc_weight_);
+         hSystMCweight_bFrag_->Fill(4,semilepbrUpWeight_*mc_weight_);
+         hSystMCweight_bFrag_->Fill(5,semilepbrDownWeight_*mc_weight_);
+      }
+      
+   }
+
+   hCutFlow_->Fill("initial_mc_weighted", mc_weight_);
+   
    ///////////////////
    // PileUp weights//
    ///////////////////
@@ -465,6 +568,15 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       pu_weight_ = hPU_.GetBinContent(hPU_.FindBin(Tnpv));
       pu_weight_up_ = hPU_up_.GetBinContent(hPU_up_.FindBin(Tnpv));
       pu_weight_down_ = hPU_down_.GetBinContent(hPU_down_.FindBin(Tnpv));
+      
+      hSystMCweight_PU_norm_->Fill(0.,pu_weight_);
+      hSystMCweight_PU_norm_->Fill(1,pu_weight_up_);
+      hSystMCweight_PU_norm_->Fill(2,pu_weight_down_);
+      
+      hSystMCweight_PU_->Fill(0.,pu_weight_*mc_weight_);
+      hSystMCweight_PU_->Fill(1,pu_weight_up_*mc_weight_);
+      hSystMCweight_PU_->Fill(2,pu_weight_down_*mc_weight_);
+      
    } else { // real data
       true_nPV_ = -1;
       pu_weight_ = 1.;
@@ -472,37 +584,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       pu_weight_down_ = 1.;
    }
    
-   //////////////////////
-   // generator weights//
-   //////////////////////
-   mc_weight_ = 1; // 1 for data
-   if (!isRealData) {   //https://twiki.cern.ch/twiki/bin/view/CMS/TopModGen#Event_Generation
-      edm::Handle<GenEventInfoProduct> GenEventInfoHandle;
-      iEvent.getByLabel("generator", GenEventInfoHandle);
-      // PS weight
-      // https://twiki.cern.ch/twiki/bin/view/CMS/HowToPDF
-      if (GenEventInfoHandle.isValid()) {
-         mc_weight_ = sign(GenEventInfoHandle->weight());
-         auto weightsize = GenEventInfoHandle->weights().size();
-         vPS_weights_ = std::vector<float>(weightsize, 1.0);
-         for (unsigned i=0; i<weightsize; i++) {
-            vPS_weights_[i] = GenEventInfoHandle->weights()[i]/GenEventInfoHandle->weights()[1];
-         }
-      }
-      // PDF and scale variations
-      edm::Handle<LHEEventProduct> LHEEventProductHandle;
-      iEvent.getByToken(LHEEventToken_, LHEEventProductHandle);
-      if (LHEEventProductHandle.isValid()) {
-         unsigned iMax = 112; // these are 9 scale variations and 103 variation of the first pdf set (NNPDF31_nnlo_hessian_pdfas)
-         if (iMax>LHEEventProductHandle->weights().size()) iMax = LHEEventProductHandle->weights().size();
-         vPdf_weights_ = std::vector<float>(iMax, 1.0);
-         for (unsigned i=0; i<iMax; i++) {   // https://twiki.cern.ch/twiki/bin/view/CMS/HowToPDF
-            vPdf_weights_[i] = LHEEventProductHandle->weights()[i].wgt/LHEEventProductHandle->originalXWGTUP();
-         }
-      }
-   }
-
-   hCutFlow_->Fill("initial_mc_weighted", mc_weight_);
    hCutFlow_->Fill("initial", mc_weight_*pu_weight_);
       
    ////////////
@@ -699,13 +780,13 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trEl.etaSC = el->superCluster()->eta();
       trEl.corr = el->userFloat("ecalTrkEnergyPostCorr")/el->energy();
       trEl.corrections[0] = el->userFloat("ecalTrkEnergyPostCorr")/el->energy();
-      trEl.corrections[1] = el->userFloat("energyScaleEtUp")/el->energy();
-      trEl.corrections[2] = el->userFloat("energyScaleEtDown")/el->energy();
+      trEl.corrections[1] = el->userFloat("energyScaleUp")/el->energy();
+      trEl.corrections[2] = el->userFloat("energyScaleDown")/el->energy();
       trEl.corrections[3] = el->userFloat("energySigmaRhoUp")/el->energy();
       trEl.corrections[4] = el->userFloat("energySigmaRhoDown")/el->energy();
       trEl.corrections[5] = el->userFloat("energySigmaPhiUp")/el->energy();
       trEl.corrections[6] = el->userFloat("energySigmaPhiDown")/el->energy();
-            
+                  
       // VID calculation of (1/E - 1/p)
       if (el->ecalEnergy() == 0)   trEl.EoverPInv = 1e30;
       else if (!std::isfinite(el->ecalEnergy()))  trEl.EoverPInv = 1e30;
@@ -996,41 +1077,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
      }
      sort(vGenJets_.begin(), vGenJets_.end(), tree::PtGreater);
    } // gen-jet loop
-   
-   ///////////////////
-   // BFragmentation//
-   ///////////////////
-   fragUpWeight_        = 1.0;
-   fragCentralWeight_   = 1.0;
-   fragDownWeight_      = 1.0;
-   fragPetersonWeight_  = 1.0;
-   semilepbrUpWeight_   = 1.0;
-   semilepbrDownWeight_ = 1.0;
-   if (bFragInfo_){
-      edm::Handle<std::vector<reco::GenJet> > genJetsBfrag;
-      iEvent.getByToken(genJetsBfragToken_, genJetsBfrag);
-      edm::Handle<edm::ValueMap<float> > frag_BLCentral;
-      edm::Handle<edm::ValueMap<float> > frag_BLUp;
-      edm::Handle<edm::ValueMap<float> > frag_BLDown;
-      edm::Handle<edm::ValueMap<float> > frag_Peterson;
-      edm::Handle<edm::ValueMap<float> > frag_BSemiLepUp;
-      edm::Handle<edm::ValueMap<float> > frag_BSemiLepDown;
-      iEvent.getByToken(bfragWeight_BLCentralToken_, frag_BLCentral);
-      iEvent.getByToken(bfragWeight_BLUpToken_, frag_BLUp);
-      iEvent.getByToken(bfragWeight_BLDownToken_, frag_BLDown);
-      iEvent.getByToken(bfragWeight_PetersonToken_, frag_Peterson);
-      iEvent.getByToken(bfragWeight_BSemiLepUpToken_, frag_BSemiLepUp);
-      iEvent.getByToken(bfragWeight_BSemiLepDownToken_, frag_BSemiLepDown);
-      for (auto genJet=genJetsBfrag->begin(); genJet!=genJetsBfrag->end(); ++genJet) {
-         edm::Ref<std::vector<reco::GenJet> > genJetRef(genJetsBfrag, genJet-genJetsBfrag->begin());
-         fragUpWeight_ *= (*frag_BLCentral)[genJetRef];
-         fragCentralWeight_ *= (*frag_BLUp)[genJetRef];
-         fragDownWeight_ *= (*frag_BLDown)[genJetRef];
-         fragPetersonWeight_ *= (*frag_Peterson)[genJetRef];
-         semilepbrUpWeight_ *= (*frag_BSemiLepUp)[genJetRef];
-         semilepbrDownWeight_ *= (*frag_BSemiLepDown)[genJetRef];
-      }
-   }
 
    ////////
    // MET//
@@ -1172,8 +1218,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    vIntermediateGenParticles_.clear();
    tree::GenParticle trP;
    tree::IntermediateGenParticle trIntermP;
-   signal_nBinos_ = 0;
-   signal_nNeutralinoDecays_ = 0;
    TVector3 p_EWK_temp;
    TVector3 p_EWK_tot;
    p_EWK_tot.SetPtEtaPhi(0.,0.,0.);
@@ -1237,7 +1281,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    //////////////////////////
    // Gen Information Ttbar//
    //////////////////////////
-   topPTweight_ = 1.;
    if(ttbarGenInfo_){
       // Gen-level particles of ttbar system
       edm::Handle<TtGenEvent> ttbarGenEvent;
@@ -1290,9 +1333,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
          else if(ttbarGenEvent->isFullLeptonic(WDecay::kTau,WDecay::kElec)) ttbarDecayMode_=5;
          else if(ttbarGenEvent->isFullLeptonic(WDecay::kTau,WDecay::kMuon)) ttbarDecayMode_=6;
          else if(ttbarGenEvent->isFullLeptonic(WDecay::kTau,WDecay::kTau)) ttbarDecayMode_=7;
-         
-         // PT reweighting
-         topPTweight_ = sqrt(exp(0.0615-0.0005*genTop_.Pt())*exp(0.0615-0.0005*genAntiTop_.Pt()));
          
       }
       else{
@@ -1354,35 +1394,20 @@ void TreeWriter::beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::Ev
 {
    newLumiBlock_ = true;
 
-   edm::Handle<GenLumiInfoHeader> gen_header;
-   iLumi.getByLabel("generator", gen_header);
-   std::string modelName_ = "";
-   signal_m1_ = 0;
-   signal_m2_ = 0;
-   if (gen_header.isValid()) {
-      modelName_ = gen_header->configDescription();
-      std::smatch sm;
-      if (regex_match(modelName_, sm, std::regex(".*_(\\d+)_(\\d+)"))) {
-         signal_m1_ = std::stoi(sm[1]);
-         signal_m2_ = std::stoi(sm[2]);
-      } else if (regex_match(modelName_, sm, std::regex(".*_(\\d+)"))) {
-         signal_m1_ = std::stoi(sm[1]);
-      } else if (regex_match(modelName_, sm, std::regex(".*_M1(\\d+)_M3(\\d+)"))) {
-         signal_m1_ = std::stoi(sm[1]);
-         signal_m2_ = std::stoi(sm[2]);
-      } else if (regex_match(modelName_, sm, std::regex(".*_M1(\\d+)_M2(\\d+)"))) {
-         signal_m1_ = std::stoi(sm[1]);
-         signal_m2_ = std::stoi(sm[2]);
-      }
-   }
-
-   // create the cutflow histogram for the model if not there yet
-   // (modelName="" for non-signal samples)
-   if (!hCutFlowMap_.count(modelName_)) {
-      hCutFlowMap_[modelName_] = createCutFlowHist(modelName_);
-   }
    // point to the right cut flow histogram
-   hCutFlow_ = hCutFlowMap_.at(modelName_);
+   hCutFlow_ = createCutFlowHist("");
+   
+   // create histogram for syst. MC weight sus
+   hSystMCweight_PS_norm_ = createSystMCWeightHist("hSystMCweight_PS_norm_",46);
+   hSystMCweight_PS_ = createSystMCWeightHist("hSystMCweight_PS_",46);
+   hSystMCweight_PDF_norm_ = createSystMCWeightHist("hSystMCweight_PDF_norm_",112);
+   hSystMCweight_PDF_ = createSystMCWeightHist("hSystMCweight_PDF_",112);
+   hSystMCweight_topPt_norm_ = createSystMCWeightHist("hSystMCweight_topPt_norm_",1);
+   hSystMCweight_topPt_ = createSystMCWeightHist("hSystMCweight_topPt_",1);
+   hSystMCweight_bFrag_norm_ = createSystMCWeightHist("hSystMCweight_bFrag_norm_",6);
+   hSystMCweight_bFrag_ = createSystMCWeightHist("hSystMCweight_bFrag_",6);
+   hSystMCweight_PU_norm_ = createSystMCWeightHist("hSystMCweight_PU_norm_",3);
+   hSystMCweight_PU_ = createSystMCWeightHist("hSystMCweight_PU_",3);
 }
 
 void TreeWriter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {

@@ -104,7 +104,8 @@ private:
    virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
    virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override {};
 
-   TH1F* createCutFlowHist(std::string modelName = "");
+   TH1D* createCutFlowHist(std::string modelName = "");
+   TH1D* createSystMCWeightHist(const std::string &histName, const int &nBins);
 
    // ----------member data ---------------------------
    double dJet_pT_cut_;
@@ -163,7 +164,7 @@ private:
    Float_t pu_weight_;
    Float_t pu_weight_up_;
    Float_t pu_weight_down_;
-   Char_t  mc_weight_; // +1 or -1 event weights (take care when reading with python, this is a character!)
+   Float_t  mc_weight_;
    std::vector<float> vPdf_weights_;
    std::vector<float> vPS_weights_;
    
@@ -178,12 +179,6 @@ private:
    ULong64_t evtNo_;
    UInt_t    runNo_;
    UInt_t    lumNo_;
-
-
-   UShort_t signal_m1_; // usually mass of first particle in decay chain
-   UShort_t signal_m2_; // usually neutarlino mass
-   UShort_t signal_nBinos_; // 2 for T5gg, 1 for T5Wg, 0 for T5WW
-   UShort_t signal_nNeutralinoDecays_;
 
    // Trigger decisions
    std::vector<std::string>      triggerNames_;
@@ -223,8 +218,19 @@ private:
    edm::Service<TFileService> fs_;
 
    // histogram to store #evts after each "cut"
-   TH1F* hCutFlow_;
-   std::map<std::string,TH1F*> hCutFlowMap_;
+   TH1D* hCutFlow_;
+   
+   // histograms to store sum of MC weights
+   TH1D* hSystMCweight_PS_norm_;
+   TH1D* hSystMCweight_PS_;
+   TH1D* hSystMCweight_PDF_norm_;
+   TH1D* hSystMCweight_PDF_;
+   TH1D* hSystMCweight_topPt_norm_;
+   TH1D* hSystMCweight_topPt_;
+   TH1D* hSystMCweight_bFrag_norm_;
+   TH1D* hSystMCweight_bFrag_;
+   TH1D* hSystMCweight_PU_norm_;
+   TH1D* hSystMCweight_PU_;
 
    // Pileup histogram(s)
    TH1F hPU_;
