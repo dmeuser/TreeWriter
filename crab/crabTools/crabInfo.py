@@ -98,37 +98,7 @@ class CrabInfo:
         elif "ext4" in self.datasetMiddle: modifiedDatasetName += "_ext4"
         elif "ext5" in self.datasetMiddle: modifiedDatasetName += "_ext5"
         elif "backup" in self.datasetMiddle: modifiedDatasetName += "_backup"
-        if self.user == "kiesel":
-            if hasattr(self, "datasetType"):
-                if self.datasetType == "MINIAOD": # data
-                    modifiedDatasetName += "_"+self.datasetMiddle
-            baseDir = "/user/kiesel/nTuples/"
-            baseDir = "/net/scratch_cms1b2/cms/user/kiesel/"
-            baseDir = os.path.join(baseDir, self.outputDatasetTag)
-            if not os.path.isdir(baseDir): os.mkdir(baseDir)
-            return os.path.join(baseDir, modifiedDatasetName+"_nTuple.root")
-        elif self.user == "jschulz":
-            if "Run2015" in self.datasetMiddle: # distinguish different data runs/recos
-                modifiedDatasetName+="_"+self.datasetMiddle
-            elif "Run2016" in self.datasetMiddle: # distinguish different data runs/recos
-                modifiedDatasetName+="_"+self.datasetMiddle
-            elif "T5gg" in self.datasetName: # extract mass
-                m=re.search(".*_mGluino-(.*)_mNeutralino-(.*)-.*",self.datasetMiddle)
-                if m and len(m.groups())==2:
-                    modifiedDatasetName+="_g%s_n%s"%m.groups()
-                else:
-                    modifiedDatasetName="UNKOWNPATTERN"
-            return "/user/jschulz/2016/data/run2/dl/{}.root".format(modifiedDatasetName)
-        elif self.user == "swuchterl":
-            if hasattr(self, "datasetType"):
-                if self.datasetType == "MINIAOD": # data
-                    modifiedDatasetName += "_"+self.datasetMiddle
-            baseDir = "/user/swuchterl/nTuples/"
-            baseDir = "/net/scratch_cms1b2/cms/user/swuchterl/"
-            baseDir = os.path.join(baseDir, self.outputDatasetTag)
-            if not os.path.isdir(baseDir): os.mkdir(baseDir)
-            return os.path.join(baseDir, modifiedDatasetName+"_nTuple.root")
-        elif self.user == "dmeuser":
+        if self.user == "dmeuser":
             if "Run2015" in self.datasetMiddle: # distinguish different data runs/recos
                 modifiedDatasetName+="_"+self.datasetMiddle
             elif "Run2016" in self.datasetMiddle: # distinguish different data runs/recos

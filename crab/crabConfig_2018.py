@@ -272,21 +272,21 @@ datasets["TopMass_top"] = [
     #  ~"/TTToSemiLeptonic_mtop175p5_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM",
 ]
 
-datasets["dmeuser"] = []
-datasets["dmeuser"] += datasets["DoubleMuon"]
-datasets["dmeuser"] += datasets["EGamma"]
-datasets["dmeuser"] += datasets["MuonEG"]
-datasets["dmeuser"] += datasets["SingleMuon"]
-datasets["dmeuser"] += datasets["MET"]
-datasets["dmeuser"] += datasets["Standard_ttbar"]
-datasets["dmeuser"] += datasets["SingleTop"]
-datasets["dmeuser"] += datasets["V+Jets"]
-datasets["dmeuser"] += datasets["Diboson"]
-datasets["dmeuser"] += datasets["tt+X"]
-datasets["dmeuser"] += datasets["hdamp_ttbar"]
-datasets["dmeuser"] += datasets["UE_top"]
-datasets["dmeuser"] += datasets["ColorRec_top"]
-datasets["dmeuser"] += datasets["TopMass_top"]
+datasets["all"] = []
+datasets["all"] += datasets["DoubleMuon"]
+datasets["all"] += datasets["EGamma"]
+datasets["all"] += datasets["MuonEG"]
+datasets["all"] += datasets["SingleMuon"]
+datasets["all"] += datasets["MET"]
+datasets["all"] += datasets["Standard_ttbar"]
+datasets["all"] += datasets["SingleTop"]
+datasets["all"] += datasets["V+Jets"]
+datasets["all"] += datasets["Diboson"]
+datasets["all"] += datasets["tt+X"]
+datasets["all"] += datasets["hdamp_ttbar"]
+datasets["all"] += datasets["UE_top"]
+datasets["all"] += datasets["ColorRec_top"]
+datasets["all"] += datasets["TopMass_top"]
 
 # call with 'python crabConfig.py'
 if __name__ == '__main__':
@@ -296,7 +296,7 @@ if __name__ == '__main__':
 
     iSub = 0
     failed = []
-    for dataset in datasets[user]:
+    for dataset in datasets["all"]:
 
         isSim = 'SIM' in dataset
         isFastSim = "Fast" in dataset
