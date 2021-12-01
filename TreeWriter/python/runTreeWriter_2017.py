@@ -27,12 +27,13 @@ options.register ('user',
                   VarParsing.varType.string,
                   "Name the user. If not set by crab, this script will determine it.")
 
-# defaults
+# input files for local testing
 options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL17MiniAOD/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_mc2017_realistic_v6-v2/00000/054AE840-3924-BD47-880F-12FA2F909901.root',
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2017B/DoubleMuon/MINIAOD/09Aug2019_UL2017-v1/260000/032A7B27-0F31-D348-9B82-9E1B62ED9587.root',
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL17MiniAOD/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_mc2017_realistic_v6-v2/270000/05F2529D-1C66-3745-925D-C6B3C1E850ED.root',
+
+# defaults
 options.outputFile = 'ttbarTree.root'
-#~ options.outputFile = 'overlap_lepton_2.root'
 #  ~options.maxEvents = -1
 options.maxEvents = 100
 # get and parse the command line arguments
@@ -45,6 +46,7 @@ isRealData=not dataset.endswith("SIM")
 # the actual TreeWriter module
 process = cms.Process("TreeWriter")
 
+# message logger
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
@@ -71,15 +73,10 @@ process.Timing = cms.Service("Timing",
 # https://twiki.cern.ch/twiki/bin/view/CMS/EgammaMiniAODV2
 # https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPostRecoRecipes
 # https://twiki.cern.ch/twiki/bin/view/CMS/EgammaUL2016To2018
-# Geometry neccessary to runVID
-#  ~process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi");
-#  ~process.load("Geometry.CaloEventSetup.CaloGeometry_cfi");
-#  ~process.load("Geometry.CaloEventSetup.CaloTopology_cfi");
-#  ~process.load("Configuration.Geometry.GeometryECALHCAL_cff")
 
 from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
 setupEgammaPostRecoSeq(process,
-                       runVID=True, #saves CPU time by not needlessly re-running VID, if you want the Fall17V2 IDs, set this to True or remove (default is True) needed for Puppi correction
+                       runVID=True, #needed for Puppi correction
                        era='2017-UL') 
                        
 
@@ -103,14 +100,12 @@ runMetCorAndUncFromMiniAOD(   #update pfMET
     process,
     isData=isRealData,
     fixEE2017 = False,
-    #  ~jetCollUnskimmed="updatedPatJetsUpdatedJECID",
-    #  ~reapplyJEC=False,
 )
 # If using patSmearedJETS is removing too many jets due to lepton matching, use the following to keep all jets: https://indico.cern.ch/event/882528/contributions/3718330/attachments/1974802/3286397/Sync_summary.pdf
 # Puppi MET is correct when applying new Puppi Tune
 
 #########################################
-# MET Filter (not needed in MiniAODv2   #
+# MET Filter (not needed in MiniAODv2)  #
 #########################################
 # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2#Recipe_for_BadPFMuonDz_filter_in
 from RecoMET.METFilters.BadPFMuonDzFilter_cfi import BadPFMuonDzFilter
@@ -126,7 +121,8 @@ process.BadPFMuonFilterUpdateDz=BadPFMuonDzFilter.clone(
 # Jets                         #
 ################################
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-updateJetCollection(        #JEC
+#JEC
+updateJetCollection(
    process,
    jetSource = cms.InputTag('slimmedJets'),
    labelName = 'UpdatedJEC',
@@ -134,6 +130,7 @@ updateJetCollection(        #JEC
 )
 process.jecSequence = cms.Sequence(process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC)
 
+#TightLeptonVeto ID
 from PhysicsTools.SelectorUtils.pfJetIDSelector_cfi import pfJetIDSelector
 process.PFJetIDTightLepVeto = cms.EDProducer('PatJetIDValueMapProducer',
     src = cms.InputTag("updatedPatJetsUpdatedJEC"),
@@ -150,15 +147,14 @@ process.updatedPatJetsUpdatedJECID = cms.EDProducer('PATJetUserDataEmbedder',
 )
 process.jetIDSequence = cms.Sequence(process.PFJetIDTightLepVeto * process.updatedPatJetsUpdatedJECID)
 
+#JER (currently not used, but applied in local framework)
 #from https://github.com/cms-sw/cmssw/blob/master/PhysicsTools/PatUtils/test/runJERsmearingOnMiniAOD.py
-process.updatedPatJetsUpdatedJECIDsmeared = cms.EDProducer('SmearedPATJetProducer',        #JER
+process.updatedPatJetsUpdatedJECIDsmeared = cms.EDProducer('SmearedPATJetProducer',
        src = cms.InputTag('updatedPatJetsUpdatedJECID'),
        enabled = cms.bool(True),
        rho = cms.InputTag("fixedGridRhoFastjetAll"),
        algo = cms.string('AK4PFchs'),
        algopt = cms.string('AK4PFchs_pt'),
-       #resolutionFile = cms.FileInPath('Autumn18_V7_MC_PtResolution_AK4PFchs.txt'),
-       #scaleFactorFile = cms.FileInPath('combined_SFs_uncertSources.txt'),
 
        genJets = cms.InputTag('slimmedGenJets'),
        dRMax = cms.double(0.2),
@@ -177,8 +173,10 @@ process.updatedPatJetsUpdatedJECIDsmeared = cms.EDProducer('SmearedPATJetProduce
 # Puppi Jets                   #
 ################################
 from CommonTools.PileupAlgos.customizePuppiTune_cff import UpdatePuppiTuneV15
+# Update to new Puppi tune
 UpdatePuppiTuneV15(process, runOnMC=(isRealData==False))
 
+#JEC
 updateJetCollection(
    process,
    jetSource = cms.InputTag('slimmedJetsPuppi'),
@@ -187,6 +185,7 @@ updateJetCollection(
 )
 process.jecSequencePuppi = cms.Sequence(process.patJetCorrFactorsUpdatedJECPuppi * process.updatedPatJetsUpdatedJECPuppi)
 
+#TightLeptonVeto ID
 process.PFJetIDTightLepVetoPuppi = process.PFJetIDTightLepVeto.clone()
 process.PFJetIDTightLepVetoPuppi.src = cms.InputTag("updatedPatJetsUpdatedJECPuppi")
 
@@ -196,7 +195,6 @@ process.updatedPatJetsUpdatedJECIDPuppi.userInts.PFJetIDTightLepVeto = cms.Input
 
 process.jetIDSequencePuppi = cms.Sequence(process.PFJetIDTightLepVetoPuppi * process.updatedPatJetsUpdatedJECIDPuppi)
 
-
 ################################
 # Ttbar Gen Info               #
 ################################
@@ -205,13 +203,12 @@ process.load("TopQuarkAnalysis.TopEventProducers.sequences.ttGenEvent_cff")
 process.initSubset.src = genParticleCollection
 process.decaySubset.src = genParticleCollection
 process.decaySubset.fillMode = "kME" # Status3, use kStable for Status2
-#  ~process.decaySubset.fillMode = "kStable" # Status3, use kStable for Status2
 runMode = "Run2"
 process.decaySubset.runMode = runMode
 
-################################
-# Ttbar Pseudo Info            #
-################################
+####################################
+# Ttbar Pseudo Info(particle level)#
+####################################
 process.load("TopQuarkAnalysis.TopEventProducers.producers.pseudoTop_cfi")
 process.pseudoTop = cms.EDProducer("PseudoTopProducer",
    genParticles = cms.InputTag("prunedGenParticles"),
@@ -252,6 +249,8 @@ process.genParticles2HepMC = genParticles2HepMC.clone(genParticles = cms.InputTa
 process.load("GeneratorInterface.RivetInterface.particleLevel_cfi")
 process.particleLevel.excludeNeutrinosFromJetClustering = False
 process.load('TopQuarkAnalysis.BFragmentationAnalyzer.bfragWgtProducer_cfi')
+if not isRealData: process.bFragWgtSequence = cms.Sequence(process.mergedGenParticles*process.genParticles2HepMC*process.particleLevel*process.bfragWgtProducer)
+else: process.bFragWgtSequence = cms.Sequence()
 
 ################################
 # Define input and output      #
@@ -270,16 +269,11 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     jet_pT_cut=cms.untracked.double(15), # for all jets
                                     NumberLeptons_cut=cms.untracked.uint32(2),
                                     # physics objects
-                                    #  ~jets = cms.InputTag("slimmedJets"),
-                                    #  ~jets = cms.InputTag("patSmearedJets"),
                                     jets = cms.InputTag("updatedPatJetsUpdatedJECID"),    #Use unsmeared jets and apply JER locally
                                     jets_puppi = cms.InputTag("updatedPatJetsUpdatedJECIDPuppi"),
-                                    #  ~jets_puppi = cms.InputTag("slimmedJetsPuppi"),
                                     muons = cms.InputTag("MuonsAddedRochesterCorr"),
-                                    #  ~muons = cms.InputTag("slimmedMuons"),
                                     genJets=cms.InputTag("slimmedGenJets"),
                                     electrons = cms.InputTag("slimmedElectrons"),
-                                    photons = cms.InputTag("slimmedPhotons"),
                                     mets = cms.InputTag("slimmedMETs"),
                                     metsPuppi = cms.InputTag("slimmedMETsPuppi"),
                                     metsNoHF = cms.InputTag("slimmedMETsNoHF"),
@@ -296,10 +290,6 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     electronLooseIdMap  = cms.untracked.string("cutBasedElectronID-Fall17-94X-V2-loose"),
                                     electronMediumIdMap = cms.untracked.string("cutBasedElectronID-Fall17-94X-V2-medium"),
                                     electronTightIdMap  = cms.untracked.string("cutBasedElectronID-Fall17-94X-V2-tight"),
-                                    # photon IDs
-                                    #  ~photonLooseIdMap   = cms.untracked.string("cutBasedPhotonID-Fall17-94X-V2-loose"),
-                                    #  ~photonMediumIdMap  = cms.untracked.string("cutBasedPhotonID-Fall17-94X-V2-medium"),
-                                    #  ~photonTightIdMap   = cms.untracked.string("cutBasedPhotonID-Fall17-94X-V2-tight"),
                                     # met filters to apply
                                     metFilterNames=cms.untracked.vstring(
                                         "Flag_goodVertices",
@@ -334,58 +324,49 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
 # Modify the TreeWriter module #
 ################################
 
+# set booleans depending on sample name
 process.TreeWriter.ttbarGenInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T"))
 process.TreeWriter.ttbarPseudoInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T"))
 process.TreeWriter.bFragInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/ST"))
 process.TreeWriter.DYptInfo=(dataset.startswith("/DY"))
 
-if not isRealData:
-    process.TreeWriter.metFilterNames.remove("Flag_eeBadScFilter")
-    if "Fast" in dataset:
-        process.TreeWriter.metFilterNames.remove("Flag_globalSuperTightHalo2016Filter")
-        process.TreeWriter.lheEventProduct = "source"
-
-# determine user if not set by crab
-user=options.user or getpass.getuser()
-# user settings
-if user=="dmeuser":
-    process.TreeWriter.triggerObjectNames = ["hltEG90CaloIdLHEFilter", "hltEG165HE10Filter"]
-    process.TreeWriter.triggerNames=[
-        # ee Channel
-        "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v",
-        "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v",
-        "HLT_DoubleEle25_CaloIdL_MW_v",
-        "HLT_Ele32_WPTight_Gsf_L1DoubleEG_v",
-        # emu Channel
-        "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v",
-        "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v",
-        "HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v",
-        "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v",
-        # mumu Chanel
-        "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v",
-        "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v",
-        "HLT_IsoMu27_v",
-        # MET
-        "HLT_PFMET200_HBHECleaned_v",
-        "HLT_PFMET200_HBHE_BeamHaloCleaned_v",
-        "HLT_PFMETTypeOne200_HBHE_BeamHaloCleaned_v",
-        "HLT_PFMET120_PFMHT120_IDTight_v",
-        "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v",
-        "HLT_PFMET120_PFMHT120_IDTight_PFHT60_v",
-        "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60_v",
-        "HLT_PFHT500_PFMET100_PFMHT100_IDTight_v",
-        "HLT_PFHT700_PFMET85_PFMHT85_IDTight_v",
-        "HLT_PFHT800_PFMET75_PFMHT75_IDTight_v",
-    ]
-    process.TreeWriter.triggerPrescales=[
-    ]
-else:
-    print "you shall not pass!"
-    print "(unkown user '%s')"%user
-    exit()
+# set triggers
+process.TreeWriter.triggerObjectNames = ["hltEG90CaloIdLHEFilter", "hltEG165HE10Filter"]
+process.TreeWriter.triggerNames=[
+    # ee Channel
+    "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v",
+    "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v",
+    "HLT_DoubleEle25_CaloIdL_MW_v",
+    "HLT_Ele32_WPTight_Gsf_L1DoubleEG_v",
+    # emu Channel
+    "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v",
+    "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v",
+    "HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v",
+    "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v",
+    # mumu Chanel
+    "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v",
+    "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v",
+    "HLT_IsoMu27_v",
+    # MET
+    "HLT_PFMET200_HBHECleaned_v",
+    "HLT_PFMET200_HBHE_BeamHaloCleaned_v",
+    "HLT_PFMETTypeOne200_HBHE_BeamHaloCleaned_v",
+    "HLT_PFMET120_PFMHT120_IDTight_v",
+    "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v",
+    "HLT_PFMET120_PFMHT120_IDTight_PFHT60_v",
+    "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60_v",
+    "HLT_PFHT500_PFMET100_PFMHT100_IDTight_v",
+    "HLT_PFHT700_PFMET85_PFMHT85_IDTight_v",
+    "HLT_PFHT800_PFMET75_PFMHT75_IDTight_v",
+]
+process.TreeWriter.triggerPrescales=[
+]
 
 for trig in process.TreeWriter.triggerPrescales:
     assert(trig in process.TreeWriter.triggerNames),"Trigger '"+trig+"' is not used, so prescale cannot be stored!"
+
+# determine user if not set by crab
+user=options.user or getpass.getuser()
 ####################
 #     RUN          #
 ####################
@@ -393,7 +374,6 @@ for trig in process.TreeWriter.triggerPrescales:
 process.p = cms.Path(
     process.jecSequence
     *process.jetIDSequence
-    #  ~*process.updatedPatJetsUpdatedJECIDsmeared
     *process.egammaPostRecoSeq
     *process.MuonsAddedRochesterCorr
     *process.fullPatMetSequence
@@ -402,9 +382,6 @@ process.p = cms.Path(
     *process.jetIDSequencePuppi
     *process.TTbarGen
     *process.BadPFMuonFilterUpdateDz
-    *process.mergedGenParticles
-    *process.genParticles2HepMC
-    *process.particleLevel
-    *process.bfragWgtProducer
+    *process.bFragWgtSequence
     *process.TreeWriter
 )

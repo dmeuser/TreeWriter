@@ -291,18 +291,18 @@ datasets["TopMass_top"] = [
     #  ~"/TTToSemiLeptonic_mtop175p5_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v1/MINIAODSIM",
 ]
 
-datasets["dmeuser"] = []
-#  ~datasets["dmeuser"] += datasets["DoubleEG"]
-#  ~datasets["dmeuser"] += datasets["DoubleMuon"]
-#  ~datasets["dmeuser"] += datasets["MuonEG"]
-#  ~datasets["dmeuser"] += datasets["SingleMuon"]
-#  ~datasets["dmeuser"] += datasets["SingleElectron"]
-#  ~datasets["dmeuser"] += datasets["MET"]
-#  ~datasets["dmeuser"] += datasets["Standard_ttbar"]
-#  ~datasets["dmeuser"] += datasets["SingleTop"]
-#  ~datasets["dmeuser"] += datasets["V+Jets"]
-#  ~datasets["dmeuser"] += datasets["Diboson"]
-datasets["dmeuser"] += datasets["tt+X"]
+datasets["all"] = []
+datasets["all"] += datasets["DoubleEG"]
+datasets["all"] += datasets["DoubleMuon"]
+datasets["all"] += datasets["MuonEG"]
+datasets["all"] += datasets["SingleMuon"]
+datasets["all"] += datasets["SingleElectron"]
+datasets["all"] += datasets["MET"]
+datasets["all"] += datasets["Standard_ttbar"]
+datasets["all"] += datasets["SingleTop"]
+datasets["all"] += datasets["V+Jets"]
+datasets["all"] += datasets["Diboson"]
+datasets["all"] += datasets["tt+X"]
 
 # call with 'python crabConfig.py'
 if __name__ == '__main__':
@@ -312,7 +312,7 @@ if __name__ == '__main__':
 
     iSub = 0
     failed = []
-    for dataset in datasets[user]:
+    for dataset in datasets["all"]:
 
         isSim = 'SIM' in dataset
         isFastSim = "Fast" in dataset
@@ -330,15 +330,14 @@ if __name__ == '__main__':
         config.JobType.pyCfgParams = ["dataset="+dataset,"user="+user]
         config.JobType.inputFiles  = [cmssw_src + "TreeWriter/" + x for x in ["data"]]
         config.JobType.allowUndistributedCMSSW = True
-        #  ~config.JobType.maxJobRuntimeMin = 2400
-        config.JobType.maxJobRuntimeMin = 1800
+        config.JobType.maxJobRuntimeMin = 2400
+        #  ~config.JobType.maxJobRuntimeMin = 1800
 
 
         config.section_("Data")
         config.Data.inputDataset = dataset
-        config.Data.splitting = 'FileBased' if isSim else 'LumiBased'
-        #  ~config.Data.unitsPerJob = 1 if isSim else 50
-        config.Data.unitsPerJob = 5 if isSim else 50
+        config.Data.splitting = 'EventAwareLumiBased' if isSim else 'LumiBased'
+        config.Data.unitsPerJob = 100000 if isSim else 50
         config.Data.publication = False
         config.Data.outputDatasetTag = 'outputDatasetTag'
         config.Data.outLFNDirBase = "outLFNDirBase"
