@@ -27,11 +27,13 @@ if __name__ == "__main__":
     arguments.add_argument( "-o", "--outputFilename", default="puWeights.root" )
     arguments.add_argument( "--mc", default="mc.root"  )
     arguments.add_argument( "--data", default="data.root" )
+    arguments.add_argument( "--data_up", default="data.root" )
+    arguments.add_argument( "--data_down", default="data.root" )
     opts = arguments.parse_args()
 
     dataHist = readHisto( opts.data, "pileup" )
-    dataHistUp = readHisto( opts.data, "pileupUp" )
-    dataHistDown = readHisto( opts.data, "pileupDown" )
+    dataHistUp = readHisto( opts.data_up, "pileup" )
+    dataHistDown = readHisto( opts.data_down, "pileup" )
 
     for h in [ dataHist, dataHistUp, dataHistDown ]:
         h.Scale( 1./h.Integral() )
