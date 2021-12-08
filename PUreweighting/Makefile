@@ -2,10 +2,26 @@
 # JSON: 36.459/fb https://hypernews.cern.ch/HyperNews/CMS/get/physics-validation/2766.html
 # see https://twiki.cern.ch/twiki/bin/view/CMS/PileupJSONFileforData
 #2016
-ANA_JSON2016=/home/home4/institut_1b/dmeuser/CMSSW_ttbarTreeUL/CMSSW_10_6_20/src/TreeWriter/PUreweighting/JSONS/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt
-PU_JSON2016=/home/home4/institut_1b/dmeuser/CMSSW_ttbarTreeUL/CMSSW_10_6_20/src/TreeWriter/PUreweighting/JSONS/pileup_latest_2016.txt
-MC_TRUEVERTEX2016=nTrueVertexMC_2016.root
-DATA_TRUEVERTEX2016=nTrueVertexData_2016.root
+ANA_JSON2016=/home/home4/institut_1b/teroerde/cmssw/CMSSW_10_6_20/src/TreeWriter/PUreweighting/JSONS/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt
+PU_JSON2016=/home/home4/institut_1b/teroerde/cmssw/CMSSW_10_6_20/src/TreeWriter/PUreweighting/JSONS/pileup_latest_2016.txt
+MC_TRUEVERTEX2016=data/nTrueVertexMC_2016.root
+DATA_TRUEVERTEX2016=data/PileupHistogram-goldenJSON-13tev-2016-69200ub-99bins.root
+DATA_TRUEVERTEX2016_UP=data/PileupHistogram-goldenJSON-13tev-2016-72400ub-99bins.root
+DATA_TRUEVERTEX2016_DOWN=data/PileupHistogram-goldenJSON-13tev-2016-66000ub-99bins.root
+#2016_PREVFP
+ANA_JSON2016_PREVFP=/home/home4/institut_1b/teroerde/cmssw/CMSSW_10_6_20/src/TreeWriter/PUreweighting/JSONS/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt
+PU_JSON2016=/home/home4/institut_1b/teroerde/cmssw/CMSSW_10_6_20/src/TreeWriter/PUreweighting/JSONS/pileup_latest_2016_preVFP.txt
+MC_TRUEVERTEX2016_PREVFP=data/nTrueVertexMC_2016.root
+DATA_TRUEVERTEX2016_PREVFP=data/PileupHistogram-goldenJSON-13tev-2016-preVFP-69200ub-99bins.root
+DATA_TRUEVERTEX2016_PREVFP_UP=data/PileupHistogram-goldenJSON-13tev-2016-preVFP-72400ub-99bins.root
+DATA_TRUEVERTEX2016_PREVFP_DOWN=data/PileupHistogram-goldenJSON-13tev-2016-preVFP-66000ub-99bins.root
+#2016_POSTVFP
+ANA_JSON2016_POSTVFP=/home/home4/institut_1b/teroerde/cmssw/CMSSW_10_6_20/src/TreeWriter/PUreweighting/JSONS/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt
+PU_JSON2016=/home/home4/institut_1b/teroerde/cmssw/CMSSW_10_6_20/src/TreeWriter/PUreweighting/JSONS/pileup_latest_2016_postVFP.txt
+MC_TRUEVERTEX2016_POSTVFP=data/nTrueVertexMC_2016.root
+DATA_TRUEVERTEX2016_POSTVFP=data/PileupHistogram-goldenJSON-13tev-2016-postVFP-69200ub-99bins.root
+DATA_TRUEVERTEX2016_POSTVFP_UP=data/PileupHistogram-goldenJSON-13tev-2016-postVFP-72400ub-99bins.root
+DATA_TRUEVERTEX2016_POSTVFP_DOWN=data/PileupHistogram-goldenJSON-13tev-2016-postVFP-66000ub-99bins.root
 #2017
 ANA_JSON2017=/home/home4/institut_1b/dmeuser/CMSSW_ttbarTreeUL/CMSSW_10_6_20/src/TreeWriter/PUreweighting/JSONS/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt
 PU_JSON2017=/home/home4/institut_1b/dmeuser/CMSSW_ttbarTreeUL/CMSSW_10_6_20/src/TreeWriter/PUreweighting/JSONS/pileup_latest_2017.txt
