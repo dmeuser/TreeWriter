@@ -133,7 +133,7 @@ def main():
         else:
             print "continue without maxMergeSize"
     
-    if(args.downloadFirst==False and args.maxMergeSize!=-1):
+    if(args.autoDL==True and args.downloadFirst==False and args.maxMergeSize!=-1):
         print "maxMergeSize can only be used if downloadFirst is selected!"
         exit(0)
 
