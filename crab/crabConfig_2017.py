@@ -4,7 +4,7 @@ import os
 import subprocess
 import CRABClient
 from CRABAPI.RawCommand import crabCommand
-from WMCore.Configuration import Configuration,saveConfigurationFile
+from WMCore.Configuration import Configuration
 
 
 def searchUserDatasets( name ):
@@ -358,7 +358,9 @@ if __name__ == '__main__':
             print "(unkown user '%s')"%user
             exit()
          
-        saveConfigurationFile(config,"current_config.py")
+        with open("current_config.py", 'w') as handle:
+            handle.write(str(config))
+        
         try:
             print "submitting",dataset
             # ~crabCommand('submit', config = config)

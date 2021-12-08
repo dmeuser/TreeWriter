@@ -4,7 +4,7 @@ import os
 import subprocess
 import CRABClient
 from CRABAPI.RawCommand import crabCommand
-from WMCore.Configuration import Configuration,saveConfigurationFile
+from WMCore.Configuration import Configuration
 
 
 def searchUserDatasets( name ):
@@ -331,14 +331,16 @@ if __name__ == '__main__':
             config.Data.lumiMask = getLumiMask(cmssw_src)
 
         if user=="dmeuser":
-            config.Data.outputDatasetTag = 'v05'
+            config.Data.outputDatasetTag = 'v06'
             config.Data.outLFNDirBase = "/store/user/dmeuser/run2_topUL/2018/"
         else:
             print "you shall not pass!"
             print "(unkown user '%s')"%user
             exit()
          
-        saveConfigurationFile(config,"current_config.py")
+        with open("current_config.py", 'w') as handle:
+            handle.write(str(config))
+        
         try:
             print "submitting",dataset
             # ~crabCommand('submit', config = config)
