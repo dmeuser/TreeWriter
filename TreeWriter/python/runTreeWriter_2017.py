@@ -135,7 +135,7 @@ from PhysicsTools.SelectorUtils.pfJetIDSelector_cfi import pfJetIDSelector
 process.PFJetIDTightLepVeto = cms.EDProducer('PatJetIDValueMapProducer',
     src = cms.InputTag("updatedPatJetsUpdatedJEC"),
     filterParams = cms.PSet(
-        version = cms.string('RUNIIULCHS'),
+        version = cms.string('RUN2ULCHS'),
         quality = cms.string('TIGHTLEPVETO')
     )
 )
@@ -188,6 +188,7 @@ process.jecSequencePuppi = cms.Sequence(process.patJetCorrFactorsUpdatedJECPuppi
 #TightLeptonVeto ID
 process.PFJetIDTightLepVetoPuppi = process.PFJetIDTightLepVeto.clone()
 process.PFJetIDTightLepVetoPuppi.src = cms.InputTag("updatedPatJetsUpdatedJECPuppi")
+process.PFJetIDTightLepVetoPuppi.filterParams.version = cms.string("RUN2ULPUPPI")
 
 process.updatedPatJetsUpdatedJECIDPuppi = process.updatedPatJetsUpdatedJECID.clone()
 process.updatedPatJetsUpdatedJECIDPuppi.src = cms.InputTag("updatedPatJetsUpdatedJECPuppi")
