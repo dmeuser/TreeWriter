@@ -28,7 +28,7 @@ options.register ('user',
                   "Name the user. If not set by crab, this script will determine it.")
 
 # input files for local testing
-options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL16MiniAODAPV/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_mcRun2_asymptotic_preVFP_v8-v2/00000/00098436-82CB-8747-AB1A-96CDB0A9B640.root',
+options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL16MiniAOD/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_mcRun2_asymptotic_v13-v2/00000/0393578C-5B4A-124C-9442-48A3BD2096EA.root',
 
 # defaults
 options.outputFile = 'ttbarTree.root'
@@ -53,7 +53,7 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 if isRealData:
         process.GlobalTag.globaltag = "106X_dataRun2_v35"
 else:
-        process.GlobalTag.globaltag = "106X_mcRun2_asymptotic_preVFP_v11"
+        process.GlobalTag.globaltag = "106X_mcRun2_asymptotic_v17"
         
 #timing information
 process.Timing = cms.Service("Timing",
@@ -71,7 +71,7 @@ process.Timing = cms.Service("Timing",
 from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
 setupEgammaPostRecoSeq(process,
                        runVID=True, #needed for Puppi correction
-                       era='2016preVFP-UL') 
+                       era='2016postVFP-UL') 
                        
 
 #############
@@ -83,7 +83,7 @@ process.MuonsAddedRochesterCorr = muonPATUserDataRochesterCorrectionAdder.clone(
    applyEnergyCorrections = False,
    debug = False,
 )
-process.MuonsAddedRochesterCorr.path = cms.string('TreeWriter/data/2016/RoccoR2016aUL.txt')
+process.MuonsAddedRochesterCorr.path = cms.string('TreeWriter/data/2016/RoccoR2016bUL.txt')
 
 ##########################
 # MET                    #
@@ -298,9 +298,9 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
 
                                     ),
                                     # choose pileup data
-                                    pileupHistogramName=cms.untracked.string("pileupWeight_mix_2016_25ns_UltraLegacy_PoissonOOTPU_preVFP"),
-                                    pileupHistogramNameUp=cms.untracked.string("pileupWeightUp_mix_2016_25ns_UltraLegacy_PoissonOOTPU_preVFP"),
-                                    pileupHistogramNameDown=cms.untracked.string("pileupWeightDown_mix_2016_25ns_UltraLegacy_PoissonOOTPU_preVFP"),
+                                    pileupHistogramName=cms.untracked.string("pileupWeight_mix_2016_25ns_UltraLegacy_PoissonOOTPU_postVFP"),
+                                    pileupHistogramNameUp=cms.untracked.string("pileupWeightUp_mix_2016_25ns_UltraLegacy_PoissonOOTPU_postVFP"),
+                                    pileupHistogramNameDown=cms.untracked.string("pileupWeightDown_mix_2016_25ns_UltraLegacy_PoissonOOTPU_postVFP"),
                                     # triggers to be saved
                                     # Warning: To be independent of the version number, the trigger result is saved if the trigger name begins
                                     # with the strings given here. E.g. "HLT" would always be true if any of the triggers fired.

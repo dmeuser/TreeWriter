@@ -33,7 +33,7 @@ def getRequestName(dataset, isSim):
         elif "ext4" in dataset: out += "_ext4"
         elif "ext5" in dataset: out += "_ext5"
         elif "backup" in dataset: out += "_backup"
-        out += "_2018"
+        out += "_2016_preVFP"
     else:
         out = "{}_{}".format(d2,d3)
     # CRABClient.ClientExceptions.ConfigurationException: Invalid CRAB configuration: Parameter General.requestName should not be longer than 100 characters.
@@ -76,6 +76,8 @@ datasets["DoubleEG"] = [
     # "/DoubleEG/Run2016D-HIPM_UL2016_MiniAODv2-v1/MINIAOD",
     # "/DoubleEG/Run2016E-HIPM_UL2016_MiniAODv2-v1/MINIAOD",
     # "/DoubleEG/Run2016F-HIPM_UL2016_MiniAODv2-v1/MINIAOD",    
+
+]
     
 datasets["SingleElectron"] = [
     "/SingleElectron/Run2016B-21Feb2020_ver1_UL2016_HIPM-v1/MINIAOD",
@@ -85,12 +87,12 @@ datasets["SingleElectron"] = [
     "/SingleElectron/Run2016E-21Feb2020_UL2016_HIPM-v2/MINIAOD",
     "/SingleElectron/Run2016F-21Feb2020_UL2016_HIPM-v1/MINIAOD",
 
-    "/SingleElectron/Run2016B-ver1_HIPM_UL2016_MiniAODv2-v2/MINIAOD",
-    "/SingleElectron/Run2016B-ver2_HIPM_UL2016_MiniAODv2-v2/MINIAOD",
-    "/SingleElectron/Run2016C-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
-    "/SingleElectron/Run2016D-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
-    "/SingleElectron/Run2016E-HIPM_UL2016_MiniAODv2-v5/MINIAOD",
-    "/SingleElectron/Run2016F-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
+    # "/SingleElectron/Run2016B-ver1_HIPM_UL2016_MiniAODv2-v2/MINIAOD",
+    # "/SingleElectron/Run2016B-ver2_HIPM_UL2016_MiniAODv2-v2/MINIAOD",
+    # "/SingleElectron/Run2016C-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
+    # "/SingleElectron/Run2016D-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
+    # "/SingleElectron/Run2016E-HIPM_UL2016_MiniAODv2-v5/MINIAOD",
+    # "/SingleElectron/Run2016F-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
 
 ]
 
@@ -136,14 +138,12 @@ datasets["MET"] = [
     "/MET/Run2016E-21Feb2020_UL2016_HIPM-v1/AOD",
     "/MET/Run2016F-21Feb2020_UL2016_HIPM-v1/AOD",
 
-    "/MET/Run2016B-ver1_HIPM_UL2016_MiniAODv2-v2/MINIAOD",
-    "/MET/Run2016B-ver2_HIPM_UL2016_MiniAODv2-v2/MINIAOD",
-    "/MET/Run2016C-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
-    "/MET/Run2016D-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
-    "/MET/Run2016E-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
-    "/MET/Run2016F-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
-
-
+    # "/MET/Run2016B-ver1_HIPM_UL2016_MiniAODv2-v2/MINIAOD",
+    # "/MET/Run2016B-ver2_HIPM_UL2016_MiniAODv2-v2/MINIAOD",
+    # "/MET/Run2016C-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
+    # "/MET/Run2016D-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
+    # "/MET/Run2016E-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
+    # "/MET/Run2016F-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
 
 ]
 
@@ -157,7 +157,6 @@ datasets["Standard_ttbar"] = [
     # "/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM",
     # "/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM",
     # "/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM" # production
-    
     
 ]
 
@@ -294,7 +293,6 @@ datasets["ColorRec_top"] = [
     # "/TTToSemiLeptonic_TuneCP5CR1_13TeV-powheg-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM",
     # "/TTToSemiLeptonic_TuneCP5CR2_13TeV-powheg-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM",
     
-    
 ]
 
 datasets["TopMass_top"] = [
@@ -320,7 +318,6 @@ datasets["TopMass_top"] = [
     # "/TTToHadronic_mtop175p5_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM",
     # "/TTToSemiLeptonic_mtop169p5_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM",
     # "/TTToSemiLeptonic_mtop175p5_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM", # production
-
 
 ]
 
@@ -363,7 +360,7 @@ if __name__ == '__main__':
 
         config.section_("JobType")
         config.JobType.pluginName = 'Analysis'
-        config.JobType.psetName = cmssw_src + 'TreeWriter/TreeWriter/python/runTreeWriter_2018.py'
+        config.JobType.psetName = cmssw_src + 'TreeWriter/TreeWriter/python/runTreeWriter_2016_preVFP.py'
         config.JobType.pyCfgParams = ["dataset="+dataset,"user="+user]
         config.JobType.inputFiles  = [cmssw_src + "TreeWriter/" + x for x in ["data"]]
         config.JobType.allowUndistributedCMSSW = True
@@ -373,8 +370,8 @@ if __name__ == '__main__':
 
         config.section_("Data")
         config.Data.inputDataset = dataset
-        config.Data.splitting = 'EventAwareLumiBased' if isSim else 'LumiBased'
-        config.Data.unitsPerJob = 100000 if isSim else 50
+        config.Data.splitting = 'FileBased' if isSim else 'LumiBased'
+        config.Data.unitsPerJob = 5 if isSim else 50
         config.Data.publication = False
         config.Data.outputDatasetTag = 'outputDatasetTag'
         config.Data.outLFNDirBase = "outLFNDirBase"
@@ -386,11 +383,11 @@ if __name__ == '__main__':
             config.Data.lumiMask = getLumiMask(cmssw_src)
 
         if user=="dmeuser":
-            config.Data.outputDatasetTag = 'v05'
-            config.Data.outLFNDirBase = "/store/user/dmeuser/run2_topUL/2018/"
+            config.Data.outputDatasetTag = 'v01'
+            config.Data.outLFNDirBase = "/store/user/dmeuser/run2_topUL/2016_preVFP/"
         elif user=="teroerde":
-            config.Data.outputDatasetTag = 'v05'
-            config.Data.outLFNDirBase = "/store/user/mteroerd/data/Histos/"
+            config.Data.outputDatasetTag = 'v01'
+            config.Data.outLFNDirBase = "/store/user/mteroerd/data/Histos/2016_preVFP/"
         else:
             print "you shall not pass!"
             print "(unkown user '%s')"%user
