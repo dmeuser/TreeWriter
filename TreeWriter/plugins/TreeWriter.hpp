@@ -94,7 +94,7 @@ public:
    static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:
-   virtual void beginJob() override {};
+   virtual void beginJob() override;
    virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
    virtual void endJob() override {};
    

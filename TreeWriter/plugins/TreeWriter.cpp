@@ -1296,11 +1296,9 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    eventTree_->Fill();
 }
 
-void TreeWriter::beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const&)
+void TreeWriter::beginJob()
 {
-   newLumiBlock_ = true;
-
-   // point to the right cut flow histogram
+   // create Cutflow histogram
    hCutFlow_ = createCutFlowHist("");
    
    // create histogram for syst. MC weight sus
@@ -1314,6 +1312,11 @@ void TreeWriter::beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::Ev
    hSystMCweight_bFrag_ = createSystMCWeightHist("hSystMCweight_bFrag_",6);
    hSystMCweight_PU_norm_ = createSystMCWeightHist("hSystMCweight_PU_norm_",3);
    hSystMCweight_PU_ = createSystMCWeightHist("hSystMCweight_PU_",3);
+}
+
+void TreeWriter::beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const&)
+{
+   newLumiBlock_ = true;
 }
 
 void TreeWriter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
