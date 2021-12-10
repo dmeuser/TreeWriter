@@ -34,8 +34,8 @@ options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL
 
 # defaults
 options.outputFile = 'ttbarTree.root'
-#  ~options.maxEvents = -1
-options.maxEvents = 100
+options.maxEvents = -1
+#  ~options.maxEvents = 100
 # get and parse the command line arguments
 options.parseArguments()
 
@@ -310,7 +310,7 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     # with the strings given here. E.g. "HLT" would always be true if any of the triggers fired.
                                     triggerNames=cms.vstring(),
                                     triggerObjectNames=cms.vstring(),
-                                    pfJetIDSelector=cms.PSet(version=cms.string('RUNIIULCHS'), quality=cms.string('TIGHT')),
+                                    pfJetIDSelector=cms.PSet(version=cms.string('RUN2ULCHS'), quality=cms.string('TIGHT')),
                                     triggerPrescales=cms.vstring(), # also useful to check whether a trigger was run
                                     ttbarGenInfo = cms.bool(False),
                                     ttbarPseudoInfo = cms.bool(False),

@@ -338,8 +338,8 @@ if __name__ == '__main__':
 
         config.section_("Data")
         config.Data.inputDataset = dataset
-        config.Data.splitting = 'EventAwareLumiBased' if isSim else 'LumiBased'
-        config.Data.unitsPerJob = 200000 if isSim else 50
+        config.Data.splitting = 'FileBased' if isSim else 'LumiBased'
+        config.Data.unitsPerJob = 5 if isSim else 50
         config.Data.publication = False
         config.Data.outputDatasetTag = 'outputDatasetTag'
         config.Data.outLFNDirBase = "outLFNDirBase"

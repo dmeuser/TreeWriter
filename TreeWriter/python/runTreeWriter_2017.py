@@ -313,7 +313,7 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     # with the strings given here. E.g. "HLT" would always be true if any of the triggers fired.
                                     triggerNames=cms.vstring(),
                                     triggerObjectNames=cms.vstring(),
-                                    pfJetIDSelector=cms.PSet(version=cms.string('RUNIIULCHS'), quality=cms.string('TIGHT')),
+                                    pfJetIDSelector=cms.PSet(version=cms.string('RUN2ULCHS'), quality=cms.string('TIGHT')),
                                     triggerPrescales=cms.vstring(), # also useful to check whether a trigger was run
                                     ttbarGenInfo = cms.bool(False),
                                     ttbarPseudoInfo = cms.bool(False),
