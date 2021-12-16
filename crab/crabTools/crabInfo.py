@@ -112,18 +112,18 @@ class CrabInfo:
             else:
                 modifiedDatasetName="UNKOWNPATTERN"
                 
-        import TreeWriter.paths.getPath
+        from TreeWriter.paths.getPath import getPath
         if "UL2016_HIPM-" in self.datasetMiddle or "RunIISummer20UL16MiniAODAPV-" in self.datasetMiddle:
-            return os.path.join(getPath("localDirBase", user),getPath("dir2016_preVFP", user),getPath("datasetTag_2016_preVFP", user),"nTuple/{}.root".format(modifiedDatasetName))
+            return os.path.join(getPath("localDirBase", self.user),getPath("dir2016_preVFP", self.user),getPath("datasetTag_2016_preVFP", self.user),"nTuple/{}.root".format(modifiedDatasetName))
             # return "/net/data_cms1b/user/teroerde/top_analysis/2016_preVFP/v01/nTuple/{}.root".format(modifiedDatasetName)
         elif "UL2016-" in self.datasetMiddle or "RunIISummer20UL16MiniAOD-" in self.datasetMiddle:
-            return os.path.join(getPath("localDirBase", user),getPath("dir2016_postVFP", user),getPath("datasetTag_2016_postVFP", user),"nTuple/{}.root".format(modifiedDatasetName))
+            return os.path.join(getPath("localDirBase", self.user),getPath("dir2016_postVFP", self.user),getPath("datasetTag_2016_postVFP", self.user),"nTuple/{}.root".format(modifiedDatasetName))
             # return "/net/data_cms1b/user/teroerde/top_analysis/2016_postVFP/v01/nTuple/{}.root".format(modifiedDatasetName)
         elif "UL2017" in self.datasetMiddle or "UL17" in self.datasetMiddle:
-            return os.path.join(getPath("localDirBase", user),getPath("dir2017", user),getPath("datasetTag_2017", user),"nTuple/{}.root".format(modifiedDatasetName))
+            return os.path.join(getPath("localDirBase", self.user),getPath("dir2017", self.user),getPath("datasetTag_2017", self.user),"nTuple/{}.root".format(modifiedDatasetName))
             # return "/net/data_cms1b/user/dmeuser/top_analysis/2017/v02/nTuple/{}.root".format(modifiedDatasetName)
         elif "UL2018" in self.datasetMiddle or "UL18" in self.datasetMiddle:
-            return os.path.join(getPath("localDirBase", user),getPath("dir2018", user),getPath("datasetTag_2018", user),"nTuple/{}.root".format(modifiedDatasetName))
+            return os.path.join(getPath("localDirBase", self.user),getPath("dir2018", self.user),getPath("datasetTag_2018", self.user),"nTuple/{}.root".format(modifiedDatasetName))
             # return "/net/data_cms1b/user/dmeuser/top_analysis/2018/v06/nTuple/{}.root".format(modifiedDatasetName)
 
             
