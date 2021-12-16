@@ -32,8 +32,8 @@ options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL
 
 # defaults
 options.outputFile = 'ttbarTree.root'
-#  ~options.maxEvents = -1
-options.maxEvents = 100
+options.maxEvents = -1
+# options.maxEvents = 100
 # get and parse the command line arguments
 options.parseArguments()
 

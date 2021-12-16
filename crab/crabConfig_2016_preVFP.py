@@ -46,7 +46,7 @@ cmssw_src = os.environ['CMSSW_BASE']+'/src/'
 datasets={}
 
 datasets["DoubleMuon"] = [
-    "/DoubleMuon/Run2016B-21Feb2020_ver1_UL2016_HIPM-v1/MINIAOD",
+    # "/DoubleMuon/Run2016B-21Feb2020_ver1_UL2016_HIPM-v1/MINIAOD",
     "/DoubleMuon/Run2016B-21Feb2020_ver2_UL2016_HIPM-v1/MINIAOD",
     "/DoubleMuon/Run2016C-21Feb2020_UL2016_HIPM-v1/MINIAOD",
     "/DoubleMuon/Run2016D-21Feb2020_UL2016_HIPM-v1/MINIAOD",
@@ -63,7 +63,7 @@ datasets["DoubleMuon"] = [
 ]
 
 datasets["DoubleEG"] = [
-    "/DoubleEG/Run2016B-21Feb2020_ver1_UL2016_HIPM-v1/MINIAOD",
+    # "/DoubleEG/Run2016B-21Feb2020_ver1_UL2016_HIPM-v1/MINIAOD",
     "/DoubleEG/Run2016B-21Feb2020_ver2_UL2016_HIPM-v2/MINIAOD",
     "/DoubleEG/Run2016C-21Feb2020_UL2016_HIPM-v1/MINIAOD",
     "/DoubleEG/Run2016D-21Feb2020_UL2016_HIPM-v1/MINIAOD",
@@ -80,7 +80,7 @@ datasets["DoubleEG"] = [
 ]
     
 datasets["SingleElectron"] = [
-    "/SingleElectron/Run2016B-21Feb2020_ver1_UL2016_HIPM-v1/MINIAOD",
+    # "/SingleElectron/Run2016B-21Feb2020_ver1_UL2016_HIPM-v1/MINIAOD",
     "/SingleElectron/Run2016B-21Feb2020_ver2_UL2016_HIPM-v1/MINIAOD",
     "/SingleElectron/Run2016C-21Feb2020_UL2016_HIPM-v1/MINIAOD",
     "/SingleElectron/Run2016D-21Feb2020_UL2016_HIPM-v1/MINIAOD",
@@ -97,7 +97,7 @@ datasets["SingleElectron"] = [
 ]
 
 datasets["MuonEG"] = [
-    "/MuonEG/Run2016B-21Feb2020_ver1_UL2016_HIPM-v1/MINIAOD",
+    # "/MuonEG/Run2016B-21Feb2020_ver1_UL2016_HIPM-v1/MINIAOD",
     "/MuonEG/Run2016B-21Feb2020_ver2_UL2016_HIPM-v1/MINIAOD",
     "/MuonEG/Run2016C-21Feb2020_UL2016_HIPM-v1/MINIAOD",
     "/MuonEG/Run2016D-21Feb2020_UL2016_HIPM-v1/MINIAOD",
@@ -114,7 +114,7 @@ datasets["MuonEG"] = [
 ]
 
 datasets["SingleMuon"] = [
-    "/SingleMuon/Run2016B-21Feb2020_ver1_UL2016_HIPM-v1/MINIAOD",
+    # "/SingleMuon/Run2016B-21Feb2020_ver1_UL2016_HIPM-v1/MINIAOD",
     "/SingleMuon/Run2016B-21Feb2020_ver2_UL2016_HIPM-v1/MINIAOD",
     "/SingleMuon/Run2016C-21Feb2020_UL2016_HIPM-v1/MINIAOD",
     "/SingleMuon/Run2016D-21Feb2020_UL2016_HIPM-v1/MINIAOD",
@@ -131,12 +131,12 @@ datasets["SingleMuon"] = [
 ]
 
 datasets["MET"] = [
-    "/MET/Run2016B-21Feb2020_ver1_UL2016_HIPM-v1/AOD",
-    "/MET/Run2016B-21Feb2020_ver2_UL2016_HIPM-v1/AOD",
-    "/MET/Run2016C-21Feb2020_UL2016_HIPM-v1/AOD",
-    "/MET/Run2016D-21Feb2020_UL2016_HIPM-v1/AOD",
-    "/MET/Run2016E-21Feb2020_UL2016_HIPM-v1/AOD",
-    "/MET/Run2016F-21Feb2020_UL2016_HIPM-v1/AOD",
+    # "/MET/Run2016B-21Feb2020_ver1_UL2016_HIPM-v1/MINIAOD",
+    "/MET/Run2016B-21Feb2020_ver2_UL2016_HIPM-v1/MINIAOD",
+    "/MET/Run2016C-21Feb2020_UL2016_HIPM-v1/MINIAOD",
+    "/MET/Run2016D-21Feb2020_UL2016_HIPM-v1/MINIAOD",
+    "/MET/Run2016E-21Feb2020_UL2016_HIPM-v1/MINIAOD",
+    "/MET/Run2016F-21Feb2020_UL2016_HIPM-v1/MINIAOD",
 
     # "/MET/Run2016B-ver1_HIPM_UL2016_MiniAODv2-v2/MINIAOD",
     # "/MET/Run2016B-ver2_HIPM_UL2016_MiniAODv2-v2/MINIAOD",
@@ -346,8 +346,8 @@ if __name__ == '__main__':
 
     iSub = 0
     failed = []
-    for dataset in datasets["all"]:
 
+    for dataset in datasets["all"]:
         isSim = 'SIM' in dataset
         isFastSim = "Fast" in dataset
 
@@ -382,16 +382,10 @@ if __name__ == '__main__':
         if not isSim:
             config.Data.lumiMask = getLumiMask(cmssw_src)
 
-        if user=="dmeuser":
-            config.Data.outputDatasetTag = 'v01'
-            config.Data.outLFNDirBase = "/store/user/dmeuser/run2_topUL/2016_preVFP/"
-        elif user=="teroerde":
-            config.Data.outputDatasetTag = 'v01'
-            config.Data.outLFNDirBase = "/store/user/mteroerd/data/Histos/2016_preVFP/"
-        else:
-            print "you shall not pass!"
-            print "(unkown user '%s')"%user
-            exit()
+        from TreeWriter.paths.getPath import getPath
+        config.Data.outputDatasetTag = getPath("datasetTag_2016_preVFP", user)
+        config.Data.outLFNDirBase = os.path.join(getPath("outLFNDirBase", user),getPath("dir2016_preVFP", user))
+        
          
         with open("current_config.py", 'w') as handle:
             handle.write(str(config))

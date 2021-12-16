@@ -349,16 +349,10 @@ if __name__ == '__main__':
         if not isSim:
             config.Data.lumiMask = getLumiMask(cmssw_src)
 
-        if user=="dmeuser":
-            config.Data.outputDatasetTag = 'v01'
-            config.Data.outLFNDirBase = "/store/user/dmeuser/run2_topUL/2016_postVFP/"
-        elif user=="teroerde":
-            config.Data.outputDatasetTag = 'v01'
-            config.Data.outLFNDirBase = "/store/user/mteroerd/data/Histos/2016_postVFP/"
-        else:
-            print "you shall not pass!"
-            print "(unkown user '%s')"%user
-            exit()
+
+        from TreeWriter.paths.getPath import getPath
+        config.Data.outputDatasetTag = getPath("datasetTag_2016_postVFP", user)
+        config.Data.outLFNDirBase = os.path.join(getPath("outLFNDirBase", user),getPath("dir2016_postVFP", user))
          
         with open("current_config.py", 'w') as handle:
             handle.write(str(config))

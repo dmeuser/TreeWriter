@@ -98,27 +98,36 @@ class CrabInfo:
         elif "ext4" in self.datasetMiddle: modifiedDatasetName += "_ext4"
         elif "ext5" in self.datasetMiddle: modifiedDatasetName += "_ext5"
         elif "backup" in self.datasetMiddle: modifiedDatasetName += "_backup"
-        if self.user == "dmeuser":
-            if "Run2015" in self.datasetMiddle: # distinguish different data runs/recos
-                modifiedDatasetName+="_"+self.datasetMiddle
-            elif "Run2016" in self.datasetMiddle: # distinguish different data runs/recos
-                modifiedDatasetName+="_"+self.datasetMiddle
-            elif "UL2017" in self.datasetMiddle or "UL17" in self.datasetMiddle: # distinguish different data runs/recos
-                modifiedDatasetName+="_"+self.datasetMiddle
-            elif "UL2018" in self.datasetMiddle or "UL18" in self.datasetMiddle: # distinguish different data runs/recos
-                modifiedDatasetName+="_"+self.datasetMiddle
-            elif "T5gg" in self.datasetName: # extract mass
-                m=re.search(".*_mGluino-(.*)_mNeutralino-(.*)-.*",self.datasetMiddle)
-                if m and len(m.groups())==2:
-                    modifiedDatasetName+="_g%s_n%s"%m.groups()
-                else:
-                    modifiedDatasetName="UNKOWNPATTERN"
-            if "RunIISummer16" in self.datasetMiddle or "Run2016" in self.datasetMiddle:
-                return "/net/data_cms1b/user/dmeuser/top_analysis/2016/v23/nTuple/{}.root".format(modifiedDatasetName)
-            elif "UL2017" in self.datasetMiddle or "UL17" in self.datasetMiddle:
-                return "/net/data_cms1b/user/dmeuser/top_analysis/2017/v02/nTuple/{}.root".format(modifiedDatasetName)
-            elif "UL2018" in self.datasetMiddle or "UL18" in self.datasetMiddle:
-                return "/net/data_cms1b/user/dmeuser/top_analysis/2018/v06/nTuple/{}.root".format(modifiedDatasetName)
+
+        if "UL2016" in self.datasetMiddle or "UL16" in self.datasetMiddle: # distinguish different data runs/recos
+            modifiedDatasetName+="_"+self.datasetMiddle
+        elif "UL2017" in self.datasetMiddle or "UL17" in self.datasetMiddle: # distinguish different data runs/recos
+            modifiedDatasetName+="_"+self.datasetMiddle
+        elif "UL2018" in self.datasetMiddle or "UL18" in self.datasetMiddle: # distinguish different data runs/recos
+            modifiedDatasetName+="_"+self.datasetMiddle
+        elif "T5gg" in self.datasetName: # extract mass
+            m=re.search(".*_mGluino-(.*)_mNeutralino-(.*)-.*",self.datasetMiddle)
+            if m and len(m.groups())==2:
+                modifiedDatasetName+="_g%s_n%s"%m.groups()
+            else:
+                modifiedDatasetName="UNKOWNPATTERN"
+                
+        import TreeWriter.paths.getPath
+        if "UL2016_HIPM-" in self.datasetMiddle or "RunIISummer20UL16MiniAODAPV-" in self.datasetMiddle:
+            return os.path.join(getPath("localDirBase", user),getPath("dir2016_preVFP", user),getPath("datasetTag_2016_preVFP", user),"nTuple/{}.root".format(modifiedDatasetName))
+            # return "/net/data_cms1b/user/teroerde/top_analysis/2016_preVFP/v01/nTuple/{}.root".format(modifiedDatasetName)
+        elif "UL2016-" in self.datasetMiddle or "RunIISummer20UL16MiniAOD-" in self.datasetMiddle:
+            return os.path.join(getPath("localDirBase", user),getPath("dir2016_postVFP", user),getPath("datasetTag_2016_postVFP", user),"nTuple/{}.root".format(modifiedDatasetName))
+            # return "/net/data_cms1b/user/teroerde/top_analysis/2016_postVFP/v01/nTuple/{}.root".format(modifiedDatasetName)
+        elif "UL2017" in self.datasetMiddle or "UL17" in self.datasetMiddle:
+            return os.path.join(getPath("localDirBase", user),getPath("dir2017", user),getPath("datasetTag_2017", user),"nTuple/{}.root".format(modifiedDatasetName))
+            # return "/net/data_cms1b/user/dmeuser/top_analysis/2017/v02/nTuple/{}.root".format(modifiedDatasetName)
+        elif "UL2018" in self.datasetMiddle or "UL18" in self.datasetMiddle:
+            return os.path.join(getPath("localDirBase", user),getPath("dir2018", user),getPath("datasetTag_2018", user),"nTuple/{}.root".format(modifiedDatasetName))
+            # return "/net/data_cms1b/user/dmeuser/top_analysis/2018/v06/nTuple/{}.root".format(modifiedDatasetName)
+
+            
+            
         return "outputFile.root"
 
 
@@ -192,8 +201,8 @@ class CrabInfo:
            print colors.BOLD+colors.RED,
            print self.statusCRAB+colors.NORMAL
         elif self.validStatusCache==False:
-		   print colors.BOLD+colors.GREEN,
-		   print "SUBMIT NOT YET FINISHED"+colors.NORMAL
+           print colors.BOLD+colors.GREEN,
+           print "SUBMIT NOT YET FINISHED"+colors.NORMAL
         else:
             if self.statusScheduler=="RESUBMITFAILED": print colors.BOLD+colors.RED,
             print self.statusScheduler+colors.NORMAL
