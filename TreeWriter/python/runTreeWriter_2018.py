@@ -298,7 +298,7 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                         "Flag_BadPFMuonFilter",
                                         #  ~"Flag_BadPFMuonDzFilter",       #only available in miniAODv2 (for v1 hack applied)
                                         "Flag_eeBadScFilter",
-                                        "Flag_ecalBadCalibFilter",
+                                        "Flag_ecalBadCalibFilter"
 
                                     ),
                                     # choose pileup data

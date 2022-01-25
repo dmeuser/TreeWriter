@@ -34,8 +34,8 @@ options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL
 
 # defaults
 options.outputFile = 'ttbarTree.root'
-#  ~options.maxEvents = -1
-options.maxEvents = 100
+options.maxEvents = -1
+#  ~options.maxEvents = 100
 # get and parse the command line arguments
 options.parseArguments()
 
@@ -53,8 +53,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 # determine global tag
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 if isRealData:
-        process.GlobalTag.globaltag = "106X_dataRun2_v32"
-        #  ~process.GlobalTag.globaltag = "106X_dataRun2_v33"       #miniAODv2 (correct? or only for production?)
+        process.GlobalTag.globaltag = "106X_dataRun2_v35"
 
 else:
         process.GlobalTag.globaltag = "106X_mc2017_realistic_v8"
@@ -319,6 +318,7 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     ttbarPseudoInfo = cms.bool(False),
                                     DYptInfo = cms.bool(False),
                                     bFragInfo = cms.bool(False),
+                                    isMadgraphMLM = cms.bool(False),
 )
 
 ################################
@@ -330,6 +330,7 @@ process.TreeWriter.ttbarGenInfo=(dataset.startswith("/TT") or dataset.startswith
 process.TreeWriter.ttbarPseudoInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T"))
 process.TreeWriter.bFragInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/ST"))
 process.TreeWriter.DYptInfo=(dataset.startswith("/DY"))
+process.TreeWriter.isMadgraphMLM=(dataset.find("madgraphMLM")>0)  # ME scale weights stored in different order
 
 # set triggers
 process.TreeWriter.triggerObjectNames = ["hltEG90CaloIdLHEFilter", "hltEG165HE10Filter"]
