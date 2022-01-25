@@ -307,6 +307,9 @@ private:
    float semilepbrUpWeight_;
    float semilepbrDownWeight_;
    
+   //MadgraphMLM
+   const bool isMadgraphMLM_;
+   
 };
 
 #endif /* TREEWRITER_HPP__ */

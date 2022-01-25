@@ -243,6 +243,8 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    , bfragWeight_PetersonToken_(consumes<edm::ValueMap<float> >(edm::InputTag("bfragWgtProducer:fragCP5PetersonVsPt")))
    , bfragWeight_BSemiLepUpToken_(consumes<edm::ValueMap<float> >(edm::InputTag("bfragWgtProducer:semilepbrup")))
    , bfragWeight_BSemiLepDownToken_(consumes<edm::ValueMap<float> >(edm::InputTag("bfragWgtProducer:semilepbrdown")))
+   // MadgraphMLM
+   , isMadgraphMLM_(iConfig.getParameter<bool>("isMadgraphMLM"))
 
 {
    // declare consumptions that are used "byLabel" in analyze()
@@ -459,8 +461,19 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
          unsigned iMax = 112; // these are 9 scale variations and 103 variation of the first pdf set (NNPDF31_nnlo_hessian_pdfas)
          if (iMax>LHEEventProductHandle->weights().size()) iMax = LHEEventProductHandle->weights().size();
          vPdf_weights_ = std::vector<float>(iMax, 1.0);
-         for (unsigned i=0; i<iMax; i++) {   // https://twiki.cern.ch/twiki/bin/view/CMS/HowToPDF
-            vPdf_weights_[i] = LHEEventProductHandle->weights()[i].wgt/LHEEventProductHandle->originalXWGTUP();
+         if (isMadgraphMLM_) {  // stored differently for madgraphMLM samples
+            std::vector<int> meScale_madgraphMLM = {0,5,10,15,20,25,30,35,40};
+            for (unsigned i=0; i<9; i++) {   // first store me scale weights
+               vPdf_weights_[i] = LHEEventProductHandle->weights()[meScale_madgraphMLM[i]].wgt/LHEEventProductHandle->originalXWGTUP();
+            }
+            for (unsigned i=9; i<112; i++) { // now stored PDF weights (two "envelope" weights in beetween)
+               vPdf_weights_[i] = LHEEventProductHandle->weights()[i+38].wgt/LHEEventProductHandle->originalXWGTUP();
+            }
+         }
+         else{
+            for (unsigned i=0; i<iMax; i++) {   // https://twiki.cern.ch/twiki/bin/view/CMS/HowToPDF
+               vPdf_weights_[i] = LHEEventProductHandle->weights()[i].wgt/LHEEventProductHandle->originalXWGTUP();
+            }
          }
       }
       

@@ -316,6 +316,7 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     ttbarPseudoInfo = cms.bool(False),
                                     DYptInfo = cms.bool(False),
                                     bFragInfo = cms.bool(False),
+                                    isMadgraphMLM = cms.bool(False),
 )
 
 ################################
@@ -327,6 +328,7 @@ process.TreeWriter.ttbarGenInfo=(dataset.startswith("/TT") or dataset.startswith
 process.TreeWriter.ttbarPseudoInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T"))
 process.TreeWriter.bFragInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/ST"))
 process.TreeWriter.DYptInfo=(dataset.startswith("/DY"))
+process.TreeWriter.isMadgraphMLM=(dataset.find("madgraphMLM")>0)  # ME scale weights stored in different order
 
 # set triggers
 process.TreeWriter.triggerObjectNames = ["hltEG90CaloIdLHEFilter", "hltEG165HE10Filter"]
