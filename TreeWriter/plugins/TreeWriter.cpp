@@ -397,7 +397,8 @@ TH1D* TreeWriter::createCutFlowHist(std::string modelName)
    std::vector<TString> vCutBinNames{{
       "initial_unweighted",
       "initial_mc_weighted",
-      "initial",
+      "initial_mc_pu_topPt_weighted",
+      "initial_mc_pu_topPt_bFrag_weighted",
       "trigger",
       "METfilters",
       "nGoodVertices",
@@ -449,8 +450,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
          vPS_weights_ = std::vector<float>(weightsize, 1.0);
          for (unsigned i=0; i<weightsize; i++) {
             vPS_weights_[i] = GenEventInfoHandle->weights()[i]/GenEventInfoHandle->weights()[1];
-            hSystMCweight_PS_norm_->Fill(i,vPS_weights_[i]);
-            hSystMCweight_PS_->Fill(i,vPS_weights_[i]*mc_weight_);
          }
       }
       // PDF and scale variations
@@ -462,8 +461,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
          vPdf_weights_ = std::vector<float>(iMax, 1.0);
          for (unsigned i=0; i<iMax; i++) {   // https://twiki.cern.ch/twiki/bin/view/CMS/HowToPDF
             vPdf_weights_[i] = LHEEventProductHandle->weights()[i].wgt/LHEEventProductHandle->originalXWGTUP();
-            hSystMCweight_PDF_norm_->Fill(i,vPdf_weights_[i]);
-            hSystMCweight_PDF_->Fill(i,vPdf_weights_[i]*mc_weight_);
          }
       }
       
@@ -480,8 +477,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
             else genAntiTop_ = nullP4_;
             
             topPTweight_ = sqrt(exp(0.0615-0.0005*genTop_.Pt())*exp(0.0615-0.0005*genAntiTop_.Pt()));
-            hSystMCweight_topPt_norm_->Fill(0.,topPTweight_);
-            hSystMCweight_topPt_->Fill(0.,topPTweight_*mc_weight_);
          }
       }
 
@@ -510,19 +505,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
             semilepbrUpWeight_ *= (*frag_BSemiLepUp)[genJetRef];
             semilepbrDownWeight_ *= (*frag_BSemiLepDown)[genJetRef];
          }
-         hSystMCweight_bFrag_norm_->Fill(0.,fragUpWeight_);
-         hSystMCweight_bFrag_norm_->Fill(1,fragCentralWeight_);
-         hSystMCweight_bFrag_norm_->Fill(2,fragDownWeight_);
-         hSystMCweight_bFrag_norm_->Fill(3,fragPetersonWeight_);
-         hSystMCweight_bFrag_norm_->Fill(4,semilepbrUpWeight_);
-         hSystMCweight_bFrag_norm_->Fill(5,semilepbrDownWeight_);
-         
-         hSystMCweight_bFrag_->Fill(0.,fragUpWeight_*mc_weight_);
-         hSystMCweight_bFrag_->Fill(1,fragCentralWeight_*mc_weight_);
-         hSystMCweight_bFrag_->Fill(2,fragDownWeight_*mc_weight_);
-         hSystMCweight_bFrag_->Fill(3,fragPetersonWeight_*mc_weight_);
-         hSystMCweight_bFrag_->Fill(4,semilepbrUpWeight_*mc_weight_);
-         hSystMCweight_bFrag_->Fill(5,semilepbrDownWeight_*mc_weight_);
       }
       
    }
@@ -550,15 +532,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       pu_weight_ = hPU_.GetBinContent(hPU_.FindBin(Tnpv));
       pu_weight_up_ = hPU_up_.GetBinContent(hPU_up_.FindBin(Tnpv));
       pu_weight_down_ = hPU_down_.GetBinContent(hPU_down_.FindBin(Tnpv));
-      
-      hSystMCweight_PU_norm_->Fill(0.,pu_weight_);
-      hSystMCweight_PU_norm_->Fill(1,pu_weight_up_);
-      hSystMCweight_PU_norm_->Fill(2,pu_weight_down_);
-      
-      hSystMCweight_PU_->Fill(0.,pu_weight_*mc_weight_);
-      hSystMCweight_PU_->Fill(1,pu_weight_up_*mc_weight_);
-      hSystMCweight_PU_->Fill(2,pu_weight_down_*mc_weight_);
-      
    } else { // real data
       true_nPV_ = -1;
       pu_weight_ = 1.;
@@ -566,7 +539,78 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       pu_weight_down_ = 1.;
    }
    
-   hCutFlow_->Fill("initial", mc_weight_*pu_weight_);
+   /////////////////////////////
+   // Normalization histograms//
+   /////////////////////////////
+   double mcWeight_pu_top_ = 1.;
+   double mcWeight_pu_top_bFrag_ = 1.;
+   
+   if(!isRealData){
+      
+      mcWeight_pu_top_ = mc_weight_*pu_weight_*topPTweight_;
+      mcWeight_pu_top_bFrag_ = mc_weight_*pu_weight_*topPTweight_*fragCentralWeight_;
+      
+      //PS weights
+      for (unsigned i=0; i<vPS_weights_.size(); i++){
+         hSystMCweight_PS_->Fill(i,vPS_weights_[i]*mc_weight_);
+         hSystMCweight_PS_timesTopPU_->Fill(i,vPS_weights_[i]*mcWeight_pu_top_);
+         hSystMCweight_PS_timesTopPUbFrag_->Fill(i,vPS_weights_[i]*mcWeight_pu_top_bFrag_);
+      }
+      
+      //PDF and scale variations
+      for (unsigned i=0; i<vPdf_weights_.size(); i++){
+         hSystMCweight_PDF_->Fill(i,vPdf_weights_[i]*mc_weight_);
+         hSystMCweight_PDF_timesTopPU_->Fill(i,vPdf_weights_[i]*mcWeight_pu_top_);
+         hSystMCweight_PDF_timesTopPUbFrag_->Fill(i,vPdf_weights_[i]*mcWeight_pu_top_bFrag_);
+      }
+      
+      //Top pt
+      hSystMCweight_topPt_->Fill(0.,topPTweight_*mc_weight_);
+      hSystMCweight_topPt_->Fill(1,mc_weight_);
+      hSystMCweight_topPt_timesTopPU_->Fill(0.,topPTweight_*mc_weight_*pu_weight_);
+      hSystMCweight_topPt_timesTopPU_->Fill(1,mc_weight_*pu_weight_);
+      hSystMCweight_topPt_timesTopPUbFrag_->Fill(0.,topPTweight_*mc_weight_*pu_weight_*fragCentralWeight_);
+      hSystMCweight_topPt_timesTopPUbFrag_->Fill(1,mc_weight_*pu_weight_*fragCentralWeight_);
+      
+      //Bfrag and BsemiLep
+      hSystMCweight_bFrag_->Fill(0.,fragUpWeight_*mc_weight_);
+      hSystMCweight_bFrag_->Fill(1,fragCentralWeight_*mc_weight_);
+      hSystMCweight_bFrag_->Fill(2,fragDownWeight_*mc_weight_);
+      hSystMCweight_bFrag_->Fill(3,fragPetersonWeight_*mc_weight_);
+      hSystMCweight_bFrag_->Fill(4,semilepbrUpWeight_*mc_weight_);
+      hSystMCweight_bFrag_->Fill(5,semilepbrDownWeight_*mc_weight_);
+      
+      hSystMCweight_bFrag_timesTopPU_->Fill(0.,fragUpWeight_*mcWeight_pu_top_);
+      hSystMCweight_bFrag_timesTopPU_->Fill(1,fragCentralWeight_*mcWeight_pu_top_);
+      hSystMCweight_bFrag_timesTopPU_->Fill(2,fragDownWeight_*mcWeight_pu_top_);
+      hSystMCweight_bFrag_timesTopPU_->Fill(3,fragPetersonWeight_*mcWeight_pu_top_);
+      hSystMCweight_bFrag_timesTopPU_->Fill(4,semilepbrUpWeight_*mcWeight_pu_top_);
+      hSystMCweight_bFrag_timesTopPU_->Fill(5,semilepbrDownWeight_*mcWeight_pu_top_);
+      
+      hSystMCweight_bFrag_timesTopPUbFrag_->Fill(0.,fragUpWeight_*mcWeight_pu_top_);      // do not multiply with bFrag central (is replace in local FW by shift)
+      hSystMCweight_bFrag_timesTopPUbFrag_->Fill(1,fragCentralWeight_*mcWeight_pu_top_);  // do not multiply with bFrag central (is replace in local FW by shift)
+      hSystMCweight_bFrag_timesTopPUbFrag_->Fill(2,fragDownWeight_*mcWeight_pu_top_);     // do not multiply with bFrag central (is replace in local FW by shift)
+      hSystMCweight_bFrag_timesTopPUbFrag_->Fill(3,fragPetersonWeight_*mcWeight_pu_top_); // do not multiply with bFrag central (is replace in local FW by shift)
+      hSystMCweight_bFrag_timesTopPUbFrag_->Fill(4,semilepbrUpWeight_*mcWeight_pu_top_bFrag_);
+      hSystMCweight_bFrag_timesTopPUbFrag_->Fill(5,semilepbrDownWeight_*mcWeight_pu_top_bFrag_);
+      
+      //PU
+      hSystMCweight_PU_->Fill(0.,pu_weight_*mc_weight_);
+      hSystMCweight_PU_->Fill(1,pu_weight_up_*mc_weight_);
+      hSystMCweight_PU_->Fill(2,pu_weight_down_*mc_weight_);
+      
+      hSystMCweight_PU_timesTopPU_->Fill(0.,pu_weight_*mc_weight_*topPTweight_);
+      hSystMCweight_PU_timesTopPU_->Fill(1,pu_weight_up_*mc_weight_*topPTweight_);
+      hSystMCweight_PU_timesTopPU_->Fill(2,pu_weight_down_*mc_weight_*topPTweight_);
+      
+      hSystMCweight_PU_timesTopPUbFrag_->Fill(0.,pu_weight_*mc_weight_*topPTweight_*fragCentralWeight_);
+      hSystMCweight_PU_timesTopPUbFrag_->Fill(1,pu_weight_up_*mc_weight_*topPTweight_*fragCentralWeight_);
+      hSystMCweight_PU_timesTopPUbFrag_->Fill(2,pu_weight_down_*mc_weight_*topPTweight_*fragCentralWeight_);
+   }
+   
+   
+   hCutFlow_->Fill("initial_mc_pu_topPt_weighted", mcWeight_pu_top_);
+   hCutFlow_->Fill("initial_mc_pu_topPt_bFrag_weighted", mcWeight_pu_top_bFrag_);
       
    ////////////
    // Trigger//
@@ -1302,16 +1346,21 @@ void TreeWriter::beginJob()
    hCutFlow_ = createCutFlowHist("");
    
    // create histogram for syst. MC weight sus
-   hSystMCweight_PS_norm_ = createSystMCWeightHist("hSystMCweight_PS_norm_",46);
    hSystMCweight_PS_ = createSystMCWeightHist("hSystMCweight_PS_",46);
-   hSystMCweight_PDF_norm_ = createSystMCWeightHist("hSystMCweight_PDF_norm_",112);
+   hSystMCweight_PS_timesTopPU_ = createSystMCWeightHist("hSystMCweight_PS_timesTopPU_",46);
+   hSystMCweight_PS_timesTopPUbFrag_ = createSystMCWeightHist("hSystMCweight_PS_timesTopPUbFrag_",46);
    hSystMCweight_PDF_ = createSystMCWeightHist("hSystMCweight_PDF_",112);
-   hSystMCweight_topPt_norm_ = createSystMCWeightHist("hSystMCweight_topPt_norm_",1);
-   hSystMCweight_topPt_ = createSystMCWeightHist("hSystMCweight_topPt_",1);
-   hSystMCweight_bFrag_norm_ = createSystMCWeightHist("hSystMCweight_bFrag_norm_",6);
+   hSystMCweight_PDF_timesTopPU_ = createSystMCWeightHist("hSystMCweight_PDF_timesTopPU_",112);
+   hSystMCweight_PDF_timesTopPUbFrag_ = createSystMCWeightHist("hSystMCweight_PDF_timesTopPUbFrag_",112);
+   hSystMCweight_topPt_ = createSystMCWeightHist("hSystMCweight_topPt_",2);
+   hSystMCweight_topPt_timesTopPU_ = createSystMCWeightHist("hSystMCweight_topPt_timesTopPU_",2);
+   hSystMCweight_topPt_timesTopPUbFrag_ = createSystMCWeightHist("hSystMCweight_topPt_timesTopPUbFrag_",2);
    hSystMCweight_bFrag_ = createSystMCWeightHist("hSystMCweight_bFrag_",6);
-   hSystMCweight_PU_norm_ = createSystMCWeightHist("hSystMCweight_PU_norm_",3);
+   hSystMCweight_bFrag_timesTopPU_ = createSystMCWeightHist("hSystMCweight_bFrag_timesTopPU_",6);
+   hSystMCweight_bFrag_timesTopPUbFrag_ = createSystMCWeightHist("hSystMCweight_bFrag_timesTopPUbFrag_",6);
    hSystMCweight_PU_ = createSystMCWeightHist("hSystMCweight_PU_",3);
+   hSystMCweight_PU_timesTopPU_ = createSystMCWeightHist("hSystMCweight_PU_timesTopPU_",3);
+   hSystMCweight_PU_timesTopPUbFrag_ = createSystMCWeightHist("hSystMCweight_PU_timesTopPUbFrag_",3);
 }
 
 void TreeWriter::beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const&)

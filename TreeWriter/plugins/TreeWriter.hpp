@@ -216,16 +216,21 @@ private:
    TH1D* hCutFlow_;
    
    // histograms to store sum of MC weights
-   TH1D* hSystMCweight_PS_norm_;
    TH1D* hSystMCweight_PS_;
-   TH1D* hSystMCweight_PDF_norm_;
+   TH1D* hSystMCweight_PS_timesTopPU_;
+   TH1D* hSystMCweight_PS_timesTopPUbFrag_;
    TH1D* hSystMCweight_PDF_;
-   TH1D* hSystMCweight_topPt_norm_;
+   TH1D* hSystMCweight_PDF_timesTopPU_;
+   TH1D* hSystMCweight_PDF_timesTopPUbFrag_;
    TH1D* hSystMCweight_topPt_;
-   TH1D* hSystMCweight_bFrag_norm_;
+   TH1D* hSystMCweight_topPt_timesTopPU_;
+   TH1D* hSystMCweight_topPt_timesTopPUbFrag_;
    TH1D* hSystMCweight_bFrag_;
-   TH1D* hSystMCweight_PU_norm_;
+   TH1D* hSystMCweight_bFrag_timesTopPU_;
+   TH1D* hSystMCweight_bFrag_timesTopPUbFrag_;
    TH1D* hSystMCweight_PU_;
+   TH1D* hSystMCweight_PU_timesTopPU_;
+   TH1D* hSystMCweight_PU_timesTopPUbFrag_;
 
    // Pileup histogram(s)
    TH1F hPU_;
