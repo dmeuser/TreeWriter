@@ -1074,6 +1074,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       met_.uncertainty += a*a;
    }
    met_.uncertainty=TMath::Sqrt(met_.uncertainty);
+   met_.sig = met.metSignificance();
 
    pat::MET::LorentzVector metShifted;
    metShifted = met.shiftedP4(pat::MET::NoShift, pat::MET::Raw);
@@ -1082,13 +1083,16 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    // MET shifted by uncl. energy
    metShifted = met.shiftedP4(pat::MET::UnclusteredEnUp);
    met_UnclEu_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
+   met_UnclEu_.uncertainty =  met_.uncertainty;
+   met_UnclEu_.sig = met_.sig;
    metShifted = met.shiftedP4(pat::MET::UnclusteredEnDown);
    met_UnclEd_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
+   met_UnclEd_.uncertainty =  met_.uncertainty;
+   met_UnclEd_.sig = met_.sig;
    
    metShifted = met.shiftedP4(pat::MET::NoShift, pat::MET::RawCalo);
    metCalo_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
    
-   met_.sig = met.metSignificance();
    met_raw_.sig = met_.sig;
    metCalo_.sig = met_.sig;
    
@@ -1118,8 +1122,12 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    // PuppiMET shifted by uncl. energy
    metShifted = metPuppi.shiftedP4(pat::MET::UnclusteredEnUp);
    metPuppi_UnclEu_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
+   metPuppi_UnclEu_.uncertainty = metPuppi_.uncertainty;
+   metPuppi_UnclEu_.sig = metPuppi_.sig;
    metShifted = metPuppi.shiftedP4(pat::MET::UnclusteredEnDown);
    metPuppi_UnclEd_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
+   metPuppi_UnclEd_.uncertainty = metPuppi_.uncertainty;
+   metPuppi_UnclEd_.sig = metPuppi_.sig;
    
    //XY Corrected MET
    std::pair<double,double> MET_XYpair = METXYCorr_Met_MetPhi(metPt, met.phi(), iEvent.run(), 2016, !isRealData, nPV_);
