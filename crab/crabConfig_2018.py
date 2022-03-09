@@ -323,6 +323,7 @@ if __name__ == '__main__':
         config.Data.publication = False
         config.Data.outputDatasetTag = 'outputDatasetTag'
         config.Data.outLFNDirBase = "outLFNDirBase"
+        config.Data.allowNonValidInputDataset = True    # needed for two miniAODv2 samples, which are stuck buth have >90% valid stats
 
         config.section_("Site")
         config.Site.storageSite = 'T2_DE_RWTH'
