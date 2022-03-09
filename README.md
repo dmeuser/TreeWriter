@@ -1,11 +1,11 @@
 **TreeWriter** to build a ROOT tree from MiniAOD. Designed for ttbar, starting from https://github.com/cms-susy-photon-rwth-1b/TreeWriter
 
 ## Building ##
-Get CMSSW environment 10_6_X and use the following recipe to setup the TreeWriter
+Get CMSSW environment 10_6_29 and use the following recipe to setup the TreeWriter
 
 ```
-cmsrel CMSSW_10_6_20
-cd CMSSW_10_6_20/src/
+cmsrel CMSSW_10_6_29
+cd CMSSW_10_6_29/src/
 cmsenv
 git cms-init
 git cms-merge-topic dmeuser:ttbar_treeUL
