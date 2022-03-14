@@ -28,12 +28,13 @@ options.register ('user',
                   "Name the user. If not set by crab, this script will determine it.")
 
 # input files for local testing
-options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL16MiniAODAPV/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_mcRun2_asymptotic_preVFP_v8-v2/00000/00098436-82CB-8747-AB1A-96CDB0A9B640.root',
+#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL16MiniAODAPV/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_mcRun2_asymptotic_preVFP_v8-v2/00000/00098436-82CB-8747-AB1A-96CDB0A9B640.root',        #miniAODv1
+options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL16MiniAODAPVv2/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_mcRun2_asymptotic_preVFP_v11-v1/110000/5EE076DC-67B3-E240-A9E2-B331722F9FBB.root',    #miniAODv2
 
 # defaults
 options.outputFile = 'ttbarTree.root'
 options.maxEvents = -1
-# options.maxEvents = 100
+#  ~options.maxEvents = 100
 # get and parse the command line arguments
 options.parseArguments()
 
@@ -99,17 +100,17 @@ runMetCorAndUncFromMiniAOD(   #update pfMET
 # Puppi MET is correct when applying new Puppi Tune
 
 #########################################
-# MET Filter #
+# MET Filter (not needed in MiniAODv2)  #
 #########################################
 # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2#Recipe_for_BadPFMuonDz_filter_in
-from RecoMET.METFilters.BadPFMuonDzFilter_cfi import BadPFMuonDzFilter
-process.BadPFMuonFilterUpdateDz=BadPFMuonDzFilter.clone(
-    muons = cms.InputTag("slimmedMuons"),
-    vtx   = cms.InputTag("offlineSlimmedPrimaryVertices"),
-    PFCandidates = cms.InputTag("packedPFCandidates"),
-    minDzBestTrack = cms.double(0.5),
-    taggingMode    = cms.bool(True)
-)
+#  ~from RecoMET.METFilters.BadPFMuonDzFilter_cfi import BadPFMuonDzFilter
+#  ~process.BadPFMuonFilterUpdateDz=BadPFMuonDzFilter.clone(
+    #  ~muons = cms.InputTag("slimmedMuons"),
+    #  ~vtx   = cms.InputTag("offlineSlimmedPrimaryVertices"),
+    #  ~PFCandidates = cms.InputTag("packedPFCandidates"),
+    #  ~minDzBestTrack = cms.double(0.5),
+    #  ~taggingMode    = cms.bool(True)
+#  ~)
 
 ################################
 # Jets                         #
@@ -166,9 +167,10 @@ process.updatedPatJetsUpdatedJECIDsmeared = cms.EDProducer('SmearedPATJetProduce
 ################################
 # Puppi Jets                   #
 ################################
-from CommonTools.PileupAlgos.customizePuppiTune_cff import UpdatePuppiTuneV15
-# Update to new Puppi tune
-UpdatePuppiTuneV15(process, runOnMC=(isRealData==False))
+# Update of Puppi tune only needed for miniAODv1
+#  ~from CommonTools.PileupAlgos.customizePuppiTune_cff import UpdatePuppiTuneV15
+#  ~# Update to new Puppi tune
+#  ~UpdatePuppiTuneV15(process, runOnMC=(isRealData==False))
 
 #JEC
 updateJetCollection(
@@ -247,6 +249,18 @@ process.load('TopQuarkAnalysis.BFragmentationAnalyzer.bfragWgtProducer_cfi')
 if not isRealData: process.bFragWgtSequence = cms.Sequence(process.mergedGenParticles*process.genParticles2HepMC*process.particleLevel*process.bfragWgtProducer)
 else: process.bFragWgtSequence = cms.Sequence()
 
+################################
+# Prefiring Weights            #
+################################
+from PhysicsTools.PatUtils.l1PrefiringWeightProducer_cfi import l1PrefiringWeightProducer
+process.prefiringweight = l1PrefiringWeightProducer.clone(
+        TheJets = cms.InputTag("updatedPatJetsUpdatedJEC"), #this should be the slimmedJets collection with up to date JECs !
+        DataEraECAL = cms.string("UL2016preVFP"),
+        DataEraMuon = cms.string("2016preVFP"),
+        UseJetEMPt = cms.bool(False),
+        PrefiringRateSystematicUnctyECAL = cms.double(0.2),
+        PrefiringRateSystematicUnctyMuon = cms.double(0.2)
+)
 
 ################################
 # Define input and output      #
@@ -293,7 +307,7 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                         "Flag_HBHENoiseIsoFilter",
                                         "Flag_EcalDeadCellTriggerPrimitiveFilter",
                                         "Flag_BadPFMuonFilter",
-                                        # "Flag_BadPFMuonDzFilter",   
+                                        "Flag_BadPFMuonDzFilter",       #only available in miniAODv2 (for v1 hack applied)
                                         "Flag_eeBadScFilter",
 
                                     ),
@@ -312,6 +326,8 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     ttbarPseudoInfo = cms.bool(False),
                                     DYptInfo = cms.bool(False),
                                     bFragInfo = cms.bool(False),
+                                    isMadgraphMLM = cms.bool(False),
+                                    year=cms.untracked.string("2016APV"),  # needed for xy MET correction
 )
 
 ################################
@@ -323,6 +339,7 @@ process.TreeWriter.ttbarGenInfo=(dataset.startswith("/TT") or dataset.startswith
 process.TreeWriter.ttbarPseudoInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T"))
 process.TreeWriter.bFragInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/ST"))
 process.TreeWriter.DYptInfo=(dataset.startswith("/DY"))
+process.TreeWriter.isMadgraphMLM=(dataset.find("madgraphMLM")>0)  # ME scale weights stored in different order
 
 # set triggers
 process.TreeWriter.triggerObjectNames = ["hltEG90CaloIdLHEFilter", "hltEG165HE10Filter"]
@@ -369,11 +386,12 @@ process.p = cms.Path(
     *process.egammaPostRecoSeq
     *process.MuonsAddedRochesterCorr
     *process.fullPatMetSequence
-    *process.puppiSequence
+    #  ~*process.puppiSequence              # only needed for miniAODv1
     *process.jecSequencePuppi
     *process.jetIDSequencePuppi
     *process.TTbarGen
-    *process.BadPFMuonFilterUpdateDz
+    #  ~*process.BadPFMuonFilterUpdateDz    # only needed for miniAODv1
     *process.bFragWgtSequence
+    *process.prefiringweight
     *process.TreeWriter
 )

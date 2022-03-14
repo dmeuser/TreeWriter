@@ -189,13 +189,21 @@ private:
    tree::MET                   met_UnclEu_;
    tree::MET                   met_UnclEd_;
    tree::MET                   metCalo_;
+   tree::MET                   metCalo_UnclEu_;
+   tree::MET                   metCalo_UnclEd_;
    tree::MET                   metPuppi_;
    tree::MET                   metPuppi_UnclEu_;
    tree::MET                   metPuppi_UnclEd_;
    tree::MET                   met_raw_;
    tree::MET                   met_gen_;
    tree::MET                   metXYcorr_;
+   tree::MET                   metXYcorr_UnclEu_;
+   tree::MET                   metXYcorr_UnclEd_;
+   tree::MET                   metPuppiXYcorr_;
+   tree::MET                   metPuppiXYcorr_UnclEu_;
+   tree::MET                   metPuppiXYcorr_UnclEd_;
    std::map<std::string,std::vector<tree::Particle>> triggerObjectMap_;
+   const std::string year_;
    
    // other variables
    Float_t Ht_;
@@ -306,6 +314,14 @@ private:
    float fragPetersonWeight_;
    float semilepbrUpWeight_;
    float semilepbrDownWeight_;
+   
+   //Prefiring weights
+   edm::EDGetTokenT< double > prefweight_token_;
+   edm::EDGetTokenT< double > prefweightup_token_;
+   edm::EDGetTokenT< double > prefweightdown_token_;
+   double prefiringweight_;
+   double prefiringweight_up_;
+   double prefiringweight_down_;
    
    //MadgraphMLM
    const bool isMadgraphMLM_;

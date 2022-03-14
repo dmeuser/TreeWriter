@@ -230,6 +230,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    , triggerNames_(iConfig.getParameter<std::vector<std::string>>("triggerNames"))
    , triggerPrescales_(iConfig.getParameter<std::vector<std::string>>("triggerPrescales"))
    , triggerObjectNames_(iConfig.getParameter<std::vector<std::string>>("triggerObjectNames"))
+   , year_(iConfig.getUntrackedParameter<std::string>("year"))
    // Ttbar gen Event Info
    , ttbarGenInfo_(iConfig.getParameter<bool>("ttbarGenInfo"))
    , pseudoTopInfo_(iConfig.getParameter<bool>("ttbarPseudoInfo"))
@@ -243,6 +244,10 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    , bfragWeight_PetersonToken_(consumes<edm::ValueMap<float> >(edm::InputTag("bfragWgtProducer:fragCP5PetersonVsPt")))
    , bfragWeight_BSemiLepUpToken_(consumes<edm::ValueMap<float> >(edm::InputTag("bfragWgtProducer:semilepbrup")))
    , bfragWeight_BSemiLepDownToken_(consumes<edm::ValueMap<float> >(edm::InputTag("bfragWgtProducer:semilepbrdown")))
+   // Prefiring weights
+   , prefweight_token_(consumes< double >(edm::InputTag("prefiringweight:nonPrefiringProb")))
+   , prefweightup_token_(consumes< double >(edm::InputTag("prefiringweight:nonPrefiringProbUp")))
+   , prefweightdown_token_(consumes< double >(edm::InputTag("prefiringweight:nonPrefiringProbDown")))
    // MadgraphMLM
    , isMadgraphMLM_(iConfig.getParameter<bool>("isMadgraphMLM"))
 
@@ -274,10 +279,17 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("met_UnclE_up", &met_UnclEu_);
    eventTree_->Branch("met_UnclE_down", &met_UnclEd_);
    eventTree_->Branch("metCalo", &metCalo_);
+   eventTree_->Branch("metCalo_UnclE_up", &metCalo_UnclEu_);
+   eventTree_->Branch("metCalo_UnclE_down", &metCalo_UnclEd_);
    eventTree_->Branch("metPuppi", &metPuppi_);
    eventTree_->Branch("metPuppi_UnclE_up", &metPuppi_UnclEu_);
    eventTree_->Branch("metPuppi_UnclE_down", &metPuppi_UnclEd_);
    eventTree_->Branch("metXYcorr", &metXYcorr_);
+   eventTree_->Branch("metXYcorr_UnclE_up", &metXYcorr_UnclEu_);
+   eventTree_->Branch("metXYcorr_UnclE_down", &metXYcorr_UnclEd_);
+   eventTree_->Branch("metPuppiXYcorr", &metPuppiXYcorr_);
+   eventTree_->Branch("metPuppiXYcorr_UnclE_up", &metPuppiXYcorr_UnclEu_);
+   eventTree_->Branch("metPuppiXYcorr_UnclE_down", &metPuppiXYcorr_UnclEd_);
    eventTree_->Branch("met_raw", &met_raw_);
    eventTree_->Branch("met_gen", &met_gen_);
    eventTree_->Branch("genParticles", &vGenParticles_);
@@ -300,6 +312,10 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("mc_weight", &mc_weight_, "mc_weight/F");
    eventTree_->Branch("pdf_weights", &vPdf_weights_);
    eventTree_->Branch("ps_weights", &vPS_weights_);
+   
+   eventTree_->Branch("prefiring_weight", &prefiringweight_);
+   eventTree_->Branch("prefiring_weight_up", &prefiringweight_up_);
+   eventTree_->Branch("prefiring_weight_down", &prefiringweight_down_);
 
    eventTree_->Branch("Ht", &Ht_, "Ht/F");
    eventTree_->Branch("genHt", &genHt_, "genHt/F");
@@ -550,6 +566,28 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       pu_weight_ = 1.;
       pu_weight_up_ = 1.;
       pu_weight_down_ = 1.;
+   }
+   
+   //////////////////////
+   // Prefiring weights//
+   //////////////////////
+   if (!isRealData) {
+      edm::Handle< double > theprefweight;
+      iEvent.getByToken(prefweight_token_, theprefweight ) ;
+      prefiringweight_ = (*theprefweight);
+
+      edm::Handle< double > theprefweightup;
+      iEvent.getByToken(prefweightup_token_, theprefweightup ) ;
+      prefiringweight_up_ = (*theprefweightup);
+
+      edm::Handle< double > theprefweightdown;
+      iEvent.getByToken(prefweightdown_token_, theprefweightdown ) ;
+      prefiringweight_down_ = (*theprefweightdown);
+   }
+   else{
+      prefiringweight_ = 1.;
+      prefiringweight_up_ = 1.;
+      prefiringweight_down_ = 1.;
    }
    
    /////////////////////////////
@@ -1090,11 +1128,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    met_UnclEd_.uncertainty =  met_.uncertainty;
    met_UnclEd_.sig = met_.sig;
    
-   metShifted = met.shiftedP4(pat::MET::NoShift, pat::MET::RawCalo);
-   metCalo_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
-   
    met_raw_.sig = met_.sig;
-   metCalo_.sig = met_.sig;
    
    //PuppiMET
    edm::Handle<pat::METCollection> metCollPuppi;
@@ -1129,11 +1163,51 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    metPuppi_UnclEd_.uncertainty = metPuppi_.uncertainty;
    metPuppi_UnclEd_.sig = metPuppi_.sig;
    
-   //XY Corrected MET
-   std::pair<double,double> MET_XYpair = METXYCorr_Met_MetPhi(metPt, met.phi(), iEvent.run(), 2016, !isRealData, nPV_);
+   // CaloMET
+   metShifted = met.shiftedP4(pat::MET::NoShift, pat::MET::RawCalo);
+   metCalo_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
+   metCalo_.sig = met_.sig;
+   metCalo_.uncertainty = met_.uncertainty;
+   
+   // CaloMET shifted by uncl. energy
+   metShifted = met.shiftedP4(pat::MET::UnclusteredEnUp, pat::MET::RawCalo);
+   metCalo_UnclEu_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
+   metCalo_UnclEu_.uncertainty = met_.uncertainty;
+   metCalo_UnclEu_.sig = met_.sig;
+   metShifted = met.shiftedP4(pat::MET::UnclusteredEnDown, pat::MET::RawCalo);
+   metCalo_UnclEd_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
+   metCalo_UnclEd_.uncertainty = met_.uncertainty;
+   metCalo_UnclEd_.sig = met_.sig;
+   
+   //XY Corrected PFMET
+   std::pair<double,double> MET_XYpair = METXYCorr_Met_MetPhi(metPt, met.phi(), iEvent.run(), year_, !isRealData, nPV_, true, false);
    metXYcorr_.p.SetPtEtaPhiE(MET_XYpair.first, met.eta(), MET_XYpair.second, met.energy());
    metXYcorr_.sig = met.metSignificance();
-   metXYcorr_.uncertainty = met_.uncertainty;   //should probably be changed
+   metXYcorr_.uncertainty = met_.uncertainty;
+   
+   std::pair<double,double> MET_XYpair_UnclEu = METXYCorr_Met_MetPhi(met_UnclEu_.p.Pt(), met_UnclEu_.p.Phi(), iEvent.run(), year_, !isRealData, nPV_, true, false);
+   metXYcorr_UnclEu_.p.SetPtEtaPhiE(MET_XYpair_UnclEu.first, met_UnclEu_.p.Eta(), MET_XYpair_UnclEu.second, met_UnclEu_.p.Energy());
+   metXYcorr_UnclEu_.sig = met.metSignificance();
+   metXYcorr_UnclEu_.uncertainty = met_.uncertainty;
+   std::pair<double,double> MET_XYpair_UnclEd = METXYCorr_Met_MetPhi(met_UnclEd_.p.Pt(), met_UnclEd_.p.Phi(), iEvent.run(), year_, !isRealData, nPV_, true, false);
+   metXYcorr_UnclEd_.p.SetPtEtaPhiE(MET_XYpair_UnclEd.first, met_UnclEd_.p.Eta(), MET_XYpair_UnclEd.second, met_UnclEd_.p.Energy());
+   metXYcorr_UnclEd_.sig = met.metSignificance();
+   metXYcorr_UnclEd_.uncertainty = met_.uncertainty;
+   
+   //XY Corrected PuppiMET
+   std::pair<double,double> PuppiMET_XYpair = METXYCorr_Met_MetPhi(metPt_Puppi, metPuppi.phi(), iEvent.run(), year_, !isRealData, nPV_, true, true);
+   metPuppiXYcorr_.p.SetPtEtaPhiE(PuppiMET_XYpair.first, met.eta(), PuppiMET_XYpair.second, met.energy());
+   metPuppiXYcorr_.sig = met.metSignificance();
+   metPuppiXYcorr_.uncertainty = metPuppi_.uncertainty;
+   
+   std::pair<double,double> PuppiMET_XYpair_UnclEu = METXYCorr_Met_MetPhi(metPuppi_UnclEu_.p.Pt(), metPuppi_UnclEu_.p.Phi(), iEvent.run(), year_, !isRealData, nPV_, true, true);
+   metPuppiXYcorr_UnclEu_.p.SetPtEtaPhiE(PuppiMET_XYpair_UnclEu.first, metPuppi_UnclEu_.p.Eta(), PuppiMET_XYpair_UnclEu.second, metPuppi_UnclEu_.p.Energy());
+   metPuppiXYcorr_UnclEu_.sig = met.metSignificance();
+   metPuppiXYcorr_UnclEu_.uncertainty = metPuppi_.uncertainty;
+   std::pair<double,double> PuppiMET_XYpair_UnclEd = METXYCorr_Met_MetPhi(metPuppi_UnclEd_.p.Pt(), metPuppi_UnclEd_.p.Phi(), iEvent.run(), year_, !isRealData, nPV_, true, true);
+   metPuppiXYcorr_UnclEd_.p.SetPtEtaPhiE(PuppiMET_XYpair_UnclEd.first, metPuppi_UnclEd_.p.Eta(), PuppiMET_XYpair_UnclEd.second, metPuppi_UnclEd_.p.Energy());
+   metPuppiXYcorr_UnclEd_.sig = met.metSignificance();
+   metPuppiXYcorr_UnclEd_.uncertainty = metPuppi_.uncertainty;
    
    
    ///////////////////////////

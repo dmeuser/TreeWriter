@@ -28,9 +28,10 @@ options.register ('user',
                   "Name the user. If not set by crab, this script will determine it.")
 
 # input files for local testing
-options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/00000/531C1968-9806-4346-834C-2A1EE1A86AEB.root',
-#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAODv2/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/00000/04A0B676-D63A-6D41-B47F-F4CF8CBE7DB8.root',      # miniAODv2
-#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018B/MuonEG/MINIAOD/12Nov2019_UL2018-v1/100000/00BE9C7C-F659-EB4C-A6C4-EAC5054243B2.root',
+#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/00000/531C1968-9806-4346-834C-2A1EE1A86AEB.root',        # miniAODv1
+#  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018B/MuonEG/MINIAOD/12Nov2019_UL2018-v1/100000/00BE9C7C-F659-EB4C-A6C4-EAC5054243B2.root',      # miniAODv1
+options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAODv2/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/00000/25840049-8F8B-B449-8A69-57D711B71239.root',      # miniAODv2
+#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch///store/data/Run2018B/MuonEG/MINIAOD/UL2018_MiniAODv2-v1/30000/4D022B4F-18D5-884D-950E-CCC069C04D77.root',      # miniAODv2
 
 # defaults
 options.outputFile = 'ttbarTree.root'
@@ -55,8 +56,8 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 if isRealData:
         process.GlobalTag.globaltag = "106X_dataRun2_v35"
 else:
-        process.GlobalTag.globaltag = "106X_upgrade2018_realistic_v15_L1v1"
-        #  ~process.GlobalTag.globaltag = "106X_upgrade2018_realistic_v16_L1v1"     #miniAODv2 (correct? or only for production?)
+        #  ~process.GlobalTag.globaltag = "106X_upgrade2018_realistic_v15_L1v1" #miniAODv1
+        process.GlobalTag.globaltag = "106X_upgrade2018_realistic_v16_L1v1"     #miniAODv2
         
 #timing information
 process.Timing = cms.Service("Timing",
@@ -105,14 +106,14 @@ runMetCorAndUncFromMiniAOD(   #update pfMET
 # MET Filter (not needed in MiniAODv2)  #
 #########################################
 # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2#Recipe_for_BadPFMuonDz_filter_in
-from RecoMET.METFilters.BadPFMuonDzFilter_cfi import BadPFMuonDzFilter
-process.BadPFMuonFilterUpdateDz=BadPFMuonDzFilter.clone(
-    muons = cms.InputTag("slimmedMuons"),
-    vtx   = cms.InputTag("offlineSlimmedPrimaryVertices"),
-    PFCandidates = cms.InputTag("packedPFCandidates"),
-    minDzBestTrack = cms.double(0.5),
-    taggingMode    = cms.bool(True)
-)
+#  ~from RecoMET.METFilters.BadPFMuonDzFilter_cfi import BadPFMuonDzFilter
+#  ~process.BadPFMuonFilterUpdateDz=BadPFMuonDzFilter.clone(
+    #  ~muons = cms.InputTag("slimmedMuons"),
+    #  ~vtx   = cms.InputTag("offlineSlimmedPrimaryVertices"),
+    #  ~PFCandidates = cms.InputTag("packedPFCandidates"),
+    #  ~minDzBestTrack = cms.double(0.5),
+    #  ~taggingMode    = cms.bool(True)
+#  ~)
 
 ################################
 # Jets                         #
@@ -169,9 +170,10 @@ process.updatedPatJetsUpdatedJECIDsmeared = cms.EDProducer('SmearedPATJetProduce
 ################################
 # Puppi Jets                   #
 ################################
-from CommonTools.PileupAlgos.customizePuppiTune_cff import UpdatePuppiTuneV15
-# Update to new Puppi tune
-UpdatePuppiTuneV15(process, runOnMC=(isRealData==False))
+# Update of Puppi tune only needed for miniAODv1
+#  ~from CommonTools.PileupAlgos.customizePuppiTune_cff import UpdatePuppiTuneV15
+#  ~# Update to new Puppi tune
+#  ~UpdatePuppiTuneV15(process, runOnMC=(isRealData==False))
 
 #JEC
 updateJetCollection(
@@ -250,6 +252,18 @@ process.load('TopQuarkAnalysis.BFragmentationAnalyzer.bfragWgtProducer_cfi')
 if not isRealData: process.bFragWgtSequence = cms.Sequence(process.mergedGenParticles*process.genParticles2HepMC*process.particleLevel*process.bfragWgtProducer)
 else: process.bFragWgtSequence = cms.Sequence()
 
+################################
+# Prefiring Weights            #
+################################
+from PhysicsTools.PatUtils.l1PrefiringWeightProducer_cfi import l1PrefiringWeightProducer
+process.prefiringweight = l1PrefiringWeightProducer.clone(
+        TheJets = cms.InputTag("updatedPatJetsUpdatedJEC"), #this should be the slimmedJets collection with up to date JECs !
+        DataEraECAL = cms.string("None"),
+        DataEraMuon = cms.string("20172018"),
+        UseJetEMPt = cms.bool(False),
+        PrefiringRateSystematicUnctyECAL = cms.double(0.2),
+        PrefiringRateSystematicUnctyMuon = cms.double(0.2)
+)
 
 ################################
 # Define input and output      #
@@ -296,7 +310,7 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                         "Flag_HBHENoiseIsoFilter",
                                         "Flag_EcalDeadCellTriggerPrimitiveFilter",
                                         "Flag_BadPFMuonFilter",
-                                        #  ~"Flag_BadPFMuonDzFilter",       #only available in miniAODv2 (for v1 hack applied)
+                                        "Flag_BadPFMuonDzFilter",       #only available in miniAODv2 (for v1 hack applied)
                                         "Flag_eeBadScFilter",
                                         "Flag_ecalBadCalibFilter"
 
@@ -317,6 +331,7 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     DYptInfo = cms.bool(False),
                                     bFragInfo = cms.bool(False),
                                     isMadgraphMLM = cms.bool(False),
+                                    year=cms.untracked.string("2018"),  # needed for xy MET correction
 )
 
 ################################
@@ -377,11 +392,12 @@ process.p = cms.Path(
     *process.egammaPostRecoSeq
     *process.MuonsAddedRochesterCorr
     *process.fullPatMetSequence
-    *process.puppiSequence
+    #  ~*process.puppiSequence              # only needed for miniAODv1
     *process.jecSequencePuppi
     *process.jetIDSequencePuppi
     *process.TTbarGen
-    *process.BadPFMuonFilterUpdateDz
+    #  ~*process.BadPFMuonFilterUpdateDz    # only needed for miniAODv1
     *process.bFragWgtSequence
+    *process.prefiringweight
     *process.TreeWriter
 )
