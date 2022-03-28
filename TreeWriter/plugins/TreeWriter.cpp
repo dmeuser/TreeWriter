@@ -527,8 +527,8 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
          iEvent.getByToken(bfragWeight_BSemiLepDownToken_, frag_BSemiLepDown);
          for (auto genJet=genJetsBfrag->begin(); genJet!=genJetsBfrag->end(); ++genJet) {
             edm::Ref<std::vector<reco::GenJet> > genJetRef(genJetsBfrag, genJet-genJetsBfrag->begin());
-            fragUpWeight_ *= (*frag_BLCentral)[genJetRef];
-            fragCentralWeight_ *= (*frag_BLUp)[genJetRef];
+            fragUpWeight_ *= (*frag_BLUp)[genJetRef];
+            fragCentralWeight_ *= (*frag_BLCentral)[genJetRef];
             fragDownWeight_ *= (*frag_BLDown)[genJetRef];
             fragPetersonWeight_ *= (*frag_Peterson)[genJetRef];
             semilepbrUpWeight_ *= (*frag_BSemiLepUp)[genJetRef];
