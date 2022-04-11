@@ -35,7 +35,7 @@ options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL
 # defaults
 options.outputFile = 'ttbarTree.root'
 options.maxEvents = -1
-#  ~options.maxEvents = 100
+#  ~options.maxEvents = 1000
 # get and parse the command line arguments
 options.parseArguments()
 
@@ -267,6 +267,106 @@ process.prefiringweight = l1PrefiringWeightProducer.clone(
 )
 
 ################################
+# Bjet Regression              #
+################################
+# https://github.com/cms-sw/cmssw/blob/master/PhysicsTools/NanoAOD/python/jets_cff.py
+# https://twiki.cern.ch/twiki/bin/view/CMS/HiggsWG/BJetRegression
+
+process.bJetVars = cms.EDProducer("JetRegressionVarProducer",
+   pvsrc = cms.InputTag("offlineSlimmedPrimaryVertices"),
+   src = cms.InputTag("updatedPatJetsUpdatedJECID"),
+   svsrc = cms.InputTag("slimmedSecondaryVertices"),
+   gpsrc = cms.InputTag("prunedGenParticles"),
+)
+
+process.updatedPatJetsUpdatedJECIDUserData = cms.EDProducer("PATJetUserDataEmbedder",
+    src = cms.InputTag("updatedPatJetsUpdatedJECID"),
+    userFloats = cms.PSet(
+        leadTrackPt = cms.InputTag("bJetVars:leadTrackPt"),
+        leptonPtRel = cms.InputTag("bJetVars:leptonPtRel"),
+        leptonPtRatio = cms.InputTag("bJetVars:leptonPtRatio"),
+        leptonPtRelInv = cms.InputTag("bJetVars:leptonPtRelInv"),
+        leptonPtRelv0 = cms.InputTag("bJetVars:leptonPtRelv0"),
+        leptonPtRatiov0 = cms.InputTag("bJetVars:leptonPtRatiov0"),
+        leptonPtRelInvv0 = cms.InputTag("bJetVars:leptonPtRelInvv0"),
+        leptonDeltaR = cms.InputTag("bJetVars:leptonDeltaR"),
+        leptonPt = cms.InputTag("bJetVars:leptonPt"),
+        vtxPt = cms.InputTag("bJetVars:vtxPt"),
+        vtxMass = cms.InputTag("bJetVars:vtxMass"),
+        vtx3dL = cms.InputTag("bJetVars:vtx3dL"),
+        vtx3deL = cms.InputTag("bJetVars:vtx3deL"),
+        ptD = cms.InputTag("bJetVars:ptD"),
+        genPtwNu = cms.InputTag("bJetVars:genPtwNu"),
+        ),
+    userInts = cms.PSet(
+       vtxNtrk = cms.InputTag("bJetVars:vtxNtrk"),
+       leptonPdgId = cms.InputTag("bJetVars:leptonPdgId"),
+    ),
+)
+collection = 'updatedPatJetsUpdatedJECIDUserData'
+
+process.bjetNN= cms.EDProducer("BJetEnergyRegressionMVA",
+    backend = cms.string("TF"),
+    src = cms.InputTag(collection),
+    pvsrc = cms.InputTag("offlineSlimmedPrimaryVertices"),
+    svsrc = cms.InputTag("slimmedSecondaryVertices"),
+    rhosrc = cms.InputTag("fixedGridRhoFastjetAll"),
+
+    weightFile =  cms.FileInPath("PhysicsTools/NanoAOD/data/breg_training_2017.pb"),
+    name = cms.string("JetRegNN"),
+    isClassifier = cms.bool(False),
+    variablesOrder = cms.vstring(["Jet_pt","Jet_eta","rho","Jet_mt","Jet_leadTrackPt","Jet_leptonPtRel","Jet_leptonDeltaR","Jet_neHEF",
+                                  "Jet_neEmEF","Jet_vtxPt","Jet_vtxMass","Jet_vtx3dL","Jet_vtxNtrk","Jet_vtx3deL",
+                                  "Jet_numDaughters_pt03","Jet_energyRing_dR0_em_Jet_rawEnergy","Jet_energyRing_dR1_em_Jet_rawEnergy",
+                                  "Jet_energyRing_dR2_em_Jet_rawEnergy","Jet_energyRing_dR3_em_Jet_rawEnergy","Jet_energyRing_dR4_em_Jet_rawEnergy",
+                                  "Jet_energyRing_dR0_neut_Jet_rawEnergy","Jet_energyRing_dR1_neut_Jet_rawEnergy","Jet_energyRing_dR2_neut_Jet_rawEnergy",
+                                  "Jet_energyRing_dR3_neut_Jet_rawEnergy","Jet_energyRing_dR4_neut_Jet_rawEnergy","Jet_energyRing_dR0_ch_Jet_rawEnergy",
+                                  "Jet_energyRing_dR1_ch_Jet_rawEnergy","Jet_energyRing_dR2_ch_Jet_rawEnergy","Jet_energyRing_dR3_ch_Jet_rawEnergy",
+                                  "Jet_energyRing_dR4_ch_Jet_rawEnergy","Jet_energyRing_dR0_mu_Jet_rawEnergy","Jet_energyRing_dR1_mu_Jet_rawEnergy",
+                                  "Jet_energyRing_dR2_mu_Jet_rawEnergy","Jet_energyRing_dR3_mu_Jet_rawEnergy","Jet_energyRing_dR4_mu_Jet_rawEnergy",
+                                  "Jet_chHEF","Jet_chEmEF","Jet_leptonPtRelInv","isEle","isMu","isOther","Jet_mass","Jet_ptd"]),
+    variables = cms.PSet(
+    Jet_pt = cms.string("pt*jecFactor('Uncorrected')"),
+    Jet_mt = cms.string("mt*jecFactor('Uncorrected')"),
+    Jet_eta = cms.string("eta"),
+    Jet_mass = cms.string("mass*jecFactor('Uncorrected')"),
+    Jet_ptd = cms.string("userFloat('ptD')"),
+    Jet_leadTrackPt = cms.string("userFloat('leadTrackPt')"),
+    Jet_vtxNtrk = cms.string("userInt('vtxNtrk')"),
+    Jet_vtxMass = cms.string("userFloat('vtxMass')"),
+    Jet_vtx3dL = cms.string("userFloat('vtx3dL')"),
+    Jet_vtx3deL = cms.string("userFloat('vtx3deL')"),
+    Jet_vtxPt = cms.string("userFloat('vtxPt')"),
+    #Jet_leptonPt = cms.string("userFloat('leptonPt')"),
+    Jet_leptonPtRel = cms.string("userFloat('leptonPtRelv0')"),
+    Jet_leptonPtRelInv = cms.string("userFloat('leptonPtRelInvv0')*jecFactor('Uncorrected')"),
+    Jet_leptonDeltaR = cms.string("userFloat('leptonDeltaR')"),
+    #Jet_leptonPdgId = cms.string("userInt('leptonPdgId')"),
+    Jet_neHEF = cms.string("neutralHadronEnergyFraction()"),
+    Jet_neEmEF = cms.string("neutralEmEnergyFraction()"),
+    Jet_chHEF = cms.string("chargedHadronEnergyFraction()"),
+    Jet_chEmEF = cms.string("chargedEmEnergyFraction()"),
+    isMu = cms.string("?abs(userInt('leptonPdgId'))==13?1:0"),
+    isEle = cms.string("?abs(userInt('leptonPdgId'))==11?1:0"),
+    isOther = cms.string("?userInt('leptonPdgId')==0?1:0"),
+    ),
+     inputTensorName = cms.string("ffwd_inp"),
+     outputTensorName = cms.string("ffwd_out/BiasAdd"),
+     outputNames = cms.vstring(["corr","res"]),
+     outputFormulas = cms.vstring(["at(0)*0.28225210309028625+1.055067777633667","0.5*(at(2)-at(1))*0.28225210309028625"]),
+     nThreads = cms.uint32(1),
+     singleThreadPool = cms.string("no_threads"),
+)
+
+process.updatedPatJetsUpdatedJECIDUserDataBregr = cms.EDProducer('PATJetUserDataEmbedder',
+   src = cms.InputTag(collection),
+   userFloats = cms.PSet(
+      BJetEnergyCorrFactor       = cms.InputTag('bjetNN:corr'),
+      BJetEnergyCorrResolution       = cms.InputTag('bjetNN:res'),
+   ),
+)
+
+################################
 # Define input and output      #
 ################################
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(options.maxEvents))
@@ -283,7 +383,8 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     jet_pT_cut=cms.untracked.double(15), # for all jets
                                     NumberLeptons_cut=cms.untracked.uint32(2),
                                     # physics objects
-                                    jets = cms.InputTag("updatedPatJetsUpdatedJECID"),    #Use unsmeared jets and apply JER locally
+                                    #  ~jets = cms.InputTag("updatedPatJetsUpdatedJECID"),    #Use unsmeared jets and apply JER locally
+                                    jets = cms.InputTag("updatedPatJetsUpdatedJECIDUserDataBregr"),    #Use unsmeared jets and apply JER locally
                                     jets_puppi = cms.InputTag("updatedPatJetsUpdatedJECIDPuppi"),
                                     muons = cms.InputTag("MuonsAddedRochesterCorr"),
                                     genJets=cms.InputTag("slimmedGenJets"),
@@ -348,7 +449,6 @@ process.TreeWriter.DYptInfo=(dataset.startswith("/DY"))
 process.TreeWriter.isMadgraphMLM=(dataset.find("madgraphMLM")>0)  # ME scale weights stored in different order
 
 # set triggers
-process.TreeWriter.triggerObjectNames = ["hltEG90CaloIdLHEFilter", "hltEG165HE10Filter"]
 process.TreeWriter.triggerNames=[
     # ee Channel
     "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v",
@@ -391,6 +491,10 @@ user=options.user or getpass.getuser()
 process.p = cms.Path(
     process.jecSequence
     *process.jetIDSequence
+    *process.bJetVars
+    *process.updatedPatJetsUpdatedJECIDUserData
+    *process.bjetNN
+    *process.updatedPatJetsUpdatedJECIDUserDataBregr
     *process.egammaPostRecoSeq
     *process.MuonsAddedRochesterCorr
     *process.fullPatMetSequence
