@@ -297,7 +297,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
      triggerObjectMap_[n] = std::vector<tree::Particle>();
      eventTree_->Branch(n.c_str(), &triggerObjectMap_[n]);
    }
-   eventTree_->Branch("intermediateGenParticles", &vIntermediateGenParticles_);
+   // ~eventTree_->Branch("intermediateGenParticles", &vIntermediateGenParticles_);
    eventTree_->Branch("addLepton", &addLepton_);
    eventTree_->Branch("true_nPV", &true_nPV_, "true_nPV/I");
    eventTree_->Branch("nPV", &nPV_, "nPV/I");
@@ -995,6 +995,9 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       else trJet.matchedGenJet.SetPtEtaPhiM(0.,0.,0.,0.);
       trJet.seed = createJetSeed(iEvent,jet);
       
+      trJet.bJetRegressionCorr = jet.hasUserFloat("BJetEnergyCorrFactor") ? jet.userFloat("BJetEnergyCorrFactor") : 1.;
+      trJet.bJetRegressionRes = jet.hasUserFloat("BJetEnergyCorrResolution") ? jet.userFloat("BJetEnergyCorrResolution") : 0.;
+            
       // loose object matching (nominal is performed in local framework)
       trJet.hasElectronMatch_loose = false;
       for (tree::Electron const &el: vElectrons_add_) {

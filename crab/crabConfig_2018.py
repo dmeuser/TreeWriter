@@ -66,7 +66,7 @@ datasets["EGamma"] = [
     "/EGamma/Run2018A-UL2018_MiniAODv2-v1/MINIAOD",
     "/EGamma/Run2018B-UL2018_MiniAODv2-v1/MINIAOD",
     "/EGamma/Run2018C-UL2018_MiniAODv2-v1/MINIAOD",
-    "/EGamma/Run2018D-UL2018_MiniAODv2-v1/MINIAOD",
+    "/EGamma/Run2018D-UL2018_MiniAODv2-v2/MINIAOD",
 ]
 
 datasets["MuonEG"] = [
@@ -87,10 +87,10 @@ datasets["SingleMuon"] = [
     #  ~"/SingleMuon/Run2018C-12Nov2019_UL2018-v3/MINIAOD",
     #  ~"/SingleMuon/Run2018D-12Nov2019_UL2018-v8/MINIAOD",
     
-    "/SingleMuon/Run2018A-UL2018_MiniAODv2-v1/MINIAOD",
-    "/SingleMuon/Run2018B-UL2018_MiniAODv2-v1/MINIAOD",
-    "/SingleMuon/Run2018C-UL2018_MiniAODv2-v1/MINIAOD",
-    "/SingleMuon/Run2018D-UL2018_MiniAODv2-v1/MINIAOD",
+    "/SingleMuon/Run2018A-UL2018_MiniAODv2-v3/MINIAOD",
+    "/SingleMuon/Run2018B-UL2018_MiniAODv2-v2/MINIAOD",
+    "/SingleMuon/Run2018C-UL2018_MiniAODv2-v2/MINIAOD",
+    "/SingleMuon/Run2018D-UL2018_MiniAODv2-v3/MINIAOD",
 ]
 
 datasets["MET"] = [
@@ -100,7 +100,7 @@ datasets["MET"] = [
     #  ~"/MET/Run2018D-12Nov2019_UL2018_rsb-v2/MINIAOD",
     
     "/MET/Run2018A-UL2018_MiniAODv2-v2/MINIAOD",
-    "/MET/Run2018B-UL2018_MiniAODv2-v1/MINIAOD",
+    "/MET/Run2018B-UL2018_MiniAODv2-v2/MINIAOD",
     "/MET/Run2018C-UL2018_MiniAODv2-v1/MINIAOD",
     "/MET/Run2018D-UL2018_MiniAODv2-v1/MINIAOD",
 ]
@@ -140,6 +140,9 @@ datasets["V+Jets"] = [
     "/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
     "/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
     "/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1_ext1-v1/MINIAODSIM",
+    "/DYJetsToEE_M-50_massWgtFix_TuneCP5_13TeV-powhegMiNNLO-pythia8-photos/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
+    "/DYJetsToMuMu_M-50_massWgtFix_TuneCP5_13TeV-powhegMiNNLO-pythia8-photos/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
+    "/DYJetsToTauTau_M-50_AtLeastOneEorMuDecay_massWgtFix_TuneCP5_13TeV-powhegMiNNLO-pythia8-photos/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
     "/DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM",
     "/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM",
 ]
