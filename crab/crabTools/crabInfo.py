@@ -113,10 +113,10 @@ class CrabInfo:
                 modifiedDatasetName="UNKOWNPATTERN"
                 
         from TreeWriter.paths.getPath import getPath
-        if "UL2016_HIPM-" in self.datasetMiddle or "RunIISummer20UL16MiniAODAPV-" in self.datasetMiddle:
+        if "HIPM_UL2016" in self.datasetMiddle or "RunIISummer20UL16MiniAODAPVv2-" in self.datasetMiddle:
             return os.path.join(getPath("localDirBase", self.user),getPath("dir2016_preVFP", self.user),getPath("datasetTag_2016_preVFP", self.user),"nTuple/{}.root".format(modifiedDatasetName))
             # return "/net/data_cms1b/user/teroerde/top_analysis/2016_preVFP/v01/nTuple/{}.root".format(modifiedDatasetName)
-        elif "UL2016-" in self.datasetMiddle or "RunIISummer20UL16MiniAOD-" in self.datasetMiddle:
+        elif "-UL2016" in self.datasetMiddle or "RunIISummer20UL16MiniAODv2-" in self.datasetMiddle:
             return os.path.join(getPath("localDirBase", self.user),getPath("dir2016_postVFP", self.user),getPath("datasetTag_2016_postVFP", self.user),"nTuple/{}.root".format(modifiedDatasetName))
             # return "/net/data_cms1b/user/teroerde/top_analysis/2016_postVFP/v01/nTuple/{}.root".format(modifiedDatasetName)
         elif "UL2017" in self.datasetMiddle or "UL17" in self.datasetMiddle:
