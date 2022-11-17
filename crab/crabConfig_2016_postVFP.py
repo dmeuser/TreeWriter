@@ -141,6 +141,12 @@ datasets["SingleTop"] = [
     
 ]
 
+datasets["SingleTopDS"] = [
+    # "/ST_tW_antitop_5f_DS_NoFullyHadronicDecays_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM",
+    "/ST_tW_top_5f_DS_NoFullyHadronicDecays_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM",
+]
+
+
 datasets["V+Jets"] = [
     # "/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM",
     # "/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM",
@@ -297,6 +303,7 @@ datasets["all"] += datasets["SingleMuon"]
 datasets["all"] += datasets["MET"]
 datasets["all"] += datasets["Standard_ttbar"]
 datasets["all"] += datasets["SingleTop"]
+datasets["all"] += datasets["SingleTopDS"]
 datasets["all"] += datasets["V+Jets"]
 datasets["all"] += datasets["Diboson"]
 datasets["all"] += datasets["tt+X"]
