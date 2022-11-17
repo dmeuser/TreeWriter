@@ -79,10 +79,21 @@ def multicrab(args):
         elif args.killSubmitFailed and info.statusCRAB=="SUBMITFAILED":
             print "Killing..."
             killed.append(dir.split("/")[-2])
+            crabKill(dir)
+            info.moveKilled()
+        elif args.killDatasetBlacklist and info.datasetAtBlacklist:
+            print "Killing..."
+            killed.append(dir.split("/")[-2])
+            crabKill(dir)
             info.moveKilled()
         else:
             if args.forceDL: info.download(args.downloadFirst,args.maxMergeSize)
             elif info.completed():
+                if info.datasetAtBlacklist:
+                    merging = input("Dataset is not complete since parts are on blacklistes site\nIf you still want to complete and merge, enter 1:\n")
+                    if (merging != 1):
+                        print "Abort merging"
+                        continue
                 iComplete+=1
                 if args.autoDL:
                     info.download(args.downloadFirst,args.maxMergeSize)
@@ -96,7 +107,7 @@ def multicrab(args):
 
     print "==============================="
     print "Summary: %d/%d tasks completed"%(iComplete,iTotal)
-    if args.kill or args.killSubmitFailed:
+    if args.kill or args.killSubmitFailed or args.killDatasetBlacklist:
        print colors.BOLD+colors.RED,
        print "Killed the following samples:"+colors.NORMAL
        for sample in killed:
@@ -123,6 +134,7 @@ def main():
     parser.add_argument('--maxMergeSize', type=float, default=10, help="in GB" )
     parser.add_argument('--kill', action='store_true' )
     parser.add_argument('--killSubmitFailed', action='store_true' )
+    parser.add_argument('--killDatasetBlacklist', action='store_true' )
     args = parser.parse_args()
     
     if (args.maxMergeSize==-1 and (args.forceDL or args.autoDL)):

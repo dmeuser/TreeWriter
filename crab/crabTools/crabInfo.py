@@ -53,6 +53,7 @@ class CrabInfo:
             lines = f.readlines()
 
         self.validStatusCache=False
+        self.datasetAtBlacklist = False
         for line in lines:
             for m in myMatch("config.Data.outLFNDirBase = '(.*)'", line ):
                 self.outLFNDirBase = m.group(1)
@@ -64,6 +65,8 @@ class CrabInfo:
                 self.inputDataset = m.group(1)
                 self.datasetName, self.datasetMiddle, self.datasetType = self.inputDataset.split("/")[1:]
                 self.isMC = "SIM" in self.datasetType
+            if line.find("Some blocks from dataset")>=0:
+                self.datasetAtBlacklist = True
             for m in myMatch( ".*Got information from status cache file: (.*)", line ):
                 try:
                     self.details = eval( m.group(1) )
@@ -195,14 +198,17 @@ class CrabInfo:
 
     def beautifyCrabStatus(self):
         print self.logFileDir
-        if self.completed():
+        if self.datasetAtBlacklist:
+            print colors.BOLD+colors.RED,
+            print "!!!!!!!!!!Not all files of dataset processed!!!!!!!!!!!!"+colors.NORMAL
+        elif self.completed():
             print "{}COMPLETED!{}".format(colors.GREEN+colors.BOLD,colors.NORMAL)
         elif self.statusCRAB== "SUBMITFAILED":
-           print colors.BOLD+colors.RED,
-           print self.statusCRAB+colors.NORMAL
+            print colors.BOLD+colors.RED,
+            print self.statusCRAB+colors.NORMAL
         elif self.validStatusCache==False:
-           print colors.BOLD+colors.GREEN,
-           print "SUBMIT NOT YET FINISHED"+colors.NORMAL
+            print colors.BOLD+colors.GREEN,
+            print "SUBMIT NOT YET FINISHED"+colors.NORMAL
         else:
             if self.statusScheduler=="RESUBMITFAILED": print colors.BOLD+colors.RED,
             print self.statusScheduler+colors.NORMAL
