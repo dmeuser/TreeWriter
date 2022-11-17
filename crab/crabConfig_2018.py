@@ -171,6 +171,12 @@ datasets["tt+X"] = [
     "/TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM",
 ]
 
+datasets["BSM"] = [
+    "/SMS-T2tt_mStop-525_mLSP-350_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
+    "/SMS-T2tt_mStop-525_mLSP-438_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
+
+]
+
 datasets["hdamp_ttbar"] = [
     #  ~"/TTTo2L2Nu_hdampDOWN_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
     #  ~"/TTTo2L2Nu_hdampUP_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
@@ -273,6 +279,11 @@ datasets["TopMass_top"] = [
     "/TTToSemiLeptonic_mtop175p5_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM",
 ]
 
+datasets["DS_SingleTop"] = [
+    "/ST_tW_antitop_5f_DS_NoFullyHadronicDecays_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
+    "/ST_tW_top_5f_DS_NoFullyHadronicDecays_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
+]
+
 datasets["all"] = []
 datasets["all"] += datasets["DoubleMuon"]
 datasets["all"] += datasets["EGamma"]
@@ -288,6 +299,8 @@ datasets["all"] += datasets["hdamp_ttbar"]
 datasets["all"] += datasets["UE_top"]
 datasets["all"] += datasets["ColorRec_top"]
 datasets["all"] += datasets["TopMass_top"]
+datasets["all"] += datasets["BSM"]
+datasets["all"] += datasets["DS_SingleTop"]
 
 # call with 'python crabConfig.py'
 if __name__ == '__main__':
@@ -335,7 +348,7 @@ if __name__ == '__main__':
             config.Data.lumiMask = getLumiMask(cmssw_src)
 
         if user=="dmeuser":
-            config.Data.outputDatasetTag = 'v07'
+            config.Data.outputDatasetTag = 'v08'
             config.Data.outLFNDirBase = "/store/user/dmeuser/run2_topUL/2018/"
         else:
             print "you shall not pass!"

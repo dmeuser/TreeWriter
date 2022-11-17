@@ -290,6 +290,12 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("metPuppiXYcorr", &metPuppiXYcorr_);
    eventTree_->Branch("metPuppiXYcorr_UnclE_up", &metPuppiXYcorr_UnclEu_);
    eventTree_->Branch("metPuppiXYcorr_UnclE_down", &metPuppiXYcorr_UnclEd_);
+   eventTree_->Branch("metDeepResponse", &metDeepResponse_);
+   eventTree_->Branch("metDeepResponse_UnclE_up", &metDeepResponse_UnclEu_);
+   eventTree_->Branch("metDeepResponse_UnclE_down", &metDeepResponse_UnclEd_);
+   eventTree_->Branch("metDeepResolution", &metDeepResolution_);
+   eventTree_->Branch("metDeepResolution_UnclE_up", &metDeepResolution_UnclEu_);
+   eventTree_->Branch("metDeepResolution_UnclE_down", &metDeepResolution_UnclEd_);
    eventTree_->Branch("met_raw", &met_raw_);
    eventTree_->Branch("met_gen", &met_gen_);
    eventTree_->Branch("genParticles", &vGenParticles_);
@@ -324,6 +330,7 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("genMT2neutrino", &genMT2neutrino_, "genMT2neutrino/F");
    
    eventTree_->Branch("topPTweight", &topPTweight_, "topPTweight/F");
+   eventTree_->Branch("topPTweightNNLO", &topPTweightNNLO_, "topPTweightNNLO/F");
 
    eventTree_->Branch("evtNo", &evtNo_, "evtNo/l");
    eventTree_->Branch("runNo", &runNo_, "runNo/i");
@@ -416,7 +423,9 @@ TH1D* TreeWriter::createCutFlowHist(std::string modelName)
       "initial_unweighted",
       "initial_mc_weighted",
       "initial_mc_pu_topPt_weighted",
+      "initial_mc_pu_topPtNNLO_weighted",
       "initial_mc_pu_topPt_bFrag_weighted",
+      "initial_mc_pu_topPtNNLO_bFrag_weighted",
       "trigger",
       "METfilters",
       "nGoodVertices",
@@ -451,6 +460,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    //////////////////////
    mc_weight_ = 1; // 1 for data
    topPTweight_ = 1.;
+   topPTweightNNLO_ = 1.;
    fragUpWeight_        = 1.0;
    fragCentralWeight_   = 1.0;
    fragDownWeight_      = 1.0;
@@ -506,6 +516,7 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
             else genAntiTop_ = nullP4_;
             
             topPTweight_ = sqrt(exp(0.0615-0.0005*genTop_.Pt())*exp(0.0615-0.0005*genAntiTop_.Pt()));
+            topPTweightNNLO_ = sqrt((0.103*exp(-0.0118*genTop_.Pt())-0.000134*genTop_.Pt()+0.973)*(0.103*exp(-0.0118*genAntiTop_.Pt())-0.000134*genAntiTop_.Pt()+0.973));
          }
       }
 
@@ -594,34 +605,45 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    // Normalization histograms//
    /////////////////////////////
    double mcWeight_pu_top_ = 1.;
+   double mcWeight_pu_topNNLO_ = 1.;
    double mcWeight_pu_top_bFrag_ = 1.;
+   double mcWeight_pu_topNNLO_bFrag_ = 1.;
    
    if(!isRealData){
       
       mcWeight_pu_top_ = mc_weight_*pu_weight_*topPTweight_;
+      mcWeight_pu_topNNLO_ = mc_weight_*pu_weight_*topPTweightNNLO_;
       mcWeight_pu_top_bFrag_ = mc_weight_*pu_weight_*topPTweight_*fragCentralWeight_;
+      mcWeight_pu_topNNLO_bFrag_ = mc_weight_*pu_weight_*topPTweightNNLO_*fragCentralWeight_;
       
       //PS weights
       for (unsigned i=0; i<vPS_weights_.size(); i++){
          hSystMCweight_PS_->Fill(i,vPS_weights_[i]*mc_weight_);
          hSystMCweight_PS_timesTopPU_->Fill(i,vPS_weights_[i]*mcWeight_pu_top_);
+         hSystMCweight_PS_timesTopnnloPU_->Fill(i,vPS_weights_[i]*mcWeight_pu_topNNLO_);
          hSystMCweight_PS_timesTopPUbFrag_->Fill(i,vPS_weights_[i]*mcWeight_pu_top_bFrag_);
+         hSystMCweight_PS_timesTopnnloPUbFrag_->Fill(i,vPS_weights_[i]*mcWeight_pu_topNNLO_bFrag_);
       }
       
       //PDF and scale variations
       for (unsigned i=0; i<vPdf_weights_.size(); i++){
          hSystMCweight_PDF_->Fill(i,vPdf_weights_[i]*mc_weight_);
          hSystMCweight_PDF_timesTopPU_->Fill(i,vPdf_weights_[i]*mcWeight_pu_top_);
+         hSystMCweight_PDF_timesTopnnloPU_->Fill(i,vPdf_weights_[i]*mcWeight_pu_topNNLO_);
          hSystMCweight_PDF_timesTopPUbFrag_->Fill(i,vPdf_weights_[i]*mcWeight_pu_top_bFrag_);
+         hSystMCweight_PDF_timesTopnnloPUbFrag_->Fill(i,vPdf_weights_[i]*mcWeight_pu_topNNLO_bFrag_);
       }
       
       //Top pt
       hSystMCweight_topPt_->Fill(0.,topPTweight_*mc_weight_);
       hSystMCweight_topPt_->Fill(1,mc_weight_);
+      hSystMCweight_topPt_->Fill(2,topPTweightNNLO_*mc_weight_);
       hSystMCweight_topPt_timesTopPU_->Fill(0.,topPTweight_*mc_weight_*pu_weight_);
       hSystMCweight_topPt_timesTopPU_->Fill(1,mc_weight_*pu_weight_);
+      hSystMCweight_topPt_timesTopPU_->Fill(2,topPTweightNNLO_*mc_weight_*pu_weight_);
       hSystMCweight_topPt_timesTopPUbFrag_->Fill(0.,topPTweight_*mc_weight_*pu_weight_*fragCentralWeight_);
       hSystMCweight_topPt_timesTopPUbFrag_->Fill(1,mc_weight_*pu_weight_*fragCentralWeight_);
+      hSystMCweight_topPt_timesTopPUbFrag_->Fill(2,topPTweightNNLO_*mc_weight_*pu_weight_*fragCentralWeight_);
       
       //Bfrag and BsemiLep
       hSystMCweight_bFrag_->Fill(0.,fragUpWeight_*mc_weight_);
@@ -638,12 +660,26 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       hSystMCweight_bFrag_timesTopPU_->Fill(4,semilepbrUpWeight_*mcWeight_pu_top_);
       hSystMCweight_bFrag_timesTopPU_->Fill(5,semilepbrDownWeight_*mcWeight_pu_top_);
       
+      hSystMCweight_bFrag_timesTopnnloPU_->Fill(0.,fragUpWeight_*mcWeight_pu_topNNLO_);
+      hSystMCweight_bFrag_timesTopnnloPU_->Fill(1,fragCentralWeight_*mcWeight_pu_topNNLO_);
+      hSystMCweight_bFrag_timesTopnnloPU_->Fill(2,fragDownWeight_*mcWeight_pu_topNNLO_);
+      hSystMCweight_bFrag_timesTopnnloPU_->Fill(3,fragPetersonWeight_*mcWeight_pu_topNNLO_);
+      hSystMCweight_bFrag_timesTopnnloPU_->Fill(4,semilepbrUpWeight_*mcWeight_pu_topNNLO_);
+      hSystMCweight_bFrag_timesTopnnloPU_->Fill(5,semilepbrDownWeight_*mcWeight_pu_topNNLO_);
+      
       hSystMCweight_bFrag_timesTopPUbFrag_->Fill(0.,fragUpWeight_*mcWeight_pu_top_);      // do not multiply with bFrag central (is replace in local FW by shift)
       hSystMCweight_bFrag_timesTopPUbFrag_->Fill(1,fragCentralWeight_*mcWeight_pu_top_);  // do not multiply with bFrag central (is replace in local FW by shift)
       hSystMCweight_bFrag_timesTopPUbFrag_->Fill(2,fragDownWeight_*mcWeight_pu_top_);     // do not multiply with bFrag central (is replace in local FW by shift)
       hSystMCweight_bFrag_timesTopPUbFrag_->Fill(3,fragPetersonWeight_*mcWeight_pu_top_); // do not multiply with bFrag central (is replace in local FW by shift)
       hSystMCweight_bFrag_timesTopPUbFrag_->Fill(4,semilepbrUpWeight_*mcWeight_pu_top_bFrag_);
       hSystMCweight_bFrag_timesTopPUbFrag_->Fill(5,semilepbrDownWeight_*mcWeight_pu_top_bFrag_);
+      
+      hSystMCweight_bFrag_timesTopnnloPUbFrag_->Fill(0.,fragUpWeight_*mcWeight_pu_topNNLO_);      // do not multiply with bFrag central (is replace in local FW by shift)
+      hSystMCweight_bFrag_timesTopnnloPUbFrag_->Fill(1,fragCentralWeight_*mcWeight_pu_topNNLO_);  // do not multiply with bFrag central (is replace in local FW by shift)
+      hSystMCweight_bFrag_timesTopnnloPUbFrag_->Fill(2,fragDownWeight_*mcWeight_pu_topNNLO_);     // do not multiply with bFrag central (is replace in local FW by shift)
+      hSystMCweight_bFrag_timesTopnnloPUbFrag_->Fill(3,fragPetersonWeight_*mcWeight_pu_topNNLO_); // do not multiply with bFrag central (is replace in local FW by shift)
+      hSystMCweight_bFrag_timesTopnnloPUbFrag_->Fill(4,semilepbrUpWeight_*mcWeight_pu_topNNLO_bFrag_);
+      hSystMCweight_bFrag_timesTopnnloPUbFrag_->Fill(5,semilepbrDownWeight_*mcWeight_pu_topNNLO_bFrag_);
       
       //PU
       hSystMCweight_PU_->Fill(0.,pu_weight_*mc_weight_);
@@ -654,14 +690,24 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       hSystMCweight_PU_timesTopPU_->Fill(1,pu_weight_up_*mc_weight_*topPTweight_);
       hSystMCweight_PU_timesTopPU_->Fill(2,pu_weight_down_*mc_weight_*topPTweight_);
       
+      hSystMCweight_PU_timesTopnnloPU_->Fill(0.,pu_weight_*mc_weight_*topPTweightNNLO_);
+      hSystMCweight_PU_timesTopnnloPU_->Fill(1,pu_weight_up_*mc_weight_*topPTweightNNLO_);
+      hSystMCweight_PU_timesTopnnloPU_->Fill(2,pu_weight_down_*mc_weight_*topPTweightNNLO_);
+      
       hSystMCweight_PU_timesTopPUbFrag_->Fill(0.,pu_weight_*mc_weight_*topPTweight_*fragCentralWeight_);
       hSystMCweight_PU_timesTopPUbFrag_->Fill(1,pu_weight_up_*mc_weight_*topPTweight_*fragCentralWeight_);
       hSystMCweight_PU_timesTopPUbFrag_->Fill(2,pu_weight_down_*mc_weight_*topPTweight_*fragCentralWeight_);
+      
+      hSystMCweight_PU_timesTopnnloPUbFrag_->Fill(0.,pu_weight_*mc_weight_*topPTweightNNLO_*fragCentralWeight_);
+      hSystMCweight_PU_timesTopnnloPUbFrag_->Fill(1,pu_weight_up_*mc_weight_*topPTweightNNLO_*fragCentralWeight_);
+      hSystMCweight_PU_timesTopnnloPUbFrag_->Fill(2,pu_weight_down_*mc_weight_*topPTweightNNLO_*fragCentralWeight_);
    }
    
    
    hCutFlow_->Fill("initial_mc_pu_topPt_weighted", mcWeight_pu_top_);
+   hCutFlow_->Fill("initial_mc_pu_topPtNNLO_weighted", mcWeight_pu_topNNLO_);
    hCutFlow_->Fill("initial_mc_pu_topPt_bFrag_weighted", mcWeight_pu_top_bFrag_);
+   hCutFlow_->Fill("initial_mc_pu_topPtNNLO_bFrag_weighted", mcWeight_pu_topNNLO_bFrag_);
       
    ////////////
    // Trigger//
@@ -1212,6 +1258,36 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    metPuppiXYcorr_UnclEd_.sig = met.metSignificance();
    metPuppiXYcorr_UnclEd_.uncertainty = metPuppi_.uncertainty;
    
+   //Deep MET response tune
+   metShifted = met.corP4(pat::MET::RawDeepResponseTune);
+   metDeepResponse_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
+   metDeepResponse_.sig = met.metSignificance();
+   metDeepResponse_.uncertainty = met_.uncertainty;
+   
+   metShifted = met.shiftedP4(pat::MET::UnclusteredEnUp, pat::MET::RawDeepResponseTune);
+   metDeepResponse_UnclEu_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
+   metDeepResponse_UnclEu_.uncertainty = met_.uncertainty;
+   metDeepResponse_UnclEu_.sig = met_.sig;
+   metShifted = met.shiftedP4(pat::MET::UnclusteredEnDown, pat::MET::RawDeepResponseTune);
+   metDeepResponse_UnclEd_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
+   metDeepResponse_UnclEd_.uncertainty = met_.uncertainty;
+   metDeepResponse_UnclEd_.sig = met_.sig;
+   
+   //Deep MET resolution tune
+   metShifted = met.corP4(pat::MET::RawDeepResolutionTune);
+   metDeepResolution_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
+   metDeepResolution_.sig = met.metSignificance();
+   metDeepResolution_.uncertainty = met_.uncertainty;
+   
+   metShifted = met.shiftedP4(pat::MET::UnclusteredEnUp, pat::MET::RawDeepResolutionTune);
+   metDeepResolution_UnclEu_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
+   metDeepResolution_UnclEu_.uncertainty = met_.uncertainty;
+   metDeepResolution_UnclEu_.sig = met_.sig;
+   metShifted = met.shiftedP4(pat::MET::UnclusteredEnDown, pat::MET::RawDeepResolutionTune);
+   metDeepResolution_UnclEd_.p.SetPtEtaPhiE(metShifted.pt(), metShifted.eta(), metShifted.phi(), metShifted.energy());
+   metDeepResolution_UnclEd_.uncertainty = met_.uncertainty;
+   metDeepResolution_UnclEd_.sig = met_.sig;
+   
    
    ///////////////////////////
    // generated HT and DY pt//
@@ -1446,19 +1522,27 @@ void TreeWriter::beginJob()
    // create histogram for syst. MC weight sus
    hSystMCweight_PS_ = createSystMCWeightHist("hSystMCweight_PS_",46);
    hSystMCweight_PS_timesTopPU_ = createSystMCWeightHist("hSystMCweight_PS_timesTopPU_",46);
+   hSystMCweight_PS_timesTopnnloPU_ = createSystMCWeightHist("hSystMCweight_PS_timesTopnnloPU_",46);
    hSystMCweight_PS_timesTopPUbFrag_ = createSystMCWeightHist("hSystMCweight_PS_timesTopPUbFrag_",46);
+   hSystMCweight_PS_timesTopnnloPUbFrag_ = createSystMCWeightHist("hSystMCweight_PS_timesTopnnloPUbFrag_",46);
    hSystMCweight_PDF_ = createSystMCWeightHist("hSystMCweight_PDF_",112);
    hSystMCweight_PDF_timesTopPU_ = createSystMCWeightHist("hSystMCweight_PDF_timesTopPU_",112);
+   hSystMCweight_PDF_timesTopnnloPU_ = createSystMCWeightHist("hSystMCweight_PDF_timesTopnnloPU_",112);
    hSystMCweight_PDF_timesTopPUbFrag_ = createSystMCWeightHist("hSystMCweight_PDF_timesTopPUbFrag_",112);
-   hSystMCweight_topPt_ = createSystMCWeightHist("hSystMCweight_topPt_",2);
-   hSystMCweight_topPt_timesTopPU_ = createSystMCWeightHist("hSystMCweight_topPt_timesTopPU_",2);
-   hSystMCweight_topPt_timesTopPUbFrag_ = createSystMCWeightHist("hSystMCweight_topPt_timesTopPUbFrag_",2);
+   hSystMCweight_PDF_timesTopnnloPUbFrag_ = createSystMCWeightHist("hSystMCweight_PDF_timesTopnnloPUbFrag_",112);
+   hSystMCweight_topPt_ = createSystMCWeightHist("hSystMCweight_topPt_",3);
+   hSystMCweight_topPt_timesTopPU_ = createSystMCWeightHist("hSystMCweight_topPt_timesTopPU_",3);
+   hSystMCweight_topPt_timesTopPUbFrag_ = createSystMCWeightHist("hSystMCweight_topPt_timesTopPUbFrag_",3);
    hSystMCweight_bFrag_ = createSystMCWeightHist("hSystMCweight_bFrag_",6);
    hSystMCweight_bFrag_timesTopPU_ = createSystMCWeightHist("hSystMCweight_bFrag_timesTopPU_",6);
+   hSystMCweight_bFrag_timesTopnnloPU_ = createSystMCWeightHist("hSystMCweight_bFrag_timesTopnnloPU_",6);
    hSystMCweight_bFrag_timesTopPUbFrag_ = createSystMCWeightHist("hSystMCweight_bFrag_timesTopPUbFrag_",6);
+   hSystMCweight_bFrag_timesTopnnloPUbFrag_ = createSystMCWeightHist("hSystMCweight_bFrag_timesTopnnloPUbFrag_",6);
    hSystMCweight_PU_ = createSystMCWeightHist("hSystMCweight_PU_",3);
    hSystMCweight_PU_timesTopPU_ = createSystMCWeightHist("hSystMCweight_PU_timesTopPU_",3);
+   hSystMCweight_PU_timesTopnnloPU_ = createSystMCWeightHist("hSystMCweight_PU_timesTopnnloPU_",3);
    hSystMCweight_PU_timesTopPUbFrag_ = createSystMCWeightHist("hSystMCweight_PU_timesTopPUbFrag_",3);
+   hSystMCweight_PU_timesTopnnloPUbFrag_ = createSystMCWeightHist("hSystMCweight_PU_timesTopnnloPUbFrag_",3);
 }
 
 void TreeWriter::beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const&)

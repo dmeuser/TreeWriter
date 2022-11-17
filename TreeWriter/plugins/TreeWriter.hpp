@@ -161,6 +161,7 @@ private:
    Float_t pu_weight_down_;
    Float_t mc_weight_;
    Float_t topPTweight_;
+   Float_t topPTweightNNLO_;
    std::vector<float> vPdf_weights_;
    std::vector<float> vPS_weights_;
    
@@ -202,6 +203,12 @@ private:
    tree::MET                   metPuppiXYcorr_;
    tree::MET                   metPuppiXYcorr_UnclEu_;
    tree::MET                   metPuppiXYcorr_UnclEd_;
+   tree::MET                   metDeepResolution_;
+   tree::MET                   metDeepResolution_UnclEu_;
+   tree::MET                   metDeepResolution_UnclEd_;
+   tree::MET                   metDeepResponse_;
+   tree::MET                   metDeepResponse_UnclEu_;
+   tree::MET                   metDeepResponse_UnclEd_;
    std::map<std::string,std::vector<tree::Particle>> triggerObjectMap_;
    const std::string year_;
    
@@ -226,19 +233,27 @@ private:
    // histograms to store sum of MC weights
    TH1D* hSystMCweight_PS_;
    TH1D* hSystMCweight_PS_timesTopPU_;
+   TH1D* hSystMCweight_PS_timesTopnnloPU_;
    TH1D* hSystMCweight_PS_timesTopPUbFrag_;
+   TH1D* hSystMCweight_PS_timesTopnnloPUbFrag_;
    TH1D* hSystMCweight_PDF_;
    TH1D* hSystMCweight_PDF_timesTopPU_;
+   TH1D* hSystMCweight_PDF_timesTopnnloPU_;
    TH1D* hSystMCweight_PDF_timesTopPUbFrag_;
+   TH1D* hSystMCweight_PDF_timesTopnnloPUbFrag_;
    TH1D* hSystMCweight_topPt_;
    TH1D* hSystMCweight_topPt_timesTopPU_;
    TH1D* hSystMCweight_topPt_timesTopPUbFrag_;
    TH1D* hSystMCweight_bFrag_;
    TH1D* hSystMCweight_bFrag_timesTopPU_;
+   TH1D* hSystMCweight_bFrag_timesTopnnloPU_;
    TH1D* hSystMCweight_bFrag_timesTopPUbFrag_;
+   TH1D* hSystMCweight_bFrag_timesTopnnloPUbFrag_;
    TH1D* hSystMCweight_PU_;
    TH1D* hSystMCweight_PU_timesTopPU_;
+   TH1D* hSystMCweight_PU_timesTopnnloPU_;
    TH1D* hSystMCweight_PU_timesTopPUbFrag_;
+   TH1D* hSystMCweight_PU_timesTopnnloPUbFrag_;
 
    // Pileup histogram(s)
    TH1F hPU_;
