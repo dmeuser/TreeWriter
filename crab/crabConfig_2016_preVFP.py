@@ -53,7 +53,6 @@ datasets["DoubleMuon"] = [
     # "/DoubleMuon/Run2016E-21Feb2020_UL2016_HIPM-v1/MINIAOD",
     # "/DoubleMuon/Run2016F-21Feb2020_UL2016_HIPM-v1/MINIAOD",
 
-    # "/DoubleMuon/Run2016B-ver1_HIPM_UL2016_MiniAODv2-v1/MINIAOD",
     "/DoubleMuon/Run2016B-ver2_HIPM_UL2016_MiniAODv2-v1/MINIAOD",
     "/DoubleMuon/Run2016C-HIPM_UL2016_MiniAODv2-v1/MINIAOD",
     "/DoubleMuon/Run2016D-HIPM_UL2016_MiniAODv2-v1/MINIAOD",
@@ -70,7 +69,6 @@ datasets["DoubleEG"] = [
     # "/DoubleEG/Run2016E-21Feb2020_UL2016_HIPM-v1/MINIAOD",
     # "/DoubleEG/Run2016F-21Feb2020_UL2016_HIPM-v1/MINIAOD",
     
-    # "/DoubleEG/Run2016B-ver1_HIPM_UL2016_MiniAODv2-v1/MINIAOD",
     "/DoubleEG/Run2016B-ver2_HIPM_UL2016_MiniAODv2-v3/MINIAOD",
     "/DoubleEG/Run2016C-HIPM_UL2016_MiniAODv2-v1/MINIAOD",
     "/DoubleEG/Run2016D-HIPM_UL2016_MiniAODv2-v1/MINIAOD",
@@ -87,7 +85,6 @@ datasets["SingleElectron"] = [
     # "/SingleElectron/Run2016E-21Feb2020_UL2016_HIPM-v2/MINIAOD",
     # "/SingleElectron/Run2016F-21Feb2020_UL2016_HIPM-v1/MINIAOD",
 
-    # "/SingleElectron/Run2016B-ver1_HIPM_UL2016_MiniAODv2-v2/MINIAOD",
     "/SingleElectron/Run2016B-ver2_HIPM_UL2016_MiniAODv2-v2/MINIAOD",
     "/SingleElectron/Run2016C-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
     "/SingleElectron/Run2016D-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
@@ -104,7 +101,6 @@ datasets["MuonEG"] = [
     # "/MuonEG/Run2016E-21Feb2020_UL2016_HIPM-v1/MINIAOD",
     # "/MuonEG/Run2016F-21Feb2020_UL2016_HIPM-v1/MINIAOD",
 
-    # "/MuonEG/Run2016B-ver1_HIPM_UL2016_MiniAODv2-v2/MINIAOD",
     "/MuonEG/Run2016B-ver2_HIPM_UL2016_MiniAODv2-v2/MINIAOD",
     "/MuonEG/Run2016C-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
     "/MuonEG/Run2016D-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
@@ -121,7 +117,6 @@ datasets["SingleMuon"] = [
     # "/SingleMuon/Run2016E-21Feb2020_UL2016_HIPM-v1/MINIAOD",
     # "/SingleMuon/Run2016F-21Feb2020_UL2016_HIPM-v1/MINIAOD",
 
-    # "/SingleMuon/Run2016B-ver1_HIPM_UL2016_MiniAODv2-v2/MINIAOD",
     "/SingleMuon/Run2016B-ver2_HIPM_UL2016_MiniAODv2-v2/MINIAOD",
     "/SingleMuon/Run2016C-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
     "/SingleMuon/Run2016D-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
@@ -138,7 +133,6 @@ datasets["MET"] = [
     # "/MET/Run2016E-21Feb2020_UL2016_HIPM-v1/MINIAOD",
     # "/MET/Run2016F-21Feb2020_UL2016_HIPM-v1/MINIAOD",
 
-    # "/MET/Run2016B-ver1_HIPM_UL2016_MiniAODv2-v2/MINIAOD",
     "/MET/Run2016B-ver2_HIPM_UL2016_MiniAODv2-v2/MINIAOD",
     "/MET/Run2016C-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
     "/MET/Run2016D-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
@@ -175,7 +169,7 @@ datasets["SingleTop"] = [
     
 ]
 
-datasets["SingleTopDS"] = [
+datasets["DS_SingleTop"] = [
     "/ST_tW_antitop_5f_DS_NoFullyHadronicDecays_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM",
     "/ST_tW_top_5f_DS_NoFullyHadronicDecays_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM"
 ]
@@ -189,10 +183,10 @@ datasets["V+Jets"] = [
     # "/DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPV-106X_mcRun2_asymptotic_preVFP_v8-v2/MINIAODSIM",
     # "/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPV-106X_mcRun2_asymptotic_preVFP_v8-v1/MINIAODSIM",
         
-    # "/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM",
-    # "/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM",
+    "/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM",
+    "/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM",
     "/DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM",
-    # "/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM",
+    "/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM",
 
 
 ]
@@ -220,6 +214,11 @@ datasets["tt+X"] = [
     "/TTWJetsToQQ_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM",
     "/TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM",
     
+]
+
+datasets["BSM"] = [
+    "/SMS-T2tt_mStop-525_mLSP-350_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM",
+    "/SMS-T2tt_mStop-525_mLSP-438_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM",
 ]
 
 datasets["hdamp_ttbar"] = [
@@ -337,7 +336,6 @@ datasets["all"] += datasets["SingleMuon"]
 datasets["all"] += datasets["MET"]
 datasets["all"] += datasets["Standard_ttbar"]
 datasets["all"] += datasets["SingleTop"]
-datasets["all"] += datasets["SingleTopDS"]
 datasets["all"] += datasets["V+Jets"]
 datasets["all"] += datasets["Diboson"]
 datasets["all"] += datasets["tt+X"]
@@ -345,6 +343,7 @@ datasets["all"] += datasets["hdamp_ttbar"]
 datasets["all"] += datasets["UE_top"]
 datasets["all"] += datasets["ColorRec_top"]
 datasets["all"] += datasets["TopMass_top"]
+datasets["all"] += datasets["DS_SingleTop"]
 
 # call with 'python crabConfig.py'
 if __name__ == '__main__':

@@ -385,7 +385,7 @@ process.p = cms.Path(
     *process.jetIDSequence
     *process.egammaPostRecoSeq
     *process.MuonsAddedRochesterCorr
-    *process.fullPatMetSequence
+    #  ~*process.fullPatMetSequence         # only needed if MET corrections have been changed (usually not for UL)
     #  ~*process.puppiSequence              # only needed for miniAODv1
     *process.jecSequencePuppi
     *process.jetIDSequencePuppi
