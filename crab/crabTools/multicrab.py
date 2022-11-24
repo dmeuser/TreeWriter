@@ -34,14 +34,26 @@ def crabResubmit(directory,maxjobruntime,siteblacklist,silent=False):
     with open(os.devnull, "w") as FNULL:
         if maxjobruntime<0:
             if not siteblacklist:
-                out=subprocess.check_output(["crab","resubmit",directory],stdin=FNULL,stderr=subprocess.STDOUT)
+                try:
+                    out=subprocess.check_output(["crab","resubmit",directory],stdin=FNULL,stderr=subprocess.STDOUT)
+                except subprocess.CalledProcessError as e:
+                    print(e.output)
             else:
-                out=subprocess.check_output(["crab","resubmit",directory,"--siteblacklist="+",".join(siteblacklist)],stdin=FNULL,stderr=subprocess.STDOUT)
+                try:
+                    out=subprocess.check_output(["crab","resubmit",directory,"--siteblacklist="+",".join(siteblacklist)],stdin=FNULL,stderr=subprocess.STDOUT)
+                except subprocess.CalledProcessError as e:
+                    print(e.output)
         else:
             if not siteblacklist:
-                out=subprocess.check_output(["crab","resubmit",directory,"--maxjobruntime="+str(maxjobruntime)],stdin=FNULL,stderr=subprocess.STDOUT)
+                try:
+                    out=subprocess.check_output(["crab","resubmit",directory,"--maxjobruntime="+str(maxjobruntime)],stdin=FNULL,stderr=subprocess.STDOUT)
+                except subprocess.CalledProcessError as e:
+                    print(e.output)
             else:
-                out=subprocess.check_output(["crab","resubmit",directory,"--maxjobruntime="+str(maxjobruntime),"--siteblacklist="+",".join(siteblacklist)],stdin=FNULL,stderr=subprocess.STDOUT)
+                try:
+                    out=subprocess.check_output(["crab","resubmit",directory,"--maxjobruntime="+str(maxjobruntime),"--siteblacklist="+",".join(siteblacklist)],stdin=FNULL,stderr=subprocess.STDOUT)
+                except subprocess.CalledProcessError as e:
+                    print(e.output)
         if "No credentials found!" in out:
             print "No credentials found! Initialize your VOMS proxy."
             exit(0)
