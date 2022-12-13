@@ -723,8 +723,11 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    const edm::TriggerNames &triggerNames = iEvent.triggerNames(*triggerBits);
    if (triggerIndex_.size() && newLumiBlock_) {
       newLumiBlock_ = false;
-      // set all trigger indeces to -1 as "not available"-flag
-      for (auto& it: triggerIndex_) { it.second = -1; }
+      // set all trigger indeces to -1 as "not available"-flag and reset trigger decision
+      for (auto& it: triggerIndex_) { 
+         it.second = -1; 
+         triggerDecision_[it.first] = false;
+      }
       // store the indices of the trigger names that we really find
       for (unsigned i=0; i<triggerNames.size(); i++) {
          for (auto& it : triggerIndex_) {
