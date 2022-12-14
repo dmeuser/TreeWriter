@@ -164,6 +164,24 @@ process.updatedPatJetsUpdatedJECIDsmeared = cms.EDProducer('SmearedPATJetProduce
    uncertaintySource = cms.string(""), # If not specified, default to Total
        )
 
+#Update Jet Pileup ID (only for 2016 samples)
+from RecoJets.JetProducers.PileupJetID_cfi import _chsalgos_106X_UL16APV
+from RecoJets.JetProducers.PileupJetID_cfi import pileupJetId
+process.pileupJetIdUpdated = pileupJetId.clone( 
+        jets=cms.InputTag("updatedPatJetsUpdatedJECID"),
+        inputIsCorrected=True,
+        applyJec=False,
+        vertexes=cms.InputTag("offlineSlimmedPrimaryVertices"),
+        algos = cms.VPSet(_chsalgos_106X_UL16APV),
+    )
+process.updatedPatJetsUpdatedJECIDUpdatedPileupID = cms.EDProducer('PATJetUserDataEmbedder',
+    src = cms.InputTag("updatedPatJetsUpdatedJECID"),
+    userInts = cms.PSet(
+        pileupJetIdUpdated = cms.InputTag('pileupJetIdUpdated:fullId')
+    ),
+)
+process.pileupIDSequence = cms.Sequence(process.pileupJetIdUpdated * process.updatedPatJetsUpdatedJECIDUpdatedPileupID)
+
 ################################
 # Puppi Jets                   #
 ################################
@@ -278,7 +296,7 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
                                     jet_pT_cut=cms.untracked.double(15), # for all jets
                                     NumberLeptons_cut=cms.untracked.uint32(2),
                                     # physics objects
-                                    jets = cms.InputTag("updatedPatJetsUpdatedJECID"),    #Use unsmeared jets and apply JER locally
+                                    jets = cms.InputTag("updatedPatJetsUpdatedJECIDUpdatedPileupID"),    #Use unsmeared jets and apply JER locally
                                     jets_puppi = cms.InputTag("updatedPatJetsUpdatedJECIDPuppi"),
                                     muons = cms.InputTag("MuonsAddedRochesterCorr"),
                                     genJets=cms.InputTag("slimmedGenJets"),
@@ -383,6 +401,7 @@ user=options.user or getpass.getuser()
 process.p = cms.Path(
     process.jecSequence
     *process.jetIDSequence
+    *process.pileupIDSequence
     *process.egammaPostRecoSeq
     *process.MuonsAddedRochesterCorr
     #  ~*process.fullPatMetSequence         # only needed if MET corrections have been changed (usually not for UL)

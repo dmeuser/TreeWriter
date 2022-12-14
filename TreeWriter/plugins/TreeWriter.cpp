@@ -1028,7 +1028,8 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       trJet.bTagSoftElectron = (jet.bDiscriminator("softPFElectronBJetTags")<0) ? -1. : jet.bDiscriminator("softPFElectronBJetTags");
       trJet.isTight = jetIdSelector(jet);
       trJet.TightIDlepVeto = jet.hasUserInt("PFJetIDTightLepVeto") ? jet.userInt("PFJetIDTightLepVeto") : 0;
-      trJet.PileupIDloose = (bool(jet.userInt("pileupJetId:fullId") & (1 << 2)) || (jet.pt()>50));
+      if(jet.hasUserInt("pileupJetIdUpdated")) trJet.PileupIDloose = (bool(jet.userInt("pileupJetIdUpdated") & (1 << 0)) || (jet.pt()>50));      //updated and switched WPs for 2016
+      else trJet.PileupIDloose = (bool(jet.userInt("pileupJetId:fullId") & (1 << 2)) || (jet.pt()>50));     //correct for 2017 and 2018
       trJet.uncorJecFactor = jet.jecFactor("Uncorrected");     //Factor to be applied to current level to end up with raw jet
       trJet.uncorJecFactor_L1 = jet.jecFactor("L1FastJet");    //Factor to be applied to current level to end up with L1 jet
       trJet.chf = jet.chargedHadronEnergyFraction();
