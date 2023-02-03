@@ -452,8 +452,6 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 {
    Bool_t isRealData;
    isRealData = iEvent.isRealData();
-
-   hCutFlow_->Fill("initial_unweighted", 1);
    
    //////////////////////
    // generator weights//
@@ -501,7 +499,14 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
                vPdf_weights_[i] = LHEEventProductHandle->weights()[i].wgt/LHEEventProductHandle->originalXWGTUP();
             }
          }
+         
+         // Check for NANs in PDF weights (occurs for one event in NLO low mass DY sample 2018)
+         if(LHEEventProductHandle->weights()[0].wgt != LHEEventProductHandle->weights()[0].wgt) return;
+         
       }
+      
+      // Count total generated events
+      hCutFlow_->Fill("initial_unweighted", 1);
       
       // top PT reweighting
       if(ttbarGenInfo_){
