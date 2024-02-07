@@ -87,9 +87,9 @@ datasets["SingleMuon"] = [
     #  ~"/SingleMuon/Run2018C-12Nov2019_UL2018-v3/MINIAOD",
     #  ~"/SingleMuon/Run2018D-12Nov2019_UL2018-v8/MINIAOD",
     
-    "/SingleMuon/Run2018A-UL2018_MiniAODv2-v3/MINIAOD",
-    "/SingleMuon/Run2018B-UL2018_MiniAODv2-v2/MINIAOD",
-    "/SingleMuon/Run2018C-UL2018_MiniAODv2-v2/MINIAOD",
+    #  ~"/SingleMuon/Run2018A-UL2018_MiniAODv2-v3/MINIAOD",
+    #  ~"/SingleMuon/Run2018B-UL2018_MiniAODv2-v2/MINIAOD",
+    #  ~"/SingleMuon/Run2018C-UL2018_MiniAODv2-v2/MINIAOD",
     "/SingleMuon/Run2018D-UL2018_MiniAODv2-v3/MINIAOD",
 ]
 
@@ -111,10 +111,12 @@ datasets["Standard_ttbar"] = [
     #  ~"/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
     #  ~"/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v1/MINIAODSIM"
     
-    "/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM",
-    "/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM",
-    "/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
-    "/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM"
+    #  ~"/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM",
+    #  ~"/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM",
+    #  ~"/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
+    #  ~"/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
+    #  ~"/b_bbar_4l_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAODv2-gridpackfix_106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
+    "/BBLLNuNu_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM"
 ]
 
 datasets["SingleTop"] = [
@@ -137,12 +139,12 @@ datasets["V+Jets"] = [
     #  ~"/DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
     #  ~"/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v1/MINIAODSIM",
     
-    "/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
-    "/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
-    "/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1_ext1-v1/MINIAODSIM",
-    "/DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM",
+    #  ~"/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
+    #  ~"/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
+    #  ~"/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1_ext1-v1/MINIAODSIM",
+    #  ~"/DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM",
     "/DYJetsToLL_M-10to50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
-    "/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM",
+    #  ~"/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM",
 ]
 
 datasets["Diboson"] = [
@@ -150,9 +152,10 @@ datasets["Diboson"] = [
     #  ~"/WZ_TuneCP5_13TeV-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
     #  ~"/ZZ_TuneCP5_13TeV-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM",
     
-    "/WW_TuneCP5_13TeV-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM",
-    "/WZ_TuneCP5_13TeV-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM",
-    "/ZZ_TuneCP5_13TeV-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
+    #  ~"/WW_TuneCP5_13TeV-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM",
+    #  ~"/WZ_TuneCP5_13TeV-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM",
+    #  ~"/ZZ_TuneCP5_13TeV-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
+    "/ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM",
 ]
 
 datasets["tt+X"] = [
@@ -283,22 +286,22 @@ datasets["DS_SingleTop"] = [
 ]
 
 datasets["all"] = []
-datasets["all"] += datasets["DoubleMuon"]
-datasets["all"] += datasets["EGamma"]
-datasets["all"] += datasets["MuonEG"]
-datasets["all"] += datasets["SingleMuon"]
-datasets["all"] += datasets["MET"]
+#  ~datasets["all"] += datasets["DoubleMuon"]
+#  ~datasets["all"] += datasets["EGamma"]
+#  ~datasets["all"] += datasets["MuonEG"]
+#  ~datasets["all"] += datasets["SingleMuon"]
+#  ~datasets["all"] += datasets["MET"]
 datasets["all"] += datasets["Standard_ttbar"]
-datasets["all"] += datasets["SingleTop"]
-datasets["all"] += datasets["V+Jets"]
-datasets["all"] += datasets["Diboson"]
-datasets["all"] += datasets["tt+X"]
-datasets["all"] += datasets["hdamp_ttbar"]
-datasets["all"] += datasets["UE_top"]
-datasets["all"] += datasets["ColorRec_top"]
-datasets["all"] += datasets["TopMass_top"]
-datasets["all"] += datasets["BSM"]
-datasets["all"] += datasets["DS_SingleTop"]
+#  ~datasets["all"] += datasets["SingleTop"]
+#  ~datasets["all"] += datasets["V+Jets"]
+#  ~datasets["all"] += datasets["Diboson"]
+#  ~datasets["all"] += datasets["tt+X"]
+#  ~datasets["all"] += datasets["hdamp_ttbar"]
+#  ~datasets["all"] += datasets["UE_top"]
+#  ~datasets["all"] += datasets["ColorRec_top"]
+#  ~datasets["all"] += datasets["TopMass_top"]
+#  ~datasets["all"] += datasets["BSM"]
+#  ~datasets["all"] += datasets["DS_SingleTop"]
 
 # call with 'python crabConfig.py'
 if __name__ == '__main__':
@@ -359,7 +362,8 @@ if __name__ == '__main__':
         try:
             print "submitting",dataset
             # ~crabCommand('submit', config = config)
-            subprocess.call("crab submit current_config.py", shell=True)
+            #  ~subprocess.call("crab submit current_config.py", shell=True)
+            subprocess.call("crab-pre submit current_config.py", shell=True)
         except CRABClient.ClientExceptions.ConfigException,e:
             print "  ERROR:",e
             failed.append(dataset)

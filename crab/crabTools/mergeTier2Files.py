@@ -80,16 +80,18 @@ def getDirectoryContent(srmDirectoryPath):
     - returned paths start from '/pnfs/'
     """
     # get srmls output
-    contents=sp.check_output(["srmls",srmDirectoryPath])
+    command = "eval `scram unsetenv -sh`;","gfal-ls",srmDirectoryPath
+    command = " ".join(command)
+    contents=sp.check_output(command,shell=True)
     # separate output at spaces/line breaks
     contents=contents.split()
     # only every second entry is name, the rest are sizes
     # and the very first entry is the directory name
-    contents=contents[3::2]
+    #  ~contents=contents[3::2]
     # ignore the files placed in the subfolders not containing the
     # relevant data files and the folders themselves
-    ignores=("/failed/","/log/")
-    contents=[f for f in contents if not f.endswith(ignores)]
+    ignores=("/failed","/log")
+    contents=[srmDirectoryPath.split("=")[-1]+"/"+f for f in contents if not f.endswith(ignores)]
     return contents
 
 def getFilePaths(srmDirectoryPath):
@@ -109,7 +111,9 @@ def downloadAndMergeFiles(inputFiles, outputFile, maxMergeSize=-1):
     for ifile, f in enumerate(inputFiles):
         if not os.path.isfile(os.path.join(tmpDownloadDir, os.path.basename(f))):
             print "Downloading {} {}/{}".format(f, ifile+1, len(inputFiles))
-            sp.call(["srmcp", "srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN=/pnfs/physik.rwth-aachen.de/cms"+f, "file:///{}/{}".format(tmpDownloadDir, f.split("/")[-1])])
+            command = "eval `scram unsetenv -sh`;","gfal-copy", "srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN=/pnfs/physik.rwth-aachen.de/cms"+f, "file:///{}/{}".format(tmpDownloadDir, f.split("/")[-1])
+            command = " ".join(command)
+            sp.call(command,shell=True)
         else:
             print "File {} already in folder".format(f)
     localFiles = [f for f in glob.glob("{}/*root".format(tmpDownloadDir))]

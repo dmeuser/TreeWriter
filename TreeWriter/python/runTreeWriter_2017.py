@@ -57,7 +57,7 @@ if isRealData:
 
 else:
         #  ~process.GlobalTag.globaltag = "106X_mc2017_realistic_v8"    #miniAODv1
-        process.GlobalTag.globaltag = "106X_mc2017_realistic_v9"        #miniAODv2
+        process.GlobalTag.globaltag = "106X_mc2017_realistic_v10"        #miniAODv2
 
         
 #timing information
@@ -341,9 +341,9 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
 ################################
 
 # set booleans depending on sample name
-process.TreeWriter.ttbarGenInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T"))
-process.TreeWriter.ttbarPseudoInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T"))
-process.TreeWriter.bFragInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/ST"))
+process.TreeWriter.ttbarGenInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T") or dataset.startswith("/b_bbar_4l"))
+process.TreeWriter.ttbarPseudoInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T") or dataset.startswith("/b_bbar_4l"))
+process.TreeWriter.bFragInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/ST") or dataset.startswith("/b_bbar_4l"))
 process.TreeWriter.DYptInfo=(dataset.startswith("/DY"))
 process.TreeWriter.isMadgraphMLM=(dataset.find("madgraphMLM")>0)  # ME scale weights stored in different order
 

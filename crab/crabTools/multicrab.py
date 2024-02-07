@@ -32,6 +32,7 @@ def crabUpdate( dir ):
 
 def crabResubmit(directory,maxjobruntime,siteblacklist,silent=False):
     with open(os.devnull, "w") as FNULL:
+        out = ""
         if maxjobruntime<0:
             if not siteblacklist:
                 try:

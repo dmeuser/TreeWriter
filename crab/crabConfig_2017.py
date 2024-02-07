@@ -109,10 +109,10 @@ datasets["SingleMuon"] = [
     #  ~"/SingleMuon/Run2017F-09Aug2019_UL2017-v1/MINIAOD",
     
     "/SingleMuon/Run2017B-UL2017_MiniAODv2-v1/MINIAOD",
-    "/SingleMuon/Run2017C-UL2017_MiniAODv2-v1/MINIAOD",
-    "/SingleMuon/Run2017D-UL2017_MiniAODv2-v1/MINIAOD",
-    "/SingleMuon/Run2017E-UL2017_MiniAODv2-v1/MINIAOD",
-    "/SingleMuon/Run2017F-UL2017_MiniAODv2-v1/MINIAOD",
+    #  ~"/SingleMuon/Run2017C-UL2017_MiniAODv2-v1/MINIAOD",
+    #  ~"/SingleMuon/Run2017D-UL2017_MiniAODv2-v1/MINIAOD",
+    #  ~"/SingleMuon/Run2017E-UL2017_MiniAODv2-v1/MINIAOD",
+    #  ~"/SingleMuon/Run2017F-UL2017_MiniAODv2-v1/MINIAOD",
 ]
 
 datasets["MET"] = [
@@ -135,10 +135,11 @@ datasets["Standard_ttbar"] = [
     #  ~"/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
     #  ~"/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
     
-    "/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v1/MINIAODSIM",
-    "/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM",
-    "/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v1/MINIAODSIM",
-    "/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM",
+    #  ~"/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v1/MINIAODSIM",
+    #  ~"/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM",
+    #  ~"/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v1/MINIAODSIM",
+    #  ~"/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM",
+    "/b_bbar_4l_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAODv2-gridpackfix_106X_mc2017_realistic_v9-v2/MINIAODSIM"
 ]
 
 datasets["SingleTop"] = [
@@ -162,11 +163,11 @@ datasets["V+Jets"] = [
     #  ~"/DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM",
     #  ~"/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAOD-106X_mc2017_realistic_v6-v1/MINIAODSIM",
     
-    "/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM",
-    "/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM",
-    "/DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v1/MINIAODSIM",
+    #  ~"/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM",
+    #  ~"/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM",
+    #  ~"/DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v1/MINIAODSIM",
     "/DYJetsToLL_M-10to50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM",
-    "/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v1/MINIAODSIM",
+    #  ~"/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v1/MINIAODSIM",
 ]
 
 datasets["Diboson"] = [
@@ -306,23 +307,23 @@ datasets["DS_SingleTop"] = [
 ]
 
 datasets["all"] = []
-datasets["all"] += datasets["DoubleEG"]
-datasets["all"] += datasets["DoubleMuon"]
-datasets["all"] += datasets["MuonEG"]
-datasets["all"] += datasets["SingleMuon"]
-datasets["all"] += datasets["SingleElectron"]
-datasets["all"] += datasets["MET"]
+#  ~datasets["all"] += datasets["DoubleEG"]
+#  ~datasets["all"] += datasets["DoubleMuon"]
+#  ~datasets["all"] += datasets["MuonEG"]
+#  ~datasets["all"] += datasets["SingleMuon"]
+#  ~datasets["all"] += datasets["SingleElectron"]
+#  ~datasets["all"] += datasets["MET"]
 datasets["all"] += datasets["Standard_ttbar"]
-datasets["all"] += datasets["SingleTop"]
-datasets["all"] += datasets["V+Jets"]
-datasets["all"] += datasets["Diboson"]
-datasets["all"] += datasets["tt+X"]
-datasets["all"] += datasets["hdamp_ttbar"]
-datasets["all"] += datasets["UE_top"]
-datasets["all"] += datasets["ColorRec_top"]
-datasets["all"] += datasets["TopMass_top"]
-datasets["all"] += datasets["BSM"]
-datasets["all"] += datasets["DS_SingleTop"]
+#  ~datasets["all"] += datasets["SingleTop"]
+#  ~datasets["all"] += datasets["V+Jets"]
+#  ~datasets["all"] += datasets["Diboson"]
+#  ~datasets["all"] += datasets["tt+X"]
+#  ~datasets["all"] += datasets["hdamp_ttbar"]
+#  ~datasets["all"] += datasets["UE_top"]
+#  ~datasets["all"] += datasets["ColorRec_top"]
+#  ~datasets["all"] += datasets["TopMass_top"]
+#  ~datasets["all"] += datasets["BSM"]
+#  ~datasets["all"] += datasets["DS_SingleTop"]
 
 # call with 'python crabConfig.py'
 if __name__ == '__main__':

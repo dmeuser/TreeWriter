@@ -30,7 +30,9 @@ options.register ('user',
 # input files for local testing
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/00000/531C1968-9806-4346-834C-2A1EE1A86AEB.root',        # miniAODv1
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018B/MuonEG/MINIAOD/12Nov2019_UL2018-v1/100000/00BE9C7C-F659-EB4C-A6C4-EAC5054243B2.root',      # miniAODv1
-options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAODv2/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/00000/04A0B676-D63A-6D41-B47F-F4CF8CBE7DB8.root',      # miniAODv2
+#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAODv2/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/00000/04A0B676-D63A-6D41-B47F-F4CF8CBE7DB8.root',      # miniAODv2
+options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAODv2/BBLLNuNu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/2560000/050242C5-CD9D-7146-9CA0-EFB4C324EF83.root',      # miniAODv2
+#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAODv2/b_bbar_4l_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/gridpackfix_106X_upgrade2018_realistic_v16_L1v1-v2/2820000/0016836F-1DC7-F948-B571-8872ECA73D87.root',      # miniAODv2
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAODv2/DYJetsToEE_M-50_massWgtFix_TuneCP5_13TeV-powhegMiNNLO-pythia8-photos/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/260001/BE82F688-05C7-704D-B302-3178D9DD22F3.root',      # miniAODv2
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch///store/data/Run2018B/MuonEG/MINIAOD/UL2018_MiniAODv2-v1/30000/4D022B4F-18D5-884D-950E-CCC069C04D77.root',      # miniAODv2
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAODv2/SMS-T2tt_mStop-525_mLSP-350_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/2810000/9D3A6962-E244-2240-BDEF-0200B5D37A55.root',      # miniAODv2
@@ -271,7 +273,7 @@ process.prefiringweight = l1PrefiringWeightProducer.clone(
 # Define input and output      #
 ################################
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(options.maxEvents))
-#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("1:141559:141558013"))
+#  ~process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles), eventsToProcess = cms.untracked.VEventRange("1:20170:33097835-1:20170:33098267"))
 process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(options.inputFiles))
 process.TFileService = cms.Service("TFileService", fileName=cms.string(options.outputFile))
 
@@ -341,9 +343,9 @@ process.TreeWriter = cms.EDAnalyzer('TreeWriter',
 ################################
 
 # set booleans depending on sample name
-process.TreeWriter.ttbarGenInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T"))
-process.TreeWriter.ttbarPseudoInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T"))
-process.TreeWriter.bFragInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/ST"))
+process.TreeWriter.ttbarGenInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T") or dataset.startswith("/b_bbar_4l") or dataset.startswith("/BBLLNuNu"))
+process.TreeWriter.ttbarPseudoInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/SMS-T") or dataset.startswith("/b_bbar_4l") or dataset.startswith("/BBLLNuNu"))
+process.TreeWriter.bFragInfo=(dataset.startswith("/TT") or dataset.startswith("/tt") or dataset.startswith("/ST") or dataset.startswith("/b_bbar_4l") or dataset.startswith("/BBLLNuNu"))
 process.TreeWriter.DYptInfo=(dataset.startswith("/DY"))
 process.TreeWriter.isMadgraphMLM=(dataset.find("madgraphMLM")>0)  # ME scale weights stored in different order
 
