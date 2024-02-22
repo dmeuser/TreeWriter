@@ -254,6 +254,11 @@ private:
    TH1D* hSystMCweight_PU_timesTopnnloPU_;
    TH1D* hSystMCweight_PU_timesTopPUbFrag_;
    TH1D* hSystMCweight_PU_timesTopnnloPUbFrag_;
+   TH1D* hSystMCweight_hDamp_;
+   TH1D* hSystMCweight_hDamp_timesTopPU_;
+   TH1D* hSystMCweight_hDamp_timesTopnnloPU_;
+   TH1D* hSystMCweight_hDamp_timesTopPUbFrag_;
+   TH1D* hSystMCweight_hDamp_timesTopnnloPUbFrag_;
 
    // Pileup histogram(s)
    TH1F hPU_;
@@ -337,6 +342,12 @@ private:
    double prefiringweight_;
    double prefiringweight_up_;
    double prefiringweight_down_;
+   
+   //Hdamp weights
+   edm::EDGetTokenT< float > hDampWeight_up_token_;
+   edm::EDGetTokenT< float > hDampWeight_down_token_;
+   float hdamp_up_;
+   float hdamp_down_;
    
    //MadgraphMLM
    const bool isMadgraphMLM_;

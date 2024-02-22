@@ -30,8 +30,8 @@ options.register ('user',
 # input files for local testing
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAOD/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/00000/531C1968-9806-4346-834C-2A1EE1A86AEB.root',        # miniAODv1
 #  ~options.inputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2018B/MuonEG/MINIAOD/12Nov2019_UL2018-v1/100000/00BE9C7C-F659-EB4C-A6C4-EAC5054243B2.root',      # miniAODv1
-#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAODv2/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/00000/04A0B676-D63A-6D41-B47F-F4CF8CBE7DB8.root',      # miniAODv2
-options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAODv2/BBLLNuNu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/2560000/050242C5-CD9D-7146-9CA0-EFB4C324EF83.root',      # miniAODv2
+options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAODv2/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/00000/04A0B676-D63A-6D41-B47F-F4CF8CBE7DB8.root',      # miniAODv2
+#  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAODv2/BBLLNuNu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/2560000/050242C5-CD9D-7146-9CA0-EFB4C324EF83.root',      # miniAODv2
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAODv2/b_bbar_4l_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/gridpackfix_106X_upgrade2018_realistic_v16_L1v1-v2/2820000/0016836F-1DC7-F948-B571-8872ECA73D87.root',      # miniAODv2
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18MiniAODv2/DYJetsToEE_M-50_massWgtFix_TuneCP5_13TeV-powhegMiNNLO-pythia8-photos/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/260001/BE82F688-05C7-704D-B302-3178D9DD22F3.root',      # miniAODv2
 #  ~options.inputFiles =    'root://cms-xrd-global.cern.ch///store/data/Run2018B/MuonEG/MINIAOD/UL2018_MiniAODv2-v1/30000/4D022B4F-18D5-884D-950E-CCC069C04D77.root',      # miniAODv2
@@ -270,6 +270,42 @@ process.prefiringweight = l1PrefiringWeightProducer.clone(
 )
 
 ################################
+# Hdamp Weights                #
+################################
+# ML weights for creating systematic variations from nominal sample
+MLSystematicWeightsProducer = cms.EDProducer('MLSystematicWeightsProducer',
+    verbose = cms.bool(False),
+    defaultVal = cms.double(-1.),
+    input_names = cms.vstring('input'),
+    output_names = cms.vstring('activation_6'),
+    genParticles = cms.InputTag("prunedGenParticles"),
+    # dummy inputs (BFragWeights not used)
+    genBHadFlavour = cms.InputTag(""),
+    genBHadFromTopWeakDecay = cms.InputTag(""),
+    genBHadPlusMothers = cms.InputTag(""),
+    genBHadPlusMothersIndices = cms.InputTag(""),
+    genBHadIndex = cms.InputTag("")
+)
+
+process.MLWeightsHdampUp = MLSystematicWeightsProducer.clone(
+    LHEEventProduct = cms.InputTag('externalLHEProducer'),
+    model_path = cms.FileInPath("TreeWriter/data/DCTR/mymodel12_hdamp_up_13TeV.onnx"),
+    doBFragWeights = cms.bool(False),
+    doHdampWeights = cms.bool(True),
+)
+
+process.MLWeightsHdampDown = MLSystematicWeightsProducer.clone(
+    LHEEventProduct = cms.InputTag('externalLHEProducer'),
+    model_path = cms.FileInPath("TreeWriter/data/DCTR/mymodel12_hdamp_down_13TeV.onnx"),
+    doBFragWeights = cms.bool(False),
+    doHdampWeights = cms.bool(True),
+)
+
+if dataset.startswith("/TT"): process.HdampWeights = cms.Sequence(process.MLWeightsHdampUp * process.MLWeightsHdampDown)
+else: process.TTbarGen = cms.Sequence()
+
+
+################################
 # Define input and output      #
 ################################
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(options.maxEvents))
@@ -402,5 +438,6 @@ process.p = cms.Path(
     #  ~*process.BadPFMuonFilterUpdateDz    # only needed for miniAODv1
     *process.bFragWgtSequence
     *process.prefiringweight
+    *process.HdampWeights
     *process.TreeWriter
 )

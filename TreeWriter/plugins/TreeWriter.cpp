@@ -248,6 +248,9 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    , prefweight_token_(consumes< double >(edm::InputTag("prefiringweight:nonPrefiringProb")))
    , prefweightup_token_(consumes< double >(edm::InputTag("prefiringweight:nonPrefiringProbUp")))
    , prefweightdown_token_(consumes< double >(edm::InputTag("prefiringweight:nonPrefiringProbDown")))
+   // Hdamp weights
+   , hDampWeight_up_token_(consumes< float >(edm::InputTag("MLWeightsHdampUp:weight")))
+   , hDampWeight_down_token_(consumes< float >(edm::InputTag("MLWeightsHdampDown:weight")))
    // MadgraphMLM
    , isMadgraphMLM_(iConfig.getParameter<bool>("isMadgraphMLM"))
 
@@ -322,6 +325,9 @@ TreeWriter::TreeWriter(const edm::ParameterSet& iConfig)
    eventTree_->Branch("prefiring_weight", &prefiringweight_);
    eventTree_->Branch("prefiring_weight_up", &prefiringweight_up_);
    eventTree_->Branch("prefiring_weight_down", &prefiringweight_down_);
+   
+   eventTree_->Branch("hdamp_weight_up", &hdamp_up_);
+   eventTree_->Branch("hdamp_weight_down", &hdamp_down_);
 
    eventTree_->Branch("Ht", &Ht_, "Ht/F");
    eventTree_->Branch("genHt", &genHt_, "genHt/F");
@@ -606,6 +612,23 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       prefiringweight_down_ = 1.;
    }
    
+   //////////////////////
+   //  Hdamp weights   //
+   //////////////////////
+   if (ttbarGenInfo_) {
+      edm::Handle< float > hDampUp;
+      iEvent.getByToken(hDampWeight_up_token_, hDampUp ) ;
+      hdamp_up_ = (*hDampUp);
+      
+      edm::Handle< float > hDampDown;
+      iEvent.getByToken(hDampWeight_down_token_, hDampDown ) ;
+      hdamp_down_ = (*hDampDown);
+   }
+   else{
+      hdamp_up_ = 1.;
+      hdamp_down_ = 1.;
+   }
+   
    /////////////////////////////
    // Normalization histograms//
    /////////////////////////////
@@ -706,6 +729,28 @@ void TreeWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       hSystMCweight_PU_timesTopnnloPUbFrag_->Fill(0.,pu_weight_*mc_weight_*topPTweightNNLO_*fragCentralWeight_);
       hSystMCweight_PU_timesTopnnloPUbFrag_->Fill(1,pu_weight_up_*mc_weight_*topPTweightNNLO_*fragCentralWeight_);
       hSystMCweight_PU_timesTopnnloPUbFrag_->Fill(2,pu_weight_down_*mc_weight_*topPTweightNNLO_*fragCentralWeight_);
+      
+      //Hdamp
+      hSystMCweight_hDamp_->Fill(0.,mc_weight_);
+      hSystMCweight_hDamp_->Fill(1,hdamp_up_*mc_weight_);
+      hSystMCweight_hDamp_->Fill(2,hdamp_down_*mc_weight_);
+      
+      hSystMCweight_hDamp_timesTopPU_->Fill(0.,mc_weight_*topPTweight_);
+      hSystMCweight_hDamp_timesTopPU_->Fill(1,hdamp_up_*mc_weight_*topPTweight_);
+      hSystMCweight_hDamp_timesTopPU_->Fill(2,hdamp_down_*mc_weight_*topPTweight_);
+      
+      hSystMCweight_hDamp_timesTopnnloPU_->Fill(0.,mc_weight_*topPTweightNNLO_);
+      hSystMCweight_hDamp_timesTopnnloPU_->Fill(1,hdamp_up_*mc_weight_*topPTweightNNLO_);
+      hSystMCweight_hDamp_timesTopnnloPU_->Fill(2,hdamp_down_*mc_weight_*topPTweightNNLO_);
+      
+      hSystMCweight_hDamp_timesTopPUbFrag_->Fill(0.,mc_weight_*topPTweight_*fragCentralWeight_);
+      hSystMCweight_hDamp_timesTopPUbFrag_->Fill(1,hdamp_up_*mc_weight_*topPTweight_*fragCentralWeight_);
+      hSystMCweight_hDamp_timesTopPUbFrag_->Fill(2,hdamp_down_*mc_weight_*topPTweight_*fragCentralWeight_);
+      
+      hSystMCweight_hDamp_timesTopnnloPUbFrag_->Fill(0.,mc_weight_*topPTweightNNLO_*fragCentralWeight_);
+      hSystMCweight_hDamp_timesTopnnloPUbFrag_->Fill(1,hdamp_up_*mc_weight_*topPTweightNNLO_*fragCentralWeight_);
+      hSystMCweight_hDamp_timesTopnnloPUbFrag_->Fill(2,hdamp_down_*mc_weight_*topPTweightNNLO_*fragCentralWeight_);
+      
    }
    
    
@@ -1552,6 +1597,11 @@ void TreeWriter::beginJob()
    hSystMCweight_PU_timesTopnnloPU_ = createSystMCWeightHist("hSystMCweight_PU_timesTopnnloPU_",3);
    hSystMCweight_PU_timesTopPUbFrag_ = createSystMCWeightHist("hSystMCweight_PU_timesTopPUbFrag_",3);
    hSystMCweight_PU_timesTopnnloPUbFrag_ = createSystMCWeightHist("hSystMCweight_PU_timesTopnnloPUbFrag_",3);
+   hSystMCweight_hDamp_ = createSystMCWeightHist("hSystMCweight_hDamp_",3);
+   hSystMCweight_hDamp_timesTopPU_ = createSystMCWeightHist("hSystMCweight_hDamp_timesTopPU_",3);
+   hSystMCweight_hDamp_timesTopnnloPU_ = createSystMCWeightHist("hSystMCweight_hDamp_timesTopnnloPU_",3);
+   hSystMCweight_hDamp_timesTopPUbFrag_ = createSystMCWeightHist("hSystMCweight_hDamp_timesTopPUbFrag_",3);
+   hSystMCweight_hDamp_timesTopnnloPUbFrag_ = createSystMCWeightHist("hSystMCweight_hDamp_timesTopnnloPUbFrag_",3);
 }
 
 void TreeWriter::beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const&)
